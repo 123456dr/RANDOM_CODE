@@ -16,17 +16,17 @@ jobs:
     timeout-minutes: 5
     
     steps:
-      # ⭐ 第一步：生成「單一 Repo」的貪食蛇圖（修正版寫法）
+      # ⭐ 第一步：生成「單一 Repo」的貪食蛇圖（已修正為 v3 官方規範語法）
       - name: generate-repo-snake
         uses: Platane/snk/svg-only@v3
         with:
-          # 🎯 關鍵修改：用 斜線 將「擁有者」與「專案名」綁在一起，套件就會強制唯獨抓這個專案！
-          github_user_name: "123456dr/RANDOM_CODE"
+          github_user_name: "123456dr"
+          scope: "repo"
           outputs: |
             dist/repo-snake.svg
             dist/repo-snake-dark.svg?palette=github-dark
 
-      # 第二步：生成「整個 GitHub 帳號」的貪食蛇圖（保持原樣）
+      # 第二步：生成「整個 GitHub 帳號」的貪食蛇圖
       - name: generate-global-snake
         uses: Platane/snk/svg-only@v3
         with:
