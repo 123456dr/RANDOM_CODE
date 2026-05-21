@@ -3,7 +3,7 @@ name: Generate Animation
 on:
   # 每 24 小時自動運行一次
   schedule:
-    - cron: "0 0 * * *" 
+    - cron: "0 * * * *"
   # 允許手動觸發
   workflow_dispatch:
   # 當 main 分支有 push 時也觸發
@@ -17,19 +17,30 @@ jobs:
       contents: write
     runs-on: ubuntu-latest
     timeout-minutes: 5
-
+    
     steps:
-      # 生成貪食蛇貢獻圖
-      - name: generate-snake-game-from-github-contribution-grid
+      # 第一步：生成「單一 Repo」的貪食蛇圖
+      - name: generate-repo-snake
         uses: Platane/snk/svg-only@v3
         with:
           github_user_name: ${{ github.repository_owner }}
+          scope: "repo" # 限定此專案
           outputs: |
-            dist/github-contribution-grid-snake.svg
-            dist/github-contribution-grid-snake-dark.svg?palette=github-dark
+            dist/repo-snake.svg
+            dist/repo-snake-dark.svg?palette=github-dark
 
-      # 將生成的圖片推送到 output 分支儲存
-      - name: push github-contribution-grid-snake.svg to the output branch
+      # 第二步：生成「整個 GitHub 帳號」的貪食蛇圖
+      - name: generate-global-snake
+        uses: Platane/snk/svg-only@v3
+        with:
+          github_user_name: ${{ github.repository_owner }}
+          # 這裡不加 scope，預設就是抓整個帳號的全域動態
+          outputs: |
+            dist/global-snake.svg
+            dist/global-snake-dark.svg?palette=github-dark
+            
+      # 第三步：將以上所有生成的圖片一起推送到 output 分支儲存
+      - name: push-all-snakes-to-output-branch
         uses: crazy-max/ghaction-github-pages@v3.1.0
         with:
           target_branch: output
