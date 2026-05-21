@@ -1,3 +1,4 @@
+// https://cpe.mcu.edu.tw/cpe/problems/CPE260324/CPE260324-P1.uva10591.pdf
 // unordered_set 無序 & insert(x) & s.find() == s.end()判定未找到
 // AC at ZERO Judge
 
