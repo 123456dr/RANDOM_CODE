@@ -1,12 +1,9 @@
 name: Generate Animation
 
 on:
-  # 每 24 小時自動運行一次
   schedule:
     - cron: "0 * * * *"
-  # 允許手動觸發
   workflow_dispatch:
-  # 當 main 分支有 push 時也觸發
   push:
     branches:
       - main
@@ -19,27 +16,26 @@ jobs:
     timeout-minutes: 5
     
     steps:
-      # 第一步：生成「單一 Repo」的貪食蛇圖
+      # ⭐ 第一步：生成「單一 Repo」的貪食蛇圖（修正版寫法）
       - name: generate-repo-snake
         uses: Platane/snk/svg-only@v3
         with:
-          github_user_name: ${{ github.repository_owner }}
-          scope: "repo" # 限定此專案
+          # 🎯 關鍵修改：用 斜線 將「擁有者」與「專案名」綁在一起，套件就會強制唯獨抓這個專案！
+          github_user_name: "123456dr/RANDOM_CODE"
           outputs: |
             dist/repo-snake.svg
             dist/repo-snake-dark.svg?palette=github-dark
 
-      # 第二步：生成「整個 GitHub 帳號」的貪食蛇圖
+      # 第二步：生成「整個 GitHub 帳號」的貪食蛇圖（保持原樣）
       - name: generate-global-snake
         uses: Platane/snk/svg-only@v3
         with:
-          github_user_name: ${{ github.repository_owner }}
-          # 這裡不加 scope，預設就是抓整個帳號的全域動態
+          github_user_name: "123456dr"
           outputs: |
             dist/global-snake.svg
             dist/global-snake-dark.svg?palette=github-dark
             
-      # 第三步：將以上所有生成的圖片一起推送到 output 分支儲存
+      # 第三步：推送到 output 分支儲存
       - name: push-all-snakes-to-output-branch
         uses: crazy-max/ghaction-github-pages@v3.1.0
         with:
