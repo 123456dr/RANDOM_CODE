@@ -1,6 +1,6 @@
-# RANDOM_CODE
-JUST CODE
+# RANDOM_CODE  [![wakatime](https://wakatime.com/badge/user/ec29ef99-8c9b-4017-ba6e-b52d5fcc5c9a.svg)](https://wakatime.com/@ec29ef99-8c9b-4017-ba6e-b52d5fcc5c9a)
 
+JUST CODE 
 
 ![Repo Snake](https://raw.githubusercontent.com/123456dr/RANDOM_CODE/output/repo-snake-dark.svg)
 
