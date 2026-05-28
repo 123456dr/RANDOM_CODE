@@ -20,7 +20,7 @@ JUST CODE
 |AI | 題號 | 題目名稱          | 難         | NOTE                        | 程式碼連結 |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 ||  |  | X |  | [C++](./Code) |
-||  |  | X |  | [C++](./Code) |
+|| 0276_A | Lunch Rush | X | 注意 mx 初始化 -1e10(可能有負值) | [C++](./Code) |
 |✅| 3093 |  | OOO | 建立 Trie 樹, struct, class, 前後綴, 最長子序列 | [C++](./Code/LeetCode/3093.cpp) |
 || 0025_B | Phone numbers | X |  | [C++](./Code/Codeforces/0025_B.cpp) |
 || 0025_A | IQ test | X | 找奇或偶陣列中哪個是奇葩 | [C++](./Code/Codeforces/0025_A.cpp) |
