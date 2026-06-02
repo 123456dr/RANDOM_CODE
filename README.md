@@ -22,6 +22,7 @@ JUST CODE
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | | | | &nbsp; | | [C++](./Code) |
 | | | | &nbsp; | | [C++](./Code) |
+| | LC | 3633 | &nbsp; | 進階 => 區間排程 & 貪心 [有限時間內，每個設施有開始以及持續時間，求玩最多設施的排程]| [C++](./Code/LeetCode/3633.cpp) |
 | ✅ | 洛谷 | 1908 逆序對 | OO | 逆序對, 線段樹 segment tree, 離散化數據 | [C++](./Code/Luogu/1908.cpp) |
 | | CF | 0022_A Second Order Statistics | &nbsp; | set 雙向迭代取址st.begin()++, insert()| [C++](./Code/Codeforces/0022_A.cpp) |
 | | LC | 3496 Maximum Number of Items From Sale I | OOO | [預處理每個 item 真實價值 = 本身1 + 可觸發多少 free copies] [0/1 背包問題: 針對當前物品買或不買] [dp 紀錄各種價錢下可以買的最大值] [紀錄最便宜的 item price 在荷包有剩餘的情況下可以 all in 最便宜的商品]| [C++](./Code/LeetCode/3496.cpp) |
