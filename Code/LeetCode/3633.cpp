@@ -1,4 +1,5 @@
 // https://leetcode.com/problems/earliest-finish-time-for-land-and-water-rides-i/?envType=daily-question&envId=2026-06-02
+// https://leetcode.com/problems/earliest-finish-time-for-land-and-water-rides-ii/description/
 // 1.5h
 /*
 沒有類別限制，目標是在關園前「玩到最多數量的設施」？
