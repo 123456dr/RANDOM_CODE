@@ -1,4 +1,5 @@
 // https://codeforces.com/problemset/problem/2204/D
+// 1h10m
 /*
 題目設定a->b<-c為兩組beautiful，其中b節點只有向內邊而a, c只有向外邊
 所以也就是

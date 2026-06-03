@@ -21,10 +21,11 @@ JUST CODE
 
 | 再 | 題源 | 題目 | 難 | 標籤 | NOTE | 程式碼連結 |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| | | | &nbsp; | ![](https://img.shields.io/badge/-區間排程-blue) | | [C++](./Code) |
-| | | | &nbsp; | ![](https://img.shields.io/badge/-區間排程-blue) | | [C++](./Code) |
+| | | | &nbsp; | ![](https://img.shields.io/badge/--blue) | | [C++](./Code) |
+| | | | &nbsp; | ![](https://img.shields.io/badge/--blue) | | [C++](./Code) |
+| | CF | 2204_C Spring | &nbsp; | ![](https://img.shields.io/badge/-gcd()-blue) ![](https://img.shields.io/badge/-lcm()-blue) | 最大公因、最小公倍| [C++](./Code/Codeforces/2204_C.cpp) |
 | ✅ | CF | 2204_D Alternating Path | OOO | ![](https://img.shields.io/badge/-Graph-blue)![](https://img.shields.io/badge/-二分圖-blue)![](https://img.shields.io/badge/-節點上色-blue) | 遍歷節點，上色各節點(上色分為向內/外節點)，並看當前節點鄰居有沒有同色，若同色則為不合法，若無上色則將該鄰點上為異色 三角關係為否 | [C++](./Code/Codeforces/2204_D.cpp) |
-| | LC | 3633 | &nbsp; | ![](https://img.shields.io/badge/-區間排程-blue) ![貪心](https://img.shields.io/badge/-貪心-blue) | 進階 => 區間排程 & 貪心 [有限時間內，每個設施有開始以及持續時間，求玩最多設施的排程]| [C++](./Code/LeetCode/3633.cpp) |
+| | LC | 3633 & 3635 | &nbsp; | ![](https://img.shields.io/badge/-區間排程-blue) ![貪心](https://img.shields.io/badge/-貪心-blue) | 進階 => 區間排程 & 貪心 [有限時間內，每個設施有開始以及持續時間，求玩最多設施的排程]| [C++](./Code/LeetCode/3633.cpp) |
 | ✅ | 洛谷 | 1908 逆序對 | OO | ![逆序對](https://img.shields.io/badge/-逆序對-blue) ![線段樹](https://img.shields.io/badge/-線段樹%20segment%20tree-blue) | 逆序對, 線段樹 segment tree , 離散化數據 | [C++](./Code/Luogu/1908.cpp) |
 | | CF | 0022_A Second Order Statistics | &nbsp; | ![st.begin()++](https://img.shields.io/badge/-st.begin()%2B%2B-blue) | set 雙向迭代取址st.begin()++, insert()| [C++](./Code/Codeforces/0022_A.cpp) |
 | | LC | 3496 Maximum Number of Items From Sale I | OOO | ![0/1 背包問題](https://img.shields.io/badge/-0%2F1%20背包問題-blue) ![dp](https://img.shields.io/badge/-dp-blue) | [預處理每個 item 真實價值 = 本身1 + 可觸發多少 free copies] [0/1 背包問題: 針對當前物品買或不買] [dp 紀錄各種價錢下可以買的最大值] [紀錄最便宜的 item price 在荷包有剩餘的情況下可以 all in 最便宜的商品]| [C++](./Code/LeetCode/3496.cpp) |
