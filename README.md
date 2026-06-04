@@ -23,6 +23,8 @@ JUST CODE
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | | | | &nbsp; | ![](https://img.shields.io/badge/--blue) | | [C++](./Code) |
 | | | | &nbsp; | ![](https://img.shields.io/badge/--blue) | | [C++](./Code) |
+| ✅未完成 | LC | 3753 Total Waviness of Numbers in Range II| OOOOOO | ![](https://img.shields.io/badge/-Digit DP-blue)![](https://img.shields.io/badge/-位元處理-blue) | 三digit為組單位，比較中間數字是否被兩旁數字高/低包圍| [C++](./Code/LeetCode/3751.cpp) |
+| | UT_DS | graph_B | O | ![](https://img.shields.io/badge/-DFS-blue)![](https://img.shields.io/badge/-BFS-blue) | 廣度優先/深度優先 求圖走訪順序| [C++](./Code/UT/Data_Structure/graph/graph_B.cpp) |
 | | CF | 2204_C Spring | &nbsp; | ![](https://img.shields.io/badge/-gcd()-blue) ![](https://img.shields.io/badge/-lcm()-blue) | 最大公因、最小公倍| [C++](./Code/Codeforces/2204_C.cpp) |
 | ✅ | CF | 2204_D Alternating Path | OOO | ![](https://img.shields.io/badge/-Graph-blue)![](https://img.shields.io/badge/-二分圖-blue)![](https://img.shields.io/badge/-節點上色-blue) | 遍歷節點，上色各節點(上色分為向內/外節點)，並看當前節點鄰居有沒有同色，若同色則為不合法，若無上色則將該鄰點上為異色 三角關係為否 | [C++](./Code/Codeforces/2204_D.cpp) |
 | | LC | 3633 & 3635 | &nbsp; | ![](https://img.shields.io/badge/-區間排程-blue) ![貪心](https://img.shields.io/badge/-貪心-blue) | 進階 => 區間排程 & 貪心 [有限時間內，每個設施有開始以及持續時間，求玩最多設施的排程]| [C++](./Code/LeetCode/3633.cpp) |
