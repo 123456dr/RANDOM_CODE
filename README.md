@@ -23,7 +23,7 @@ JUST CODE
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | | | | &nbsp; | ![](https://img.shields.io/badge/--blue) | | [C++](./Code) |
 | | | | &nbsp; | ![](https://img.shields.io/badge/--blue) | | [C++](./Code) |
-| | | | &nbsp; | ![](https://img.shields.io/badge/--blue) | | [C++](./Code) |
+| | CF | 2204 B - Right Maximum | &nbsp; | ![](https://img.shields.io/badge/-規律-blue) | 從左到右掃描若當前數字比前面最大值還大則一定會被輸出，第0項為一定會 | [C++](./Code/Codeforces/2204_B.cpp) |
 | ✅未完成 | LC | 3753. Total Waviness of Numbers in Range II | OOOOO | ![](https://img.shields.io/badge/-Digit_DP-blue) | 數位DP & 前綴和 | [C++](./Code/LeetCode/3753.cpp) |
 | ✅未完成 | LC | 3753 Total Waviness of Numbers in Range II| OOOOOO | ![](https://img.shields.io/badge/-Digit_DP-blue) ![](https://img.shields.io/badge/-位元處理-blue) | 三digit為組單位，比較中間數字是否被兩旁數字高/低包圍| [C++](./Code/LeetCode/3751.cpp) |
 | ✅ | UT_DS | graph_C | OOO | ![](https://img.shields.io/badge/-DFS-blue) ![](https://img.shields.io/badge/-遍歷找最佳路線-blue) | 深度優先加剪枝，遍歷各條路徑並更新體力消耗最小值(找最佳路線) [DFS 時有任意一項累加超過 100% 則剪枝] [已記錄至少一組解答時，若當前 DFS se 累加高於已記錄結果之 se 則剪枝] | [C++](./Code/UT/Data_Structure/graph/graph_C.cpp) |
