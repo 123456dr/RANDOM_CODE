@@ -23,7 +23,7 @@ JUST CODE
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | | | | &nbsp; | ![](https://img.shields.io/badge/--blue) | | [C++](./Code) |
 | | | | &nbsp; | ![](https://img.shields.io/badge/--blue) | | [C++](./Code) |
-| | | | &nbsp; | ![](https://img.shields.io/badge/--blue) | | [C++](./Code) |
+| ✅未完成 | LC | 2196. Create Binary Tree From Descriptions | OOOOOO | ![](https://img.shields.io/badge/-binary_tree-blue) ![](https://img.shields.io/badge/-struct-blue) ![](https://img.shields.io/badge/-unordered_map-blue) ![](https://img.shields.io/badge/-unordered_set-blue)| | [C++](./Code/LeetCode/2196.cpp) |
 | ✅ | UT_DS| pD Shortest Path | OOOO | ![](https://img.shields.io/badge/-最短路徑-blue) ![](https://img.shields.io/badge/-互斥集-blue)  ![](https://img.shields.io/badge/-Kruskal's_Algorithm-blue) | 求權重下最短路徑，克魯斯克爾演算法，貪心權重小到大，走與否根據檢查兩節點的根是否不相同，個節點的根預設為自己，之後每次連線，只把其中一邊的「根」改為另一邊的「根」達成集合串聯| [C++](./Code) |
 | | CF | 2204 B - Right Maximum | &nbsp; | ![](https://img.shields.io/badge/-規律-blue) | 從左到右掃描若當前數字比前面最大值還大則一定會被輸出，第0項為一定會 | [C++](./Code/Codeforces/2204_B.cpp) |
 | ✅未完成 | LC | 3753. Total Waviness of Numbers in Range II | OOOOO | ![](https://img.shields.io/badge/-Digit_DP-blue) | 數位DP & 前綴和 | [C++](./Code/LeetCode/3753.cpp) |
