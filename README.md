@@ -23,7 +23,9 @@ JUST CODE
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | | | | &nbsp; | ![](https://img.shields.io/badge/--blue) | | [C++](./Code) |
 | | | | &nbsp; | ![](https://img.shields.io/badge/--blue) | | [C++](./Code) |
-| | CF | 2236_C | &nbsp; | ![](https://img.shields.io/badge/-Math-blue)  ![](https://img.shields.io/badge/-雙迴圈-blue) | 數學題，最少動作次數，每次可/x或+1直到a == b| [C++](./Code/Codeforces/2236_C.cpp) |
+| | | | &nbsp; | ![](https://img.shields.io/badge/--blue) | | [C++](./Code) |
+| | LC | 2095. Delete the Middle Node of a Linked List | O | ![](https://img.shields.io/badge/-Linked_List-blue) ![](https://img.shields.io/badge/-快慢指標-blue) | 題目求刪除中間節點，用快慢指標找中，蔡指標一次跳兩格到尾止，此時慢指標剛好指向中節點，直接設新變數為該節點，並修改該節點->next| [C++](./Code/LeetCode/2095.cpp) |
+| | CF | 2236_C | &nbsp; | ![](https://img.shields.io/badge/-Math-blue)  ![](https://img.shields.io/badge/-雙迴圈-blue) | 數學題，最少動作次數，每次可/x或+1直到a == b，先除再加雙迴圈紀錄最小，[=max(ak,bk);v-aj+V-bk其中一個為0]，| [C++](./Code/Codeforces/2236_C.cpp) |
 | ✅ | UT_DS| pF | OOOOOO | ![](https://img.shields.io/badge/-Dijkstra-blue) ![](https://img.shields.io/badge/-pq_greater-blue) | 首先建立一個二維陣列v，用來記錄每個節點相連接的節點及其權重。接著透過Dijkstra演算法搭配優先佇列（priority queue）進行計算，並使用一個distance陣列來記錄起點到達各節點i的最短距離x。初始化時，先將代表起點到自身距離為0的數對(0, s)丟入佇列。隨後持續執行pop操作直到佇列為空，每次取出一組資料(x, u)後，便遍歷節點u的所有相鄰節點v[u]；若x加上u到該相鄰節點的邊權重大於目前distance陣列中記錄的距離，則直接跳過，否則便更新該節點的最短距離最小值，並將此新距離與該相鄰節點的組合丟入佇列中繼續運算 | [C++](./Code/UT/Data_Structure/graph/graph_F.cpp) |
 | ✅ | UT_DS| pE | OOO | ![](https://img.shields.io/badge/-加權最小-blue) ![](https://img.shields.io/badge/-互斥集_DSU-blue)  ![](https://img.shields.io/badge/-Kruskal's_Algorithm-blue) | 在過路費總額最少的情況下走訪所有節點，貪心並且每次檢查路線連接兩端的老大是否相異 | [C++](./Code/UT/Data_Structure/graph/graph_E.cpp) |
 | ✅未完成 | CF | 0021 | O | ![](https://img.shields.io/badge/-正則表達式-blue) | regax | [C++](./Code/Codeforces/0021.cpp) |
