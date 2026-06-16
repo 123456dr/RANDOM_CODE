@@ -1,9 +1,5 @@
+// https://codeforces.com/contest/2236/problem/B
 // F2改檔名 & ctrl+B關側目錄
-/* 
-先除再加一定為最少次數，紀錄每次A/x和B/x，求最佳交會點V=max(A/x/x..., B/x/x...)
-ans = [A/x/x...的次數] + [B/x/x...的次數] + [V-A/x/x...] + [V-B/x/x...]
-*/
-
 #include <bits/stdc++.h>
 using namespace std;
 #define int long long
@@ -11,23 +7,28 @@ using namespace std;
 signed main(){
     int t;cin>>t;
     while(t--){
-        int a, b, x;
-        cin>>a>>b>>x;
-        int ans = 1e18;
-        int at = 0, bt = 0;
-        while(a>=0){
-            int tb = b;
-            bt = 0;
-            while(tb>=0){
-                int V = max(a, tb);
-                ans = min(ans, at+bt+(V-a)+(V-tb));
-                if(tb == 0 || x == 0)break;
-                tb/=x;bt++;
-            }
-            if(a == 0 || x == 0)break;
-            a/=x;at++;
+        int sz, k;
+        cin>>sz>>k;
+        string s;cin>>s;
+        vector<int>v(sz, 0);
+        for(int i=0;i+k<sz;i++){
+            if((v[i]%2 == 0 && s[i] == '0') || (v[i]%2!=0 && s[i] == '1'))continue;
+            v[i]++;
+            v[i+k]++;
         }
-        cout<<ans<<endl;
+        int ans = 1;
+        for(int i=0;i<sz;i++){//cout<<v[i]<<" ";
+            if(v[i]%2 == 0 && s[i] == '1')ans = 0;
+            if(v[i]%2 != 0 && s[i] == '0')ans = 0;
+        }//cout<<endl;
+        cout<<(ans == 1 ? "YES" : "NO")<<endl;
     }
     return 0;
 }
+
+/*
+陣列 v 紀錄該字母位置被反轉過幾次
+可被反轉條件為 index+k<sz 
+- 若反轉次數為單數且字母為0則否
+- 若反轉次數為偶數且字母為1則否
+*/

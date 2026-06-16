@@ -1,3 +1,4 @@
+// https://codeforces.com/contest/2236/problem/C
 // F2改檔名 & ctrl+B關側目錄
 /* 
 [數學邏輯題目]
