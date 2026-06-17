@@ -15,7 +15,7 @@ JUST CODE
 ||  |  | &nbsp; |  | [C++](./Code) |
 -->
 
-目前總T數： %%TOTAL_COUNT%%
+```目前總T數： %%TOTAL_COUNT%%```
 <br>不想記錄水題ㄌ...
 
 
