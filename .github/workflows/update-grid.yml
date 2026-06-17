@@ -16,11 +16,7 @@ jobs:
     timeout-minutes: 5
     
     steps:
-      # ⭐ 先 Checkout 專案程式碼
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      # 第一步：生成「單一 Repo」的貪食蛇圖
+      # ⭐ 第一步：生成「單一 Repo」的貪食蛇圖（已修正為 v3 官方規範語法）
       - name: generate-repo-snake
         uses: Platane/snk/svg-only@v3
         with:
@@ -38,51 +34,8 @@ jobs:
           outputs: |
             dist/global-snake.svg
             dist/global-snake-dark.svg?palette=github-dark
-
-      # ⭐ 第三步：讀取 cont.txt 並更新 README.md (改用最安全的 Node.js 腳本，絕不洗檔)
-      - name: Read cont.txt and update README
-        run: |
-          # 1. 讀取 cont.txt 內容並去除空白
-          COUNT=$(cat cont.txt | tr -d '[:space:]')
-          echo "目前的總T數為: $COUNT"
-
-          # 2. 定義新的徽章語法
-          NEW_BADGE="![Progress](https://img.shields.io/badge/目前總T數-${COUNT}-blue)"
-
-          # 3. 匯出變數供安全腳本使用
-          export NEW_CONTENT="$NEW_BADGE"
-          
-          # 4. 使用純文字精準鎖定區塊取代，絕對不會影響到區塊外的任何一行字！
-          node -e '
-            const fs = require("fs");
-            let readme = fs.readFileSync("README.md", "utf8");
-            const startTag = "";
-            const endTag = "";
             
-            if (readme.includes(startTag) && readme.includes(endTag)) {
-              const regex = new RegExp(`${startTag}[\\s\\S]*?${endTag}`);
-              readme = readme.replace(regex, `${startTag}\n${process.env.NEW_CONTENT}\n${endTag}`);
-              fs.writeFileSync("README.md", readme, "utf8");
-              console.log("README 更新成功！");
-            } else {
-              console.log("錯誤：在 README.md 中找不到指定的標籤區塊！");
-              process.exit(1);
-            }
-          '
-
-          # 5. 設定 Git 並將變更推回 main 分支 (加上 [skip ci] 避免觸發無限循環)
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          
-          if ! git diff --exit-code README.md; then
-            git add README.md
-            git commit -m "chore: 動態更新 README 總T數至 $COUNT [skip ci]"
-            git push origin main
-          else
-            echo "數字沒有變動，跳過更新 README。"
-          fi
-          
-      # 第四步：推送到 output 分支儲存
+      # 第三步：推送到 output 分支儲存
       - name: push-all-snakes-to-output-branch
         uses: crazy-max/ghaction-github-pages@v3.1.0
         with:
