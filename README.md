@@ -1,4 +1,6 @@
 
+![Progress](https://img.shields.io/badge/目前總T數-59-blue)
+
 目前進度：![Progress](https://img.shields.io/badge/目前總T數-59-blue)
 # RANDOM_CODE  [![wakatime](https://wakatime.com/badge/user/ec29ef99-8c9b-4017-ba6e-b52d5fcc5c9a.svg)](https://wakatime.com/@ec29ef99-8c9b-4017-ba6e-b52d5fcc5c9a)
 
