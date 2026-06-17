@@ -15,7 +15,7 @@ JUST CODE
 ||  |  | &nbsp; |  | [C++](./Code) |
 -->
 
-![Progress](https://img.shields.io/badge/目前總T數-0-blue)
+目前總T數： %%TOTAL_COUNT%%
 <br>不想記錄水題ㄌ...
 
 
