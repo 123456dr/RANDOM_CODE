@@ -15,7 +15,7 @@ JUST CODE
 ||  |  | &nbsp; |  | [C++](./Code) |
 -->
 
-```%%TOTAL_COUNT%%```
+
 <br>不想記錄水題ㄌ...
 
 

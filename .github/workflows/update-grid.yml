@@ -47,7 +47,7 @@ jobs:
           echo "目前的總T數為: $COUNT"
 
           # 2. 定義新的徽章語法
-          NEW_BADGE="目前進度：![Progress](https://img.shields.io/badge/目前總T數-${COUNT}-blue)"
+          NEW_BADGE="![Progress](https://img.shields.io/badge/目前總T數-${COUNT}-blue)"
 
           # 3. 匯出變數供安全腳本使用
           export NEW_CONTENT="$NEW_BADGE"
