@@ -23,7 +23,7 @@ JUST CODE
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | | | | &nbsp; | ![](https://img.shields.io/badge/--blue) | | [C++](./Code) |
 | | | | &nbsp; | ![](https://img.shields.io/badge/--blue) | | [C++](./Code) |
-| | | | &nbsp; | ![](https://img.shields.io/badge/--blue) | | [C++](./Code) |
+| | CF | 2237_A div1、2| OOO | ![](https://img.shields.io/badge/-單調棧-blue)  ![](https://img.shields.io/badge/-Monotonic_Stack-blue)| 利用【單調棧 (Monotonic Stack)】由右向左逆序掃描，維護「高度由小到大」的遞增序列；遇高牆則將其數量「整包累加」至當前跳板（引發連鎖削平合體），最終加總棧內所有「高度 × 數量」即為 $O(n)$ 最優解。| [C++](./Code/Codeforces/2237_A.cpp) |
 | | CF | 0013_A 進位 | &nbsp; | ![](https://img.shields.io/badge/-進位制-blue) ![](https://img.shields.io/badge/-gcd()-blue) | 進位制轉換 先% 再/; 最小公因gcd()| [C++](./Code/Codeforces/0013_A.cpp) |
 | | CF | 1084. 房間 | &nbsp; | ![](https://img.shields.io/badge/-貪心-blue) | 邏輯題 | [C++](./Code/Codeforces/1804_D.cpp) |
 | | LC | 2095. Delete the Middle Node of a Linked List | O | ![](https://img.shields.io/badge/-Linked_List-blue) ![](https://img.shields.io/badge/-快慢指標-blue) | 題目求刪除中間節點，用快慢指標找中，蔡指標一次跳兩格到尾止，此時慢指標剛好指向中節點，直接設新變數為該節點，並修改該節點->next| [C++](./Code/LeetCode/2095.cpp) |
