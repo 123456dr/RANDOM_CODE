@@ -22,7 +22,9 @@ JUST CODE
 | 再 | 題源 | 題目 | 難 | 標籤 | NOTE | 程式碼連結 |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | | | | &nbsp; | ![](https://img.shields.io/badge/--blue) | | [C++](./Code) |
-| | CF | 0013_A | &nbsp; | ![](https://img.shields.io/badge/-進位制-blue) ![](https://img.shields.io/badge/-gcd()-blue) | 進位制轉換 先% 再/; 最小公因gcd()| [C++](./Code/Codeforces/0013_A.cpp) |
+| | | | &nbsp; | ![](https://img.shields.io/badge/--blue) | | [C++](./Code) |
+| | | | &nbsp; | ![](https://img.shields.io/badge/--blue) | | [C++](./Code) |
+| | CF | 0013_A 進位 | &nbsp; | ![](https://img.shields.io/badge/-進位制-blue) ![](https://img.shields.io/badge/-gcd()-blue) | 進位制轉換 先% 再/; 最小公因gcd()| [C++](./Code/Codeforces/0013_A.cpp) |
 | | CF | 1084. 房間 | &nbsp; | ![](https://img.shields.io/badge/-貪心-blue) | 邏輯題 | [C++](./Code/Codeforces/1804_D.cpp) |
 | | LC | 2095. Delete the Middle Node of a Linked List | O | ![](https://img.shields.io/badge/-Linked_List-blue) ![](https://img.shields.io/badge/-快慢指標-blue) | 題目求刪除中間節點，用快慢指標找中，蔡指標一次跳兩格到尾止，此時慢指標剛好指向中節點，直接設新變數為該節點，並修改該節點->next| [C++](./Code/LeetCode/2095.cpp) |
 | | CF | 2236_C | &nbsp; | ![](https://img.shields.io/badge/-Math-blue)  ![](https://img.shields.io/badge/-雙迴圈-blue) | 數學題，最少動作次數，每次可/x或+1直到a == b，先除再加雙迴圈紀錄最小，[=max(ak,bk);v-aj+V-bk其中一個為0]，| [C++](./Code/Codeforces/2236_C.cpp) |
