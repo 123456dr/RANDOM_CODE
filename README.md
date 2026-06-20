@@ -23,6 +23,11 @@ JUST CODE
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | | | | &nbsp; | ![](https://img.shields.io/badge/--blue) | | [C++](./Code) |
 | | | | &nbsp; | ![](https://img.shields.io/badge/--blue) | | [C++](./Code) |
+| | | | &nbsp; | ![](https://img.shields.io/badge/--blue) | | [C++](./Code) |
+| | TOPC_CF | 106084_B | &nbsp; | ![](https://img.shields.io/badge/-質數檢查-blue) | 最大檢查到 [i*i<=n] 是否整除 以及 先行判斷是否為偶數 %2 == 0| [C++](./Code/Contests/topc_2025_CF/106084_B.cpp) |
+| | CF | 0026_A Almost Prime | | ![質數表](https://img.shields.io/badge/-暴力質數表-blue) | 建立暴力質數表 | [C++](./Code/Codeforces/0026_A.cpp) |
+| | TOPC_CF | 106084_C One-Way Abyss | O | ![](https://img.shields.io/badge/-邏輯-blue) | 垂直水管有多條平行通道，選定出發的一條水管後每遇到左右轉通道都要隨之轉彎；每次讀入 x, y, val 就把水管v[x]值和v[y]值交換並且各自同時加上 val| [C++](./Code/Contests/topc_2025_CF/106084_C.cpp) |
+| | TOPC_CF | 106084_D Palindromic Distance| OO | ![](https://img.shields.io/badge/-區間_DP-blue) ![](https://img.shields.io/badge/-回文與修正-blue) | 區間 DP 從長度2開始每次dp[i][j] = min(1+dp[i][j-1]刪右, 1+dp[i+1][j]刪左, dp[i+1][j-1]替換 也就是強迫改成i, j一樣)，最終答案為 dp[0][sz-1]| [C++](./Code/Contests/topc_2025_CF/106084_D.cpp) |
 | | CF | 2237_A div1、2| OOO | ![](https://img.shields.io/badge/-單調棧-blue)  ![](https://img.shields.io/badge/-Monotonic_Stack-blue)| 利用【單調棧 (Monotonic Stack)】由右向左逆序掃描，維護「高度由小到大」的遞增序列；遇高牆則將其數量「整包累加」至當前跳板（引發連鎖削平合體），最終加總棧內所有「高度 × 數量」即為 $O(n)$ 最優解。| [C++](./Code/Codeforces/2237_A.cpp) |
 | | CF | 0013_A 進位 | &nbsp; | ![](https://img.shields.io/badge/-進位制-blue) ![](https://img.shields.io/badge/-gcd()-blue) | 進位制轉換 先% 再/; 最小公因gcd()| [C++](./Code/Codeforces/0013_A.cpp) |
 | | CF | 1084. 房間 | &nbsp; | ![](https://img.shields.io/badge/-貪心-blue) | 邏輯題 | [C++](./Code/Codeforces/1804_D.cpp) |
@@ -54,7 +59,6 @@ JUST CODE
 | | CF | 0026_C Parquet | O | ![貪心法](https://img.shields.io/badge/-貪心法-blue) | 數學題 當 n*m 為奇數則 false (由於木板類型各位偶數面積), 當 n or m(不可能同時)為奇數，分別用 1*2 and 2*1 填滿多出的奇數列/行，如果木板個數不夠則 false, 當奇數列行補足後，貪心法從最大面積開始排，若排不滿則 false | [C++](./Code/Codeforces/0026_C.cpp) |
 | | CF | 0003_C Tic_tac_toe | | | 圈圈叉叉判輸贏或 illegal | [C++](./Code/Codeforces/0003_C.cpp) |
 | | CF | 0026_B Regular_Bracket_Sequence | | | 合法括號對，當左括數不為零出現又括 => ok | [C++](./Code/Codeforces/0026_B.cpp) |
-| | CF | 0026_A Almost Prime | | ![質數表](https://img.shields.io/badge/-質數表-blue) | 建立質數表 | [C++](./Code/Codeforces/0026_A.cpp) |
 | | LC | 3120 Count the Number of Special Characters I | | ![isupper(char)](https://img.shields.io/badge/-isupper(char)-blue) ![toupper()](https://img.shields.io/badge/-toupper()-blue) | isupper(char), toupper() | [C++](./Code/LeetCode/3120.cpp) |
 | | LC | 1871 Jump Game VII | O | ![DP](https://img.shields.io/badge/-DP-blue) ![滑動視窗](https://img.shields.io/badge/-滑動視窗-blue) | DP紀錄該'0'跳板是否可到達, 滑動視窗 合法範圍內累加跳板okCont，當剛超出左界的dp[i]為合法跳板則okCont-- | [C++](./Code/LeetCode/1871.cpp) |
 | | LC | 1340 Jump Game V | O | ![DP](https://img.shields.io/badge/-DP-blue) ![DFS](https://img.shields.io/badge/-DFS-blue) |  DP, DFS, 任意點跳樓高到低求最長路徑 | [C++](./Code/LeetCode/1340.cpp) |
