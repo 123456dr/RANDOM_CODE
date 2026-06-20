@@ -22,8 +22,8 @@ JUST CODE
 | 再 | 題源 | 題目 | 難 | 標籤 | NOTE | 程式碼連結 |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | | | | &nbsp; | ![](https://img.shields.io/badge/--blue) | | [C++](./Code) |
-| | | | &nbsp; | ![](https://img.shields.io/badge/--blue) | | [C++](./Code) |
-| | | | &nbsp; | ![](https://img.shields.io/badge/--blue) | | [C++](./Code) |
+| ✅ | LC | BiWC_185_q3 樹 & 最短完成工作時間 | OOOO | ![](https://img.shields.io/badge/-DFS-blue) ![](https://img.shields.io/badge/-Tree_DP-blue) ![](https://img.shields.io/badge/-拓撲-blue) | | [C++](./Code/LeetCode/BiWC_185_q3.cpp) |
+| ✅ | LC | BiWC_185_q2 路段點亮燈 | OO | ![](https://img.shields.io/badge/-貪心-blue) ![](https://img.shields.io/badge/-差分-blue) ![](https://img.shields.io/badge/-前綴-blue) | 點亮所有點並求最少設置燈數量，每盞燈可點亮+-1區段，差分[開始點+1, 離開點-1]並前綴建立初始燈況，貪心左到右遇到暗燈在其右手一點設燈(最貪)| [C++](./Code/LeetCode/BiWC_185_q2.cpp) |
 | | TOPC_CF | 106084_B | &nbsp; | ![](https://img.shields.io/badge/-質數檢查-blue) | 最大檢查到 [i*i<=n] 是否整除 以及 先行判斷是否為偶數 %2 == 0| [C++](./Code/Contests/topc_2025_CF/106084_B.cpp) |
 | | CF | 0026_A Almost Prime | | ![質數表](https://img.shields.io/badge/-暴力質數表-blue) | 建立暴力質數表 | [C++](./Code/Codeforces/0026_A.cpp) |
 | | TOPC_CF | 106084_C One-Way Abyss | O | ![](https://img.shields.io/badge/-邏輯-blue) | 垂直水管有多條平行通道，選定出發的一條水管後每遇到左右轉通道都要隨之轉彎；每次讀入 x, y, val 就把水管v[x]值和v[y]值交換並且各自同時加上 val| [C++](./Code/Contests/topc_2025_CF/106084_C.cpp) |
