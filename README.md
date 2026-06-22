@@ -26,7 +26,7 @@ MST 最小公倍
 | | | | &nbsp; | ![](https://img.shields.io/badge/--blue) | | [C++](./Code) |
 | | | | &nbsp; | ![](https://img.shields.io/badge/--blue) | | [C++](./Code) |
 | | | | &nbsp; | ![](https://img.shields.io/badge/--blue) | | [C++](./Code) |
-| | | | &nbsp; | ![](https://img.shields.io/badge/--blue) | | [C++](./Code) |
+| | LC | 1189 給字串求單字出現次數 | &nbsp; | ![](https://img.shields.io/badge/-map-blue) | map初始化不給定大小，mp['a'],{'a', 0} | [C++](./Code/LeetCode/1189.cpp) |
 | | CF | 0204_A 求範圍 l~r 首尾數字一樣的數字個數 | &nbsp; | ![](https://img.shields.io/badge/-邏輯-blue) | ans = 9 + (n/10 - 1) + (末位是否大於等於首位 ? +1 : 0) | [C++](./Code/Codeforces/0204_A.cpp) |
 | ✅未完成 | LC | WC_507_Q3 最少權重走訪所有節點並符合連續重複字母小於k個| OOOO | ![](https://img.shields.io/badge/-Diijkstra-blue) ![](https://img.shields.io/badge/-DFS_剪枝-blue) | 記憶陣列紀錄每個節點走訪所有子節點中的最小權重路徑，走過不重複走直接取值；每次走訪新路徑判斷當前累積連續重複字母數是否大於k，大於則剪枝，若當前字母與前一個字母不同技術直接歸零(必小於k個)| [C++](./Code) |
 | | LC | WC_507_Q2. Valid Subarrays With Matching Sum Digits I | &nbsp; | ![](https://img.shields.io/badge/-前綴和-blue) | 求[l ,r] => v[r]-v[l-1] 插入第零項為0 | [C++](./Code/LeetCode/WC_507_q2.cpp) |
