@@ -10,7 +10,7 @@ JUST CODE
 ![GitHub commit activity](https://img.shields.io/github/commit-activity/m/123456dr/RANDOM_CODE?style=flat-square&color=green)
 
 <hr>
-
+void solve() // 裡面宣告變數，結束直接銷毀
 GCD 最大公因
 MST 最小公倍
 <!--
@@ -25,11 +25,11 @@ MST 最小公倍
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | | | | &nbsp; | ![](https://img.shields.io/badge/--blue) | | [C++](./Code) |
 | | | | &nbsp; | ![](https://img.shields.io/badge/--blue) | | [C++](./Code) |
-| | | | &nbsp; | ![](https://img.shields.io/badge/--blue) | | [C++](./Code) |
+| ✅有更佳解 | LC | 3699. Number of ZigZag Arrays I | OOOOO | ![](https://img.shields.io/badge/-DP-blue) ![](https://img.shields.io/badge/-prefix_sum-blue) ![](https://img.shields.io/badge/-狀態擴展/轉移-blue) ![](https://img.shields.io/badge/-降維/平面化-blue) ![](https://img.shields.io/badge/-MOD-blue) | 嚴格交替轉狀態動態規劃，前綴和與一維滾動排除（TLE/MLE），鏡像對稱（reverse）與原地變數累加（curr）將重複狀態與記憶體配置降維打擊 | [C++](./Code/LeetCode/3699.cpp) |
 | | LC | 1189 給字串求單字出現次數 | &nbsp; | ![](https://img.shields.io/badge/-map-blue) | map初始化不給定大小，mp['a'],{'a', 0} | [C++](./Code/LeetCode/1189.cpp) |
 | | CF | 0204_A 求範圍 l~r 首尾數字一樣的數字個數 | &nbsp; | ![](https://img.shields.io/badge/-邏輯-blue) | ans = 9 + (n/10 - 1) + (末位是否大於等於首位 ? +1 : 0) | [C++](./Code/Codeforces/0204_A.cpp) |
 | ✅未完成 | LC | WC_507_Q3 最少權重走訪所有節點並符合連續重複字母小於k個| OOOO | ![](https://img.shields.io/badge/-Diijkstra-blue) ![](https://img.shields.io/badge/-DFS_剪枝-blue) | 記憶陣列紀錄每個節點走訪所有子節點中的最小權重路徑，走過不重複走直接取值；每次走訪新路徑判斷當前累積連續重複字母數是否大於k，大於則剪枝，若當前字母與前一個字母不同技術直接歸零(必小於k個)| [C++](./Code) |
-| | LC | WC_507_Q2. Valid Subarrays With Matching Sum Digits I | &nbsp; | ![](https://img.shields.io/badge/-前綴和-blue) | 求[l ,r] => v[r]-v[l-1] 插入第零項為0 | [C++](./Code/LeetCode/WC_507_q2.cpp) |
+| | LC | WC_507_Q2. Valid Subarrays With Matching Sum Digits I | &nbsp; | ![](https://img.shields.io/badge/-前綴和-blue) ![](https://img.shields.io/badge/-prefix_sum-blue) | 求[l ,r] => v[r]-v[l-1] 插入第零項為0 | [C++](./Code/LeetCode/WC_507_q2.cpp) |
 | ✅ | LC | BiWC_185_q3 樹 & 最短完成工作時間 | OOOO | ![](https://img.shields.io/badge/-DFS-blue) ![](https://img.shields.io/badge/-Tree_DP-blue) ![](https://img.shields.io/badge/-拓撲-blue) | | [C++](./Code/LeetCode/BiWC_185_q3.cpp) |
 | ✅ | LC | BiWC_185_q2 路段點亮燈 | OO | ![](https://img.shields.io/badge/-貪心-blue) ![](https://img.shields.io/badge/-差分-blue) ![](https://img.shields.io/badge/-前綴-blue) | 點亮所有點並求最少設置燈數量，每盞燈可點亮+-1區段，差分[開始點+1, 離開點-1]並前綴建立初始燈況，貪心左到右遇到暗燈在其右手一點設燈(最貪)| [C++](./Code/LeetCode/BiWC_185_q2.cpp) |
 | | TOPC_CF | 106084_B | &nbsp; | ![](https://img.shields.io/badge/-質數檢查-blue) | 最大檢查到 [i*i<=n] 是否整除 以及 先行判斷是否為偶數 %2 == 0| [C++](./Code/Contests/topc_2025_CF/106084_B.cpp) |
