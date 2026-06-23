@@ -25,6 +25,9 @@ MST 最小公倍
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | | | | &nbsp; | ![](https://img.shields.io/badge/--blue) | | [C++](./Code) |
 | | | | &nbsp; | ![](https://img.shields.io/badge/--blue) | | [C++](./Code) |
+| | | | &nbsp; | ![](https://img.shields.io/badge/--blue) | | [C++](./Code) |
+| ✅ 模板題 | 洛谷 | 2197. Nim 游戏 | OO | ![](https://img.shields.io/badge/-Nim_Game-blue) ![](https://img.shields.io/badge/-組合博弈論-blue) ![](https://img.shields.io/badge/-bitset-blue) ![](https://img.shields.io/badge/-XOR^-blue) | 有n堆石子，每次必取任意大於0顆，最後取石的獲勝(拿不到石子的輸)，求是否為先手必勝
+把每堆石子數轉二進位做 XOR，如果最後為 0 (開局平衡)則先手必輸。「高位減少、低位任意翻轉」最高位改為零代表可以任意改動後面幾位，一次把所有奇數位元變成偶數個 | [C++](./Code) |
 | ✅有更佳解 | LC | 3699. Number of ZigZag Arrays I | OOOOO | ![](https://img.shields.io/badge/-DP-blue) ![](https://img.shields.io/badge/-prefix_sum-blue) ![](https://img.shields.io/badge/-狀態擴展/轉移-blue) ![](https://img.shields.io/badge/-降維/平面化-blue) ![](https://img.shields.io/badge/-MOD-blue) | 嚴格交替轉狀態動態規劃，前綴和與一維滾動排除（TLE/MLE），鏡像對稱（reverse）與原地變數累加（curr）將重複狀態與記憶體配置降維打擊 | [C++](./Code/LeetCode/3699.cpp) |
 | | LC | 1189 給字串求單字出現次數 | &nbsp; | ![](https://img.shields.io/badge/-map-blue) | map初始化不給定大小，mp['a'],{'a', 0} | [C++](./Code/LeetCode/1189.cpp) |
 | | CF | 0204_A 求範圍 l~r 首尾數字一樣的數字個數 | &nbsp; | ![](https://img.shields.io/badge/-邏輯-blue) | ans = 9 + (n/10 - 1) + (末位是否大於等於首位 ? +1 : 0) | [C++](./Code/Codeforces/0204_A.cpp) |
