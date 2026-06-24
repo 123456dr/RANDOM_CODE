@@ -12,7 +12,8 @@ JUST CODE
 <hr>
 void solve() // 裡面宣告變數，結束直接銷毀<br>
 GCD 最大公因
-MST 最小公倍
+MST 最小公倍<br>
+[QuickPower快速冪_位元右移_奇偶&1交集運算](./Code/Luogu/QuickPower.cpp)
 <!--
 ||  |  | &nbsp; |  | [C++](./Code) |
 -->
