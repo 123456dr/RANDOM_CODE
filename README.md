@@ -10,7 +10,7 @@ JUST CODE
 ![GitHub commit activity](https://img.shields.io/github/commit-activity/m/123456dr/RANDOM_CODE?style=flat-square&color=green)
 
 <hr>
-void solve() // 裡面宣告變數，結束直接銷毀
+void solve() // 裡面宣告變數，結束直接銷毀<br>
 GCD 最大公因
 MST 最小公倍
 <!--
@@ -23,6 +23,10 @@ MST 最小公倍
 
 | 再 | 題源 | 題目 | 難 | 標籤 | NOTE | 程式碼連結 |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| | | | &nbsp; | ![](https://img.shields.io/badge/--blue) | | [C++](./Code) |
+| | | | &nbsp; | ![](https://img.shields.io/badge/--blue) | | [C++](./Code) |
+| | | | &nbsp; | ![](https://img.shields.io/badge/--blue) | | [C++](./Code) |
+| | | | &nbsp; | ![](https://img.shields.io/badge/--blue) | | [C++](./Code) |
 | | | | &nbsp; | ![](https://img.shields.io/badge/--blue) | | [C++](./Code) |
 | | | | &nbsp; | ![](https://img.shields.io/badge/--blue) | | [C++](./Code) |
 | ✅ 模板題 | 洛谷 | P2613. 有理数取余 | O | ![](https://img.shields.io/badge/-費馬數論-blue) ![](https://img.shields.io/badge/-大數-blue) | Fermat's Little Theorem (費馬小定理) [b^(P-1)%P == 1], P 是一個質數，任一非 P 倍數的整數 b/ Modular Inverse (模反元素 / 乘法逆元)/ Exponentiation by Squaring (快速冪)/ Big Number Modulo (大數取模)/ Congruence (同餘)| [C++](./Code/Luogu/2613_Fermat質數_快速冪_大數同餘.cpp) |

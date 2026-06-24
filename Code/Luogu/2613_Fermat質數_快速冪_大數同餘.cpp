@@ -16,6 +16,8 @@ c mod P = [a mod P] * [b^(-1) mod P]
 - Exponentiation by Squaring (快速冪)
 - Big Number Modulo (大數取模)
 - Congruence (同餘)
+大數位數破萬碼，分數除法要取模，模數剛好是質數。
+字串邊讀邊取模，費馬小定理推逆元，手刻快速冪秒殺！
 */
 #include <bits/stdc++.h>
 using namespace std;
@@ -32,7 +34,7 @@ int fexp(int base, int exp){
     if(exp == 1)return base;
     int res = 1;
     while(exp>0){
-        if(exp %2 == 1)res *= base, res %= MOD; //不需要 exp-- 因為後面exp/2必變為偶數
+        if(exp %2 == 1)res *= base, res %= MOD; //不需要 exp-- 因為後面exp/2
         base = base * base % MOD;
         exp/=2;
     }
