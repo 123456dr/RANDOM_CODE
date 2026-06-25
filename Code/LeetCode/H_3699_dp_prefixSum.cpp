@@ -1,3 +1,4 @@
+// https://leetcode.com/problems/number-of-zigzag-arrays-i/?envType=daily-question&envId=2026-06-25
 /*
 嚴格交替轉為狀態動態規劃，先後利用前綴和與一維滾動排除時空的雙重爆炸（TLE/MLE），
 最終透過鏡像對稱（reverse）與原地變數累加（curr）體會將重複狀態與記憶體配置徹底降維打擊的優化美學。
