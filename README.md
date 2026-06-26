@@ -35,7 +35,7 @@ void solve() // 裡面宣告變數，結束直接銷毀
 | | | | &nbsp; | ![](https://img.shields.io/badge/--blue) | | [C++](./Code) |
 | | | | &nbsp; | ![](https://img.shields.io/badge/--blue) | | [C++](./Code) |
 | | | | &nbsp; | ![](https://img.shields.io/badge/--blue) | | [C++](./Code) |
-| | | | &nbsp; | ![](https://img.shields.io/badge/--blue) | | [C++](./Code) |
+| | CF | B_0158_taxi四人座同組不拆異組可併 | &nbsp; | ![](https://img.shields.io/badge/-數學技巧-blue) ![](https://img.shields.io/badge/-freqArray-blue) | 四人座、頻率陣列，v[1]會扣除併入v[3]和v[2]%2*2 => v[4] + v[3] + v[2]/2 + v[2]%2 + v[1]/4 + (v[1]%4 ? 1 : 0)| [B](./Code/Codeforces/B_0158_taxi四人座同組不拆異組可併.cpp) |
 | ✅ | LC | 3739. Count Subarrays With Majority Element II | OOOOO | ![](https://img.shields.io/badge/-freq_arry-blue) ![](https://img.shields.io/badge/-dp-blue) ![](https://img.shields.io/badge/-前綴動態移轉-blue) ![](https://img.shields.io/badge/-單調性-blue) ![](https://img.shields.io/badge/-offset-blue) | 將 target 與其餘數字轉為 $+1/-1$ 的前綴和，利用變動僅有 $\pm 1$ 的單調性，以頻率陣列動態維護並在 $O(N)$ 內累加小於當前得分的歷史次數 | [H](./Code/LeetCode/H&M_3739&3737_prefix_FreqArray_DP_Offset_單調性.cpp) |
 | ✅ 更加解 => 計數陣列 | CF | 0027_A 找最小未用過 ID | &nbsp; | ![](https://img.shields.io/badge/-pq-blue) ![](https://img.shields.io/badge/-邏輯-blue) | 其實當讀入的數字大於存在數字各數n者可以無視，因為未出現的數值一定會小於n，所以只要開計數陣列arr[n+1]預留index-1。舊思路: priority_queue<int, vector<int>, greater<int>>pq, 預設是less<i| [A](./Code/Codeforces/A_0027_pq_greater.cpp) |
 | ✅ 模板題 | 洛谷 | P2613. 有理数取余 | O | ![](https://img.shields.io/badge/-費馬數論-blue) ![](https://img.shields.io/badge/-大數-blue) | Fermat's Little Theorem (費馬小定理) [b^(P-1)%P == 1], P 是一個質數，任一非 P 倍數的整數 b/ Modular Inverse (模反元素 / 乘法逆元)/ Exponentiation by Squaring (快速冪)/ Big Number Modulo (大數取模)/ Congruence (同餘)| [C++](./Code/Luogu/2613_Fermat質數_快速冪_大數同餘.cpp) |
