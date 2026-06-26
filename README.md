@@ -14,6 +14,7 @@ JUST CODE
 ``` 
 void solve() // 裡面宣告變數，結束直接銷毀
 // char ca = 'A' | 32 = 'a' => tolower(c), toupper(c)
+// 三元運算子回傳型別相同 => a ? to_string(mp[i]-'0) : ""
 // GCD 最大公因
 // LCM 最小公倍
 // MST 是最小生成樹
