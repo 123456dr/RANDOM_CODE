@@ -12,6 +12,7 @@ JUST CODE
 <hr>
 
 ``` 
+// value & 1 判斷奇偶[== 1 奇; == 0偶]
 void solve() // 裡面宣告變數，結束直接銷毀
 // char ca = 'A' | 32 = 'a' => tolower(c), toupper(c)
 // 三元運算子回傳型別相同 => a ? to_string(mp[i]-'0) : ""
