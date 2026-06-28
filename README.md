@@ -12,6 +12,7 @@ JUST CODE
 <hr>
 
 ``` 
+// 可以暴力解 => 複雜度 2e18 
 // value & 1 判斷奇偶[== 1 奇; == 0偶]
 void solve() // 裡面宣告變數，結束直接銷毀
 // char ca = 'A' | 32 = 'a' => tolower(c), toupper(c)
@@ -35,7 +36,7 @@ void solve() // 裡面宣告變數，結束直接銷毀
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | | | | &nbsp; | ![](https://img.shields.io/badge/--blue) | | [C++](./Code) |
 | | | | &nbsp; | ![](https://img.shields.io/badge/--blue) | | [C++](./Code) |
-| | | | &nbsp; | ![](https://img.shields.io/badge/--blue) | | [C++](./Code) |
+| ✅ | LC | WC508 Q2. Filter Occupied Intervals | OO | ![](https://img.shields.io/badge/-diff_差分-blue) ![](https://img.shields.io/badge/-sweep_line-blue) | 掃描線 sweep line，用差分加入mp[開頭]++,mp[結尾+1]--，最後遍歷mp| [C++](./Code/LeetCode/M_WC_508_q2_diffArray_interval.cpp) |
 | | CF | B_0158_taxi四人座同組不拆異組可併 | &nbsp; | ![](https://img.shields.io/badge/-數學技巧-blue) ![](https://img.shields.io/badge/-freqArray-blue) | 四人座、頻率陣列，v[1]會扣除併入v[3]和v[2]%2*2 => v[4] + v[3] + v[2]/2 + v[2]%2 + v[1]/4 + (v[1]%4 ? 1 : 0)| [B](./Code/Codeforces/B_0158_taxi四人座同組不拆異組可併.cpp) |
 | ✅ | LC | 3739. Count Subarrays With Majority Element II | OOOOO | ![](https://img.shields.io/badge/-freq_arry-blue) ![](https://img.shields.io/badge/-dp-blue) ![](https://img.shields.io/badge/-前綴動態移轉-blue) ![](https://img.shields.io/badge/-單調性-blue) ![](https://img.shields.io/badge/-offset-blue) | 將 target 與其餘數字轉為 $+1/-1$ 的前綴和，利用變動僅有 $\pm 1$ 的單調性，以頻率陣列動態維護並在 $O(N)$ 內累加小於當前得分的歷史次數 | [H](./Code/LeetCode/H&M_3739&3737_prefix_FreqArray_DP_Offset_單調性.cpp) |
 | ✅ 更加解 => 計數陣列 | CF | 0027_A 找最小未用過 ID | &nbsp; | ![](https://img.shields.io/badge/-pq-blue) ![](https://img.shields.io/badge/-邏輯-blue) | 其實當讀入的數字大於存在數字各數n者可以無視，因為未出現的數值一定會小於n，所以只要開計數陣列arr[n+1]預留index-1。舊思路: priority_queue<int, vector<int>, greater<int>>pq, 預設是less<i| [A](./Code/Codeforces/A_0027_pq_greater.cpp) |
