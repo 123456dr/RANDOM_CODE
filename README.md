@@ -35,7 +35,7 @@ void solve() // 裡面宣告變數，結束直接銷毀
 | 再 | 題源 | 題目 | 難 | 標籤 | NOTE | 程式碼連結 |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | | | | &nbsp; | ![](https://img.shields.io/badge/--blue) | | [C++](./Code) |
-| | | | &nbsp; | ![](https://img.shields.io/badge/--blue) | | [C++](./Code) |
+| | CF | C. Digital Root | OOO | ![](https://img.shields.io/badge/-digital_root-blue)![](https://img.shields.io/badge/-數論分塊-blue) | 數位根: 各數字相加d(x)mod 9 == x mod 9；數論分塊除法整數部分相同個數[n/L, R = n / (n/L), 分塊個數為 R-L+1]| [C++](./Code/Codeforces/C_0010_math.cpp) |
 | ✅ | LC | WC508 Q2. Filter Occupied Intervals | OO | ![](https://img.shields.io/badge/-diff_差分-blue) ![](https://img.shields.io/badge/-sweep_line-blue) | 掃描線 sweep line，用差分加入mp[開頭]++,mp[結尾+1]--，最後遍歷mp| [C++](./Code/LeetCode/M_WC_508_q2_diffArray_interval.cpp) |
 | | CF | B_0158_taxi四人座同組不拆異組可併 | &nbsp; | ![](https://img.shields.io/badge/-數學技巧-blue) ![](https://img.shields.io/badge/-freqArray-blue) | 四人座、頻率陣列，v[1]會扣除併入v[3]和v[2]%2*2 => v[4] + v[3] + v[2]/2 + v[2]%2 + v[1]/4 + (v[1]%4 ? 1 : 0)| [B](./Code/Codeforces/B_0158_taxi四人座同組不拆異組可併.cpp) |
 | ✅ | LC | 3739. Count Subarrays With Majority Element II | OOOOO | ![](https://img.shields.io/badge/-freq_arry-blue) ![](https://img.shields.io/badge/-dp-blue) ![](https://img.shields.io/badge/-前綴動態移轉-blue) ![](https://img.shields.io/badge/-單調性-blue) ![](https://img.shields.io/badge/-offset-blue) | 將 target 與其餘數字轉為 $+1/-1$ 的前綴和，利用變動僅有 $\pm 1$ 的單調性，以頻率陣列動態維護並在 $O(N)$ 內累加小於當前得分的歷史次數 | [H](./Code/LeetCode/H&M_3739&3737_prefix_FreqArray_DP_Offset_單調性.cpp) |
