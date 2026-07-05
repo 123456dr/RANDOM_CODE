@@ -35,6 +35,9 @@ void solve() // 裡面宣告變數，結束直接銷毀
 | 再 | 題源 | 題目 | 難 | 標籤 | NOTE | 程式碼連結 |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | | | | &nbsp; | ![](https://img.shields.io/badge/--blue) | | [C++](./Code) |
+| | | | &nbsp; | ![](https://img.shields.io/badge/--blue) | | [C++](./Code) |
+| | | | &nbsp; | ![](https://img.shields.io/badge/--blue) | | [C++](./Code) |
+| ✅ | LC | WC_509_q2 可修改一字 s 是否為 t 子字串| OOO | ![](https://img.shields.io/badge/-prefix-blue) ![](https://img.shields.io/badge/-suffix-blue) ![](https://img.shields.io/badge/-subsequeue-blue) ![](https://img.shields.io/badge/-雙指標-blue) | 可更改一字母，求s是否全存在t並且照字母順序出現，建立pref和suff儲存由前由後第一次合法(照順序)出現的index，最後遍歷一次s，當r-l大於1代表有空間替換字母| [C++](./Code/LeetCode/M_WC_509_q2_pref&suff&substring.cpp) |
 | | CF | C. Digital Root | OOO | ![](https://img.shields.io/badge/-digital_root-blue)![](https://img.shields.io/badge/-數論分塊-blue) | 數位根: 各數字相加d(x)mod 9 == x mod 9；數論分塊除法整數部分相同個數[n/L, R = n / (n/L), 分塊個數為 R-L+1]| [C++](./Code/Codeforces/C_0010_math.cpp) |
 | ✅ | LC | WC508 Q2. Filter Occupied Intervals | OO | ![](https://img.shields.io/badge/-diff_差分-blue) ![](https://img.shields.io/badge/-sweep_line-blue) | 掃描線 sweep line，用差分加入mp[開頭]++,mp[結尾+1]--，最後遍歷mp| [C++](./Code/LeetCode/M_WC_508_q2_diffArray_interval.cpp) |
 | | CF | B_0158_taxi四人座同組不拆異組可併 | &nbsp; | ![](https://img.shields.io/badge/-數學技巧-blue) ![](https://img.shields.io/badge/-freqArray-blue) | 四人座、頻率陣列，v[1]會扣除併入v[3]和v[2]%2*2 => v[4] + v[3] + v[2]/2 + v[2]%2 + v[1]/4 + (v[1]%4 ? 1 : 0)| [B](./Code/Codeforces/B_0158_taxi四人座同組不拆異組可併.cpp) |
