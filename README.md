@@ -12,6 +12,7 @@ JUST CODE
 <hr>
 
 ``` 
+// BIT => x & 1末位一或零, x >>= 1除二
 // 可以暴力解 => 複雜度 2e18 
 // value & 1 判斷奇偶[== 1 奇; == 0偶]
 void solve() // 裡面宣告變數，結束直接銷毀
@@ -35,6 +36,10 @@ void solve() // 裡面宣告變數，結束直接銷毀
 | 再 | 題源 | 題目 | 難 | 標籤 | NOTE | 程式碼連結 |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | | | | &nbsp; | ![](https://img.shields.io/badge/--blue) | | [C++](./Code) |
+| | | | &nbsp; | ![](https://img.shields.io/badge/--blue) | | [C++](./Code) |
+| | | | &nbsp; | ![](https://img.shields.io/badge/--blue) | | [C++](./Code) |
+| | | | &nbsp; | ![](https://img.shields.io/badge/--blue) | | [C++](./Code) |
+| ✅ | CF | | O | ![](https://img.shields.io/badge/-右移-blue) ![](https://img.shields.io/badge/-Bitmask-blue) | 轉二進位求 1 個數, x & 1 最後一位是否為1, x>>1除二| [C++](./Code) |
 | | CF | A. Cut Ribbon | &nbsp; | ![](https://img.shields.io/badge/-dp_石階-blue) | 經典 dp 走石階/剪緞帶問題| [C++](./Code/Codeforces/A_0189_dp石階_剪緞帶.cpp) |
 | ✅ | CF | B. T-primes | OO | ![](https://img.shields.io/badge/-prime_table-blue) | 質數表O(loglogx),最多到迴圈到sqrt(x)並且每次倍數is_prime[xi]=0 & 完全平方數判斷sqrt(x)^2 == x浮點數偏差| [C++](./Code/Codeforces/B_0230_質數表_完全平方數sqrt(x)^2==x.cpp) |
 | ✅ | LC | WC_509_q2 可修改一字 s 是否為 t 子字串| OOO | ![](https://img.shields.io/badge/-prefix-blue) ![](https://img.shields.io/badge/-suffix-blue) ![](https://img.shields.io/badge/-subsequeue-blue) ![](https://img.shields.io/badge/-雙指標-blue) | 可更改一字母，求s是否全存在t並且照字母順序出現，建立pref和suff儲存由前由後第一次合法(照順序)出現的index，最後遍歷一次s，當r-l大於1代表有空間替換字母| [C++](./Code/LeetCode/M_WC_509_q2_pref&suff&substring.cpp) |
