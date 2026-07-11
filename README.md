@@ -15,6 +15,7 @@ JUST CODE
 // BIT => x & 1末位一或零, x >>= 1除二
 // 可以暴力解 => 複雜度 2e18 
 // value & 1 判斷奇偶[== 1 奇; == 0偶]
+// printf 不可ios::...
 void solve() // 裡面宣告變數，結束直接銷毀
 // char ca = 'A' | 32 = 'a' => tolower(c), toupper(c)
 // 三元運算子回傳型別相同 => a ? to_string(mp[i]-'0) : ""
@@ -23,6 +24,12 @@ void solve() // 裡面宣告變數，結束直接銷毀
 // MST 是最小生成樹
 
 [QuickPower快速冪_位元右移_奇偶&1交集運算](./Code/Luogu/QuickPower.cpp)
+```
+```
+Lamdba
+auto dfs = [&](int x) -> void{
+    // sth
+    };
 ```
 <!--
 ||  |  | &nbsp; |  | [C++](./Code) |
@@ -38,7 +45,7 @@ void solve() // 裡面宣告變數，結束直接銷毀
 | | | | &nbsp; | ![](https://img.shields.io/badge/--blue) | | [C++](./Code) |
 | | | | &nbsp; | ![](https://img.shields.io/badge/--blue) | | [C++](./Code) |
 | | | | &nbsp; | ![](https://img.shields.io/badge/--blue) | | [C++](./Code) |
-| | | | &nbsp; | ![](https://img.shields.io/badge/--blue) | | [C++](./Code) |
+| | LC | 2685. Count the Number of Complete Components | O | ![](https://img.shields.io/badge/-complete_components-blue) ![](https://img.shields.io/badge/-BFS-blue) ![](https://img.shields.io/badge/-Lamdba-blue) | 完整連通塊 | [C++](./Code/LeetCode/M_2685_completeComponents.cpp) |
 | ✅ | CF | | O | ![](https://img.shields.io/badge/-右移-blue) ![](https://img.shields.io/badge/-Bitmask-blue) | 轉二進位求 1 個數, x & 1 最後一位是否為1, x>>1除二| [C++](./Code) |
 | | CF | A. Cut Ribbon | &nbsp; | ![](https://img.shields.io/badge/-dp_石階-blue) | 經典 dp 走石階/剪緞帶問題| [C++](./Code/Codeforces/A_0189_dp石階_剪緞帶.cpp) |
 | ✅ | CF | B. T-primes | OO | ![](https://img.shields.io/badge/-prime_table-blue) | 質數表O(loglogx),最多到迴圈到sqrt(x)並且每次倍數is_prime[xi]=0 & 完全平方數判斷sqrt(x)^2 == x浮點數偏差| [C++](./Code/Codeforces/B_0230_質數表_完全平方數sqrt(x)^2==x.cpp) |
