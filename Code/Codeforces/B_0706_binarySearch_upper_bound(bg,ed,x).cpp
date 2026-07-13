@@ -10,6 +10,9 @@ void solve(){
     int k;cin>>k;
     auto f = [&]() -> auto{
         int bud;cin>>bud;
+        int ans = upper_bound(v.begin(), v.end(), bud) - v.begin();
+        cout<<ans<<'\n';
+        /* binary search
         int l = 0, r = n;
         while(l<r){
             int mid = l+(r-l)/2;
@@ -21,6 +24,7 @@ void solve(){
             }
         }
         cout<<(v[0] <= bud ? l : 0)<<'\n';
+        */
         return;
     };
 

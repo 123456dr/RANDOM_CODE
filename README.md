@@ -26,6 +26,11 @@ void solve() // 裡面宣告變數，結束直接銷毀
 [QuickPower快速冪_位元右移_奇偶&1交集運算](./Code/Luogu/QuickPower.cpp)
 ```
 ```
+回傳迭代器, *it 取址, 找不到 == v.end()
+- upper_bound(v.begin(), v.end, x) - v.begin() // 最後小於, 最高位
+- lower_bound(...) // 第一個大於, 最低位
+```
+```
 binary search 左閉右開
 - while l < r // 跳出迴圈 l為第一個不滿足
 - 右開r = n(0-index), r = mid  // 不含 r == 右開
@@ -52,7 +57,7 @@ auto dfs = [&](int x) -> void{
 | | | | &nbsp; | ![](https://img.shields.io/badge/--blue) | | [C++](./Code) |
 | | | | &nbsp; | ![](https://img.shields.io/badge/--blue) | | [C++](./Code) |
 | | | | &nbsp; | ![](https://img.shields.io/badge/--blue) | | [C++](./Code) |
-| | CF | B 預算購買數量 | &nbsp; | ![](https://img.shields.io/badge/-binary_search-blue) | 二分搜 左閉右開 | [B](./Code/Codeforces/B_0706_binarySearch.cpp) |
+| | CF | B 預算購買數量 | &nbsp; | ![](https://img.shields.io/badge/-binary_search-blue) ![](https://img.shields.io/badge/-lower_bound-blue) | 二分搜 左閉右開 | [B](./Code/Codeforces/B_0706_binarySearch.cpp) |
 | ✅ | CF | B. ezraft and Array | OOO | ![](https://img.shields.io/badge/-建構陣列-blue) | 建構陣列n項元素總和可以被個元素整除，建構初始三元素1, 2, 3，之後每次加入元素為當前總和*2 | [B](./Code/Codeforces/B_2246_construct_Narray_totalSumCanDividedByAllArrElement.cpp) |
 | | LC | 2685. Count the Number of Complete Components | O | ![](https://img.shields.io/badge/-complete_components-blue) ![](https://img.shields.io/badge/-BFS-blue) ![](https://img.shields.io/badge/-Lamdba-blue) | 完整連通塊 | [M](./Code/LeetCode/M_2685_completeComponents.cpp) |
 | ✅ | CF | | O | ![](https://img.shields.io/badge/-右移-blue) ![](https://img.shields.io/badge/-Bitmask-blue) | 轉二進位求 1 個數, x & 1 最後一位是否為1, x>>1除二| [A](./Code/Codeforces/A_0579_Bitmask.cpp) |
