@@ -13,18 +13,23 @@ JUST CODE
 
 ``` 
 // BIT => x & 1末位一或零, x >>= 1除二
-// 可以暴力解 => 複雜度 2e18 
+
 // value & 1 判斷奇偶[== 1 奇; == 0偶]
+
+// 可以暴力解 => 複雜度 2e18 
+
 // printf 不可ios::...
-void solve() // 裡面宣告變數，結束直接銷毀
+
 // char ca = 'A' | 32 = 'a' => tolower(c), toupper(c)
+
 // 三元運算子回傳型別相同 => a ? to_string(mp[i]-'0) : ""
+
 // GCD 最大公因
 // LCM 最小公倍
 // MST 是最小生成樹
-
-[QuickPower快速冪_位元右移_奇偶&1交集運算](./Code/Luogu/QuickPower.cpp)
 ```
+[QuickPower ](./Code/Luogu/QuickPower.cpp)快速冪_位元右移_奇偶&1交集運算
+
 ```
 回傳迭代器, *it 取址, 找不到 == v.end()
 - upper_bound(v.begin(), v.end, x) - v.begin() // 最後小於, 最高位
@@ -55,9 +60,9 @@ auto dfs = [&](int x) -> void{
 | | | | &nbsp; | ![](https://img.shields.io/badge/--blue) | | [C++](./Code) |
 | | | | &nbsp; | ![](https://img.shields.io/badge/--blue) | | [C++](./Code) |
 | | | | &nbsp; | ![](https://img.shields.io/badge/--blue) | | [C++](./Code) |
-| | | | &nbsp; | ![](https://img.shields.io/badge/--blue) | | [C++](./Code) |
-| | | | &nbsp; | ![](https://img.shields.io/badge/--blue) | | [C++](./Code) |
-| | CF | B 預算購買數量 | &nbsp; | ![](https://img.shields.io/badge/-binary_search-blue) ![](https://img.shields.io/badge/-lower_bound-blue) | 二分搜 左閉右開 | [B](./Code/Codeforces/B_0706_binarySearch.cpp) |
+| | CF | E | OOO | ![](https://img.shields.io/badge/-light-blue) | 點亮燈泡問題| [E](./Code/Codeforces/E_2244_prefix_math_TurnLight01.cpp) |
+| ✅✅ 有夠複雜 | CF | F. Anya Loves Trees! | OOOOOOO | ![](https://img.shields.io/badge/-DFS-blue) ![](https://img.shields.io/badge/-Tree-blue) | 檢查是否可靠左移子樹變成連續線段。dfs(1)，每個節點紀錄區間範圍l, r並檢查r-l是否等於連續區段數字個數，並將L加入vL陣列，之後比對vL是否只有小於等於1次的非遞增，因為可左移變回連續線段只能存在一次遞減落差(安餒| [F](./Code/Codeforces/F_2244_DFS_continueTree.cpp) |
+| | CF | B 預算購買數量 | &nbsp; | ![](https://img.shields.io/badge/-binary_search-blue) ![](https://img.shields.io/badge/-lower_bound-blue) ![](https://img.shields.io/badge/-upper_bound()-blue) | 二分搜 左閉右開 | [B](./Code/Codeforces/B_0706_binarySearch.cpp) |
 | ✅ | CF | B. ezraft and Array | OOO | ![](https://img.shields.io/badge/-建構陣列-blue) | 建構陣列n項元素總和可以被個元素整除，建構初始三元素1, 2, 3，之後每次加入元素為當前總和*2 | [B](./Code/Codeforces/B_2246_construct_Narray_totalSumCanDividedByAllArrElement.cpp) |
 | | LC | 2685. Count the Number of Complete Components | O | ![](https://img.shields.io/badge/-complete_components-blue) ![](https://img.shields.io/badge/-BFS-blue) ![](https://img.shields.io/badge/-Lamdba-blue) | 完整連通塊 | [M](./Code/LeetCode/M_2685_completeComponents.cpp) |
 | ✅ | CF | | O | ![](https://img.shields.io/badge/-右移-blue) ![](https://img.shields.io/badge/-Bitmask-blue) | 轉二進位求 1 個數, x & 1 最後一位是否為1, x>>1除二| [A](./Code/Codeforces/A_0579_Bitmask.cpp) |
