@@ -4,3 +4,5 @@ note.txt
 tempCodeRunnerFile.*
 *.in
 CTF.md
+cp_tracker.db
+.*
