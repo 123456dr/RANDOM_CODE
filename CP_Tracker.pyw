@@ -40,6 +40,8 @@ class CPTrackerApp:
         self.build_tab_daily()
         self.build_tab_calendar()
         self.build_tab_stats()
+
+        self.check_startup_date()
         
         self.load_daily_status()
 
@@ -55,6 +57,9 @@ class CPTrackerApp:
                            div TEXT, solved TEXT, upsolved TEXT)''')
         cursor.execute('''CREATE TABLE IF NOT EXISTS activity_log 
                           (date TEXT PRIMARY KEY)''')
+        cursor.execute('''CREATE TABLE IF NOT EXISTS app_config 
+                          (key TEXT PRIMARY KEY, value TEXT)''')
+        cursor.execute("INSERT OR IGNORE INTO app_config VALUES ('last_startup', '2000-01-01')")
         
         try: cursor.execute("ALTER TABLE contests ADD COLUMN probs TEXT DEFAULT ''")
         except: pass
@@ -127,7 +132,8 @@ class CPTrackerApp:
         input_frame.pack(fill="x", padx=2, pady=0)
         
         tk.Label(input_frame, text="賽事:", font=("Arial", 8)).grid(row=0, column=0, sticky="e")
-        self.entry_type = ttk.Combobox(input_frame, values=["CF", "LC", "Other"], width=4, state="readonly")
+        # 增加 CPE
+        self.entry_type = ttk.Combobox(input_frame, values=["CF", "LC", "CPE", "Other"], width=4, state="readonly")
         self.entry_type.grid(row=0, column=1, padx=2, pady=2)
         self.entry_type.set("CF")
         
@@ -153,6 +159,8 @@ class CPTrackerApp:
 
         def on_type_change(event):
             self.entry_div.destroy()
+            self.entry_time.config(state="normal") # 重置時間欄位狀態
+            
             ctype = self.entry_type.get()
             if ctype == "LC":
                 self.lbl_div_type.config(text="類型:")
@@ -166,6 +174,15 @@ class CPTrackerApp:
                 self.lbl_cnum.config(text="")
                 self.entry_cnum.delete(0, 'end')
                 self.entry_cnum.config(state="disabled") 
+            elif ctype == "CPE":
+                self.lbl_div_type.config(text="")
+                self.entry_div = tk.Entry(input_frame, width=6)
+                self.entry_div.insert(0, "")
+                self.entry_div.config(state="disabled") # CPE 不需要 Div
+                self.entry_time.delete(0, 'end')
+                self.entry_time.config(state="disabled") # 隱藏/停用時間
+                self.lbl_cnum.config(text="民國年:")
+                self.entry_cnum.config(state="normal")
             else:
                 self.lbl_div_type.config(text="Div:")
                 self.entry_div = tk.Entry(input_frame, width=6)
@@ -191,7 +208,6 @@ class CPTrackerApp:
         
         tk.Button(nav_frame, text="▶", command=lambda: self.change_week(1)).pack(side=tk.RIGHT, padx=10)
 
-        # 高度縮放配合 280 的主視窗
         self.canvas = tk.Canvas(tab, height=90, bg="#1e1e1e", highlightthickness=0)
         self.canvas.pack(fill="x", pady=2)
         
@@ -212,12 +228,11 @@ class CPTrackerApp:
         self.lbl_stats = tk.Label(self.stat_frame, text="資料載入中...", justify=tk.LEFT, bg="#f5f6fa", font=("Arial", 9))
         self.lbl_stats.pack(anchor="w", pady=2, padx=5)
 
-        tk.Label(tab, text="雙擊下方賽事修改進度 (僅顯示 CF/LC)", font=("Arial", 8, "bold"), fg="gray").pack(anchor="w", padx=5)
+        tk.Label(tab, text="雙擊下方賽事修改進度 (顯示 CF/LC/CPE)", font=("Arial", 8, "bold"), fg="gray").pack(anchor="w", padx=5)
 
-        cols = ('ID', '賽事', '日期', '題目', '進度', '已補')
-        disp_cols = ('賽事', '日期', '題目', '進度', '已補')
+        cols = ('ID', '賽事', '日期', '題目', '進度', '未補')
+        disp_cols = ('賽事', '日期', '題目', '進度', '未補')
         
-        # 配合 280 高度，Treeview 顯示 5 行
         self.tree = ttk.Treeview(tab, columns=cols, displaycolumns=disp_cols, show='headings', height=5)
         for c, w in zip(disp_cols, [65, 55, 60, 50, 50]):
             self.tree.heading(c, text=c)
@@ -251,6 +266,29 @@ class CPTrackerApp:
         elif "2" in val: self.total_seconds = 7200
         else: self.total_seconds = 10800
         self.reset_timer()
+
+    def check_startup_date(self):
+        """比對上次啟動日期，若跨日則重置打卡勾選"""
+        today = datetime.now().strftime('%Y-%m-%d')
+        
+        conn = sqlite3.connect(DB_FILE)
+        cursor = conn.cursor()
+        
+        cursor.execute("SELECT value FROM app_config WHERE key='last_startup'")
+        last_startup = cursor.fetchone()[0]
+        
+        if last_startup != today:
+            # 日期不同：單純取消 UI 的勾選狀態，不會觸發 handle_checkin 影響舊紀錄
+            self.cf_done.set(False)
+            self.cses_done.set(False)
+            self.picoctf_done.set(False)
+            self.project_done.set(False)
+            
+            # 更新資料庫中的最後啟動日期為今天
+            cursor.execute("UPDATE app_config SET value=? WHERE key='last_startup'", (today,))
+            conn.commit()
+            
+        conn.close()
 
     def change_week(self, delta):
         self.week_offset += delta
@@ -370,10 +408,15 @@ class CPTrackerApp:
         cdiv = self.entry_div.get().strip()
         cnum = self.entry_cnum.get().strip() if ctype != "Other" else ""
         
-        if ctype != "Other":
+        if ctype not in ["Other", "CPE"]:
             if len(raw_date) != 4 or not raw_date.isdigit() or len(raw_time) != 4 or not raw_time.isdigit():
                 messagebox.showerror("錯誤", "格式錯誤，請輸入 4 碼 (例: 0718)")
                 return
+        elif ctype == "CPE":
+            if len(raw_date) != 4 or not raw_date.isdigit():
+                messagebox.showerror("錯誤", "日期格式錯誤 (例: 0718)")
+                return
+            raw_time = "0000" # CPE 不記錄時間
         else:
             if len(raw_date) != 4 or not raw_date.isdigit():
                 messagebox.showerror("錯誤", "日期格式錯誤 (例: 0718)")
@@ -439,7 +482,6 @@ class CPTrackerApp:
         sunday = today - timedelta(days=idx)
         start_date = sunday + timedelta(weeks=self.week_offset)
         
-        # 變更本週文字與顏色
         if self.week_offset == 0:
             self.lbl_week.config(text="本週", fg="#f39c12") 
         else:
@@ -476,6 +518,9 @@ class CPTrackerApp:
                     elif c_type == "Other":
                         text_disp = f"Task\n{c_div[:8]}"
                         box_col = "#9b59b6" 
+                    elif c_type == "CPE":
+                        text_disp = f"CPE {c_num}"
+                        box_col = "#27ae60"
                     else:
                         text_disp = f"CF {c_num}\n{c_div}"
                         box_col = "#3498db"
@@ -491,6 +536,8 @@ class CPTrackerApp:
             c_div = c[4]
             if c_type == "Other":
                 self.list_contests.insert(tk.END, f"{c[2]} {c[3]} | Task: {c_div}")
+            elif c_type == "CPE":
+                self.list_contests.insert(tk.END, f"{c[2]} | CPE {c_num}年")
             else:
                 self.list_contests.insert(tk.END, f"{c[2]} {c[3]} | {c_type} {c_num} ({c_div})")
 
@@ -517,16 +564,19 @@ class CPTrackerApp:
         for row in self.tree.get_children():
             self.tree.delete(row)
             
-        # 僅選取 CF 與 LC 進入補題列表
-        cursor.execute("SELECT id, type, date, div, probs, solved, up_done, c_num FROM contests WHERE type IN ('CF', 'LC') ORDER BY date DESC, time DESC")
-        cf_cnt, lc_cnt = 0, 0
+        # 僅選取 CF, LC, CPE 進入補題列表
+        cursor.execute("SELECT id, type, date, div, probs, solved, up_done, c_num FROM contests WHERE type IN ('CF', 'LC', 'CPE') ORDER BY date DESC, time DESC")
+        cf_cnt, lc_cnt, cpe_cnt = 0, 0, 0
         tot_solved, tot_up = 0, 0
         
         for row in cursor.fetchall():
             c_id, c_type, c_date, c_div, c_probs, c_solved, c_up, c_num = row
             
-            sol_cnt = len(c_solved.replace(" ", "").replace(",", "")) if c_solved else 0
-            up_cnt = len(c_up.replace(" ", "").replace(",", "")) if c_up else 0
+            c_solved_clean = (c_solved or "").upper().replace(" ", "").replace(",", "")
+            c_up_clean = (c_up or "").upper().replace(" ", "").replace(",", "")
+            
+            sol_cnt = len(c_solved_clean)
+            up_cnt = len(c_up_clean)
             
             if c_type == "CF":
                 event_str = f"CF {c_num}"
@@ -534,14 +584,41 @@ class CPTrackerApp:
             elif c_type == "LC":
                 event_str = f"LC {c_num}"
                 lc_cnt += 1
+            elif c_type == "CPE":
+                event_str = f"CPE {c_num}"
+                cpe_cnt += 1
 
-            disp_row = (c_id, event_str, c_date, c_probs or '-', c_solved or '-', c_up or '-')
+            unsolved_str = "-"
+            if c_probs:
+                p_str = c_probs.upper().replace("~", "-")
+                all_probs = []
+                if '-' in p_str:
+                    parts = p_str.split('-')
+                    if len(parts) == 2:
+                        start, end = parts[0], parts[1]
+                        if start.isdigit() and end.isdigit():
+                            all_probs = [str(i) for i in range(int(start), int(end)+1)]
+                        elif start.isalpha() and end.isalpha():
+                            all_probs = [chr(i) for i in range(ord(start), ord(end)+1)]
+                
+                if not all_probs:
+                    all_probs = list(p_str)
+                
+                done_list = list(c_solved_clean + c_up_clean)
+                missing = [p for p in all_probs if p not in done_list]
+                
+                if missing:
+                    unsolved_str = "".join(missing)
+                else:
+                    unsolved_str = "✔"
+
+            disp_row = (c_id, event_str, c_date, c_probs or '-', c_solved or '-', unsolved_str)
             self.tree.insert("", "end", values=disp_row)
             
             tot_solved += sol_cnt
             tot_up += up_cnt
             
-        self.lbl_stats.config(text=f"🏆 賽事: CF {cf_cnt} 場 | LC {lc_cnt} 場\n🔥 完成進度: {tot_solved} 項 | 🛠️ 賽後補題: {tot_up} 題")
+        self.lbl_stats.config(text=f"🏆 賽事: CF {cf_cnt} | LC {lc_cnt} | CPE {cpe_cnt}\n🔥 完成進度: {tot_solved} 項 | 🛠️ 賽後補題: {tot_up} 題")
         conn.close()
 
     def on_tree_double_click(self, event):
@@ -564,9 +641,13 @@ class CPTrackerApp:
         
         ctype, cur_probs, cur_solved, cur_up_done, cur_cnum, cur_div = row
         is_lc = (ctype == "LC")
+        is_cpe = (ctype == "CPE")
         
         if not cur_probs:
-            cur_probs = "1-4" if is_lc else ""
+            if is_lc: cur_probs = "1-4"
+            elif is_cpe: cur_probs = "1-7"
+            else: cur_probs = ""
+            
         cur_solved = cur_solved if cur_solved else ""
         cur_up_done = cur_up_done if cur_up_done else ""
 
@@ -577,17 +658,14 @@ class CPTrackerApp:
         self.upd_win.geometry(f"200x260+{x}+{y}")
         self.upd_win.attributes('-topmost', True)
         
-        # --- 原地雙擊編輯比賽編號功能 ---
         header_frame = tk.Frame(self.upd_win)
         header_frame.pack(pady=5)
         
         tk.Label(header_frame, text=f"{ctype} ", font=("Arial", 10, "bold")).grid(row=0, column=0)
         
-        # 標籤 (可點擊)
-        lbl_cnum = tk.Label(header_frame, text=cur_cnum if cur_cnum else "(未填編號)", font=("Arial", 10, "bold", "underline"), fg="#3498db", cursor="hand2")
+        lbl_cnum = tk.Label(header_frame, text=cur_cnum if cur_cnum else "(未填)", font=("Arial", 10, "bold", "underline"), fg="#3498db", cursor="hand2")
         lbl_cnum.grid(row=0, column=1)
         
-        # 輸入框 (隱藏)
         ent_cnum = tk.Entry(header_frame, width=5, font=("Arial", 10))
         ent_cnum.insert(0, cur_cnum)
         
@@ -601,21 +679,20 @@ class CPTrackerApp:
         def on_cnum_focus_out(e):
             ent_cnum.grid_forget()
             new_val = ent_cnum.get().strip()
-            lbl_cnum.config(text=new_val if new_val else "(未填編號)")
+            lbl_cnum.config(text=new_val if new_val else "(未填)")
             lbl_cnum.grid(row=0, column=1)
             
         lbl_cnum.bind("<Double-1>", on_cnum_double_click)
         ent_cnum.bind("<FocusOut>", on_cnum_focus_out)
         ent_cnum.bind("<Return>", on_cnum_focus_out)
-        # --------------------------------
 
-        lbl_p_text = "題目範圍 (例 1-4):" if is_lc else "題目範圍 (例 A-F):"
+        lbl_p_text = "題目範圍 (例 1-7):" if is_cpe else ("題目範圍 (例 1-4):" if is_lc else "題目範圍 (例 A-F):")
         tk.Label(self.upd_win, text=lbl_p_text, font=("Arial", 8)).pack()
         ent_probs = tk.Entry(self.upd_win, width=12)
         ent_probs.insert(0, cur_probs)
         ent_probs.pack()
         
-        lbl_s_text = "賽中解出 (例 124):" if is_lc else "賽中解出 (例 ACD):"
+        lbl_s_text = "賽中解出 (例 124):" if (is_lc or is_cpe) else "賽中解出 (例 ACD):"
         tk.Label(self.upd_win, text=lbl_s_text, font=("Arial", 8)).pack()
         ent_solved = tk.Entry(self.upd_win, width=12)
         ent_solved.insert(0, cur_solved)
@@ -663,7 +740,7 @@ class CPTrackerApp:
             p_val = ent_probs.get().upper().replace("~", "-")
             s_val = ent_solved.get().upper().replace(" ", "").replace(",", "")
             u_val = "".join([p for p, var in chk_vars.items() if var.get()])
-            new_cnum = ent_cnum.get().strip() # 儲存原地修改的編號
+            new_cnum = ent_cnum.get().strip()
             
             conn = sqlite3.connect(DB_FILE)
             cursor = conn.cursor()

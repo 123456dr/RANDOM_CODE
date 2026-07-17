@@ -1,7 +1,8 @@
 # RANDOM_CODE  [![wakatime](https://wakatime.com/badge/user/ec29ef99-8c9b-4017-ba6e-b52d5fcc5c9a.svg)](https://wakatime.com/@ec29ef99-8c9b-4017-ba6e-b52d5fcc5c9a)
-JUST CODE 
+JUST [C](./Code/)ODE 
 
 ![Repo Snake](https://raw.githubusercontent.com/123456dr/RANDOM_CODE/output/repo-snake-dark.svg)<!--[![GitHub Activity Graph](https://github-readme-activity-graph.vercel.app/graph?username=123456dr&repo=RANDOM_CODE&theme=github-dark)](https://github.com/123456dr/RANDOM_CODE) --><br>![GitHub last commit](https://img.shields.io/github/last-commit/123456dr/RANDOM_CODE?style=flat-square&color=green) ![GitHub commit activity](https://img.shields.io/github/commit-activity/m/123456dr/RANDOM_CODE?style=flat-square&color=green)
+<details><summary>NOTE</summary>
 
 - BIT => `x & 1`末位一或零, `x >>= 1`除二
 - `value & 1` 判斷奇偶[== 1 奇; == 0偶]
@@ -21,13 +22,18 @@ JUST CODE
     - 右開 `r = n(0-index)`, `r = mid` // 不含 r == 右開
 
 - Lamdba: `auto dfs = [&](int x) -> void{// sth};`
-
+</details>
 <hr>
 
 [目前總題數](/cont.txt)
 
 | 再練 | 題源 | 題目與連結 | 難度 | 標籤 |
 | :--- | :--- | :--- | :--- | :--- |
+| | | [-](./Code)  | - | ![](https://img.shields.io/badge/--blue) |
+| | | [-](./Code)  | - | ![](https://img.shields.io/badge/--blue) |
+| | | [-](./Code)  | - | ![](https://img.shields.io/badge/--blue) |
+| | | [-](./Code)  | - | ![](https://img.shields.io/badge/--blue) |
+| | CF | [C_0466](./Code/Codeforces/C_0466_prefix_linearScan_threeSameSumSubArray.cpp) 含負與零陣列，計算能切三份總和同且「連續」的子陣列切割方法數 | 1 | ![](https://img.shields.io/badge/-prefix-blue) ![](https://img.shields.io/badge/-linear_scan-blue) ![](https://img.shields.io/badge/-subArray-blue) |
 | | CF | [E_2244](./Code/Codeforces/E_2244_prefix_math_TurnLight01.cpp) 點亮燈泡問題 | 3 | ![](https://img.shields.io/badge/-light-blue) |
 | ✅✅ | CF | [F_2244](./Code/Codeforces/F_2244_DFS_continueTree.cpp) Anya Loves Trees! - 檢查左移子樹連續線段，非遞增落差需<=1 | 7 | ![](https://img.shields.io/badge/-DFS-blue) ![](https://img.shields.io/badge/-Tree-blue) |
 | | CF | [B_0706](./Code/Codeforces/B_0706_binarySearch_upper_bound(bg,ed,x).cpp) 預算購買數量 - 二分搜 左閉右開 | - | ![](https://img.shields.io/badge/-binary_search-blue) ![](https://img.shields.io/badge/-lower_bound-blue) ![](https://img.shields.io/badge/-upper_bound()-blue) |
@@ -98,5 +104,5 @@ JUST CODE
 - `ctrl + shift + E` 切換焦點
 - `F2` 改檔名
 - `F10` 建檔選單<br>
-[CP_Tracker.pyw](./AWARD/mess/CheckIn_py)<br>
+[CP_Tracker.pyw](./AWARD/mess/CheckIn_py/哥本哈根_根本超讚ㄏ_0.png) <small><small><small>(好耶 會自動開啟 desu</small></small></small> <br>
 [mem](./AWARD/)
