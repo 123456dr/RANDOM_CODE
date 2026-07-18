@@ -10,6 +10,12 @@ class CPTrackerApp:
         self.root = root
         self.root.title("CP & CTF Tracker")
         
+        try:
+            icon_image = tk.PhotoImage(file='./AWARD/mess/CheckIn_py/rc_icon.png')
+            self.root.iconphoto(False, icon_image)
+        except Exception:
+            pass
+
         # --- 精準設定視窗大小與位置 ---
         window_width = 380
         window_height = 280
@@ -33,6 +39,9 @@ class CPTrackerApp:
         self.week_offset = 0
         self.upd_win = None
         self.contest_ids = []
+        self.checkin_popup = None
+        self.popup_timer = None
+        self.ignore_next_click = False  # 防止雙擊與單擊事件衝突的開關
         
         self.notebook = ttk.Notebook(self.root)
         self.notebook.pack(expand=True, fill='both', padx=5, pady=2)
@@ -42,8 +51,10 @@ class CPTrackerApp:
         self.build_tab_stats()
 
         self.check_startup_date()
-        
         self.load_daily_status()
+        
+        # 全域綁定點擊事件以關閉 popup
+        self.root.bind_all("<Button-1>", self.close_popup_on_click, add="+")
 
     def init_db(self):
         conn = sqlite3.connect(DB_FILE)
@@ -66,6 +77,10 @@ class CPTrackerApp:
         try: cursor.execute("ALTER TABLE contests ADD COLUMN up_done TEXT DEFAULT ''")
         except: pass
         try: cursor.execute("ALTER TABLE contests ADD COLUMN c_num TEXT DEFAULT ''")
+        except: pass
+        
+        tw_year = datetime.now().year - 1911
+        try: cursor.execute(f"UPDATE contests SET date = '{tw_year}-' || date WHERE length(date) = 5")
         except: pass
             
         for plat in ['CF', 'CSES', 'picoCTF', 'Project']:
@@ -101,18 +116,22 @@ class CPTrackerApp:
 
         self.lbl_cf_streak = tk.Label(check_frame, text="CF cnt: 0 | 0.0 hr", font=("Arial", 9))
         self.lbl_cf_streak.grid(row=0, column=0, sticky="w", padx=5, pady=2)
+        self.lbl_cf_streak.bind('<Double-1>', lambda e: self.show_last_checkin(e, 'CF'))
         tk.Checkbutton(check_frame, text="CF 打卡", variable=self.cf_done, command=lambda: self.handle_checkin('CF')).grid(row=0, column=1, sticky="w")
 
         self.lbl_cses_streak = tk.Label(check_frame, text="CSES cnt: 0 | 0.0 hr", font=("Arial", 9))
         self.lbl_cses_streak.grid(row=1, column=0, sticky="w", padx=5, pady=2)
+        self.lbl_cses_streak.bind('<Double-1>', lambda e: self.show_last_checkin(e, 'CSES'))
         tk.Checkbutton(check_frame, text="CSES 打卡", variable=self.cses_done, command=lambda: self.handle_checkin('CSES')).grid(row=1, column=1, sticky="w")
 
         self.lbl_picoctf_streak = tk.Label(check_frame, text="picoCTF cnt: 0", font=("Arial", 9))
         self.lbl_picoctf_streak.grid(row=2, column=0, sticky="w", padx=5, pady=2)
+        self.lbl_picoctf_streak.bind('<Double-1>', lambda e: self.show_last_checkin(e, 'picoCTF'))
         tk.Checkbutton(check_frame, text="picoCTF 打卡", variable=self.picoctf_done, command=lambda: self.handle_checkin('picoCTF')).grid(row=2, column=1, sticky="w")
         
         self.lbl_project_streak = tk.Label(check_frame, text="專案 cnt: 0", font=("Arial", 9))
         self.lbl_project_streak.grid(row=3, column=0, sticky="w", padx=5, pady=2)
+        self.lbl_project_streak.bind('<Double-1>', lambda e: self.show_last_checkin(e, 'Project'))
         tk.Checkbutton(check_frame, text="專案 打卡", variable=self.project_done, command=lambda: self.handle_checkin('Project')).grid(row=3, column=1, sticky="w")
 
         bottom_frame = tk.Frame(tab)
@@ -132,7 +151,7 @@ class CPTrackerApp:
         input_frame.pack(fill="x", padx=2, pady=0)
         
         tk.Label(input_frame, text="賽事:", font=("Arial", 8)).grid(row=0, column=0, sticky="e")
-        # 增加 CPE
+        
         self.entry_type = ttk.Combobox(input_frame, values=["CF", "LC", "CPE", "Other"], width=4, state="readonly")
         self.entry_type.grid(row=0, column=1, padx=2, pady=2)
         self.entry_type.set("CF")
@@ -159,7 +178,7 @@ class CPTrackerApp:
 
         def on_type_change(event):
             self.entry_div.destroy()
-            self.entry_time.config(state="normal") # 重置時間欄位狀態
+            self.entry_time.config(state="normal") 
             
             ctype = self.entry_type.get()
             if ctype == "LC":
@@ -178,9 +197,9 @@ class CPTrackerApp:
                 self.lbl_div_type.config(text="")
                 self.entry_div = tk.Entry(input_frame, width=6)
                 self.entry_div.insert(0, "")
-                self.entry_div.config(state="disabled") # CPE 不需要 Div
+                self.entry_div.config(state="disabled") 
                 self.entry_time.delete(0, 'end')
-                self.entry_time.config(state="disabled") # 隱藏/停用時間
+                self.entry_time.config(state="disabled") 
                 self.lbl_cnum.config(text="民國年:")
                 self.entry_cnum.config(state="normal")
             else:
@@ -208,8 +227,37 @@ class CPTrackerApp:
         
         tk.Button(nav_frame, text="▶", command=lambda: self.change_week(1)).pack(side=tk.RIGHT, padx=10)
 
-        self.canvas = tk.Canvas(tab, height=90, bg="#1e1e1e", highlightthickness=0)
-        self.canvas.pack(fill="x", pady=2)
+        # --- 加入 Scrollbar 與滑鼠滾輪支援 ---
+        canvas_frame = tk.Frame(tab)
+        canvas_frame.pack(fill="x", pady=2)
+        
+        self.canvas_scrollbar = ttk.Scrollbar(canvas_frame, orient="vertical")
+        self.canvas_scrollbar.pack(side=tk.RIGHT, fill="y")
+        
+        self.canvas = tk.Canvas(canvas_frame, height=90, bg="#1e1e1e", highlightthickness=0, yscrollcommand=self.canvas_scrollbar.set)
+        self.canvas.pack(side=tk.LEFT, fill="both", expand=True)
+        self.canvas_scrollbar.config(command=self.canvas.yview)
+
+        def _on_mousewheel(event):
+            if getattr(event, 'delta', 0) != 0:
+                direction = -1 if event.delta > 0 else 1
+                self.canvas.yview_scroll(direction, "units")
+            elif getattr(event, 'num', 0) in (4, 5):
+                direction = -1 if event.num == 4 else 1
+                self.canvas.yview_scroll(direction, "units")
+
+        def _bind_mouse(event):
+            self.canvas.bind_all("<MouseWheel>", _on_mousewheel)
+            self.canvas.bind_all("<Button-4>", _on_mousewheel)
+            self.canvas.bind_all("<Button-5>", _on_mousewheel)
+
+        def _unbind_mouse(event):
+            self.canvas.unbind_all("<MouseWheel>")
+            self.canvas.unbind_all("<Button-4>")
+            self.canvas.unbind_all("<Button-5>")
+
+        self.canvas.bind("<Enter>", _bind_mouse)
+        self.canvas.bind("<Leave>", _unbind_mouse)
         
         del_frame = tk.Frame(tab)
         del_frame.pack(fill="both", expand=True, padx=5, pady=0)
@@ -230,8 +278,8 @@ class CPTrackerApp:
 
         tk.Label(tab, text="雙擊下方賽事修改進度 (顯示 CF/LC/CPE)", font=("Arial", 8, "bold"), fg="gray").pack(anchor="w", padx=5)
 
-        cols = ('ID', '賽事', '日期', '題目', '進度', '未補')
-        disp_cols = ('賽事', '日期', '題目', '進度', '未補')
+        cols = ('ID', '賽事', '日期', '題目', '賽中', '未補')
+        disp_cols = ('賽事', '日期', '題目', '賽中', '未補')
         
         self.tree = ttk.Treeview(tab, columns=cols, displaycolumns=disp_cols, show='headings', height=5)
         for c, w in zip(disp_cols, [65, 55, 60, 50, 50]):
@@ -279,13 +327,11 @@ class CPTrackerApp:
         last_startup = cursor.fetchone()[0]
         
         if last_startup != today:
-            # 日期不同：單純取消 UI 的勾選狀態，不會觸發 handle_checkin 影響舊紀錄
             self.cf_done.set(False)
             self.cses_done.set(False)
             self.picoctf_done.set(False)
             self.project_done.set(False)
             
-            # 更新資料庫中的最後啟動日期為今天
             cursor.execute("UPDATE app_config SET value=? WHERE key='last_startup'", (today,))
             conn.commit()
             
@@ -366,7 +412,7 @@ class CPTrackerApp:
         
         if is_checked:
             if last_date != today:
-                streak = streak + 1 #streak + 1 if last_date == yesterday else 1
+                streak = streak + 1 
                 cursor.execute("UPDATE streaks SET current_streak=?, last_checkin=? WHERE platform=?", (streak, today, platform))
         else:
             if last_date == today:
@@ -386,6 +432,8 @@ class CPTrackerApp:
     def load_daily_status(self):
         today = datetime.now().strftime('%Y-%m-%d')
         today_md = datetime.now().strftime('%m-%d')
+        tw_year = datetime.now().year - 1911
+        today_tw = f"{tw_year}-{today_md}"
         
         conn = sqlite3.connect(DB_FILE)
         cursor = conn.cursor()
@@ -395,7 +443,7 @@ class CPTrackerApp:
             if cursor.fetchone()[0] == today:
                 getattr(self, f"{plat.lower()}_done").set(True)
                 
-        cursor.execute("SELECT id FROM contests WHERE type='CF' AND date=?", (today_md,))
+        cursor.execute("SELECT id FROM contests WHERE type='CF' AND date=?", (today_tw,))
         if cursor.fetchone() and not self.cf_done.get():
             self.cf_done.set(True)
             self.handle_checkin('CF') 
@@ -417,7 +465,7 @@ class CPTrackerApp:
             if len(raw_date) != 4 or not raw_date.isdigit():
                 messagebox.showerror("錯誤", "日期格式錯誤 (例: 0718)")
                 return
-            raw_time = "0000" # CPE 不記錄時間
+            raw_time = "0000" 
         else:
             if len(raw_date) != 4 or not raw_date.isdigit():
                 messagebox.showerror("錯誤", "日期格式錯誤 (例: 0718)")
@@ -428,7 +476,8 @@ class CPTrackerApp:
                     return
             elif raw_time == "": raw_time = "0000"
             
-        cdate = f"{raw_date[:2]}-{raw_date[2:]}"
+        tw_year = datetime.now().year - 1911
+        cdate = f"{tw_year}-{raw_date[:2]}-{raw_date[2:]}"
         ctime = f"{raw_time[:2]}:{raw_time[2:]}"
         
         if ctype == "CF" and cdiv:
@@ -490,7 +539,7 @@ class CPTrackerApp:
             self.lbl_week.config(text=f"{mid_week.month} 月", fg="#3498db")
         
         days_zh = ["日", "一", "二", "三", "四", "五", "六"]
-        col_width = 370 / 7
+        col_width = 350 / 7  
         
         for i in range(7):
             d = start_date + timedelta(days=i)
@@ -508,7 +557,7 @@ class CPTrackerApp:
             day_str = d.strftime("%m-%d")
             y_offset = 46
             for c in contests:
-                if c[2] == day_str:
+                if c[2][-5:] == day_str:
                     c_type = c[1]
                     c_div = c[4]
                     c_num = c[9] if len(c) > 9 else ""
@@ -535,12 +584,19 @@ class CPTrackerApp:
             c_type = c[1]
             c_num = c[9] if len(c) > 9 else ""
             c_div = c[4]
+            disp_date = c[2][-5:]
             if c_type == "Other":
-                self.list_contests.insert(tk.END, f"{c[2]} {c[3]} | Task: {c_div}")
+                self.list_contests.insert(tk.END, f"{disp_date} {c[3]} | Task: {c_div}")
             elif c_type == "CPE":
-                self.list_contests.insert(tk.END, f"{c[2]} | CPE {c_num}年")
+                self.list_contests.insert(tk.END, f"{disp_date} | CPE {c_num}年")
             else:
-                self.list_contests.insert(tk.END, f"{c[2]} {c[3]} | {c_type} {c_num} ({c_div})")
+                self.list_contests.insert(tk.END, f"{disp_date} {c[3]} | {c_type} {c_num} ({c_div})")
+                
+        # --- 設定捲動範圍 ---
+        self.canvas.yview_moveto(0) 
+        bbox = self.canvas.bbox("all")
+        if bbox:
+            self.canvas.config(scrollregion=(0, 0, bbox[2], max(90, bbox[3] + 10)))
 
     def refresh_stats(self):
         conn = sqlite3.connect(DB_FILE)
@@ -556,7 +612,7 @@ class CPTrackerApp:
                 total_hours = (t_row[0] / 3600) if t_row else 0
                 time_str = f" | {total_hours:.1f} hr"
             
-            getattr(self, f"lbl_{plat.lower()}_streak").config(text=f"{plat} 連勝: {streak} {time_str}")
+            getattr(self, f"lbl_{plat.lower()}_streak").config(text=f"{plat} D-{streak} {time_str}")
             
         cursor.execute("SELECT COUNT(*) FROM activity_log")
         total_days = cursor.fetchone()[0]
@@ -565,13 +621,19 @@ class CPTrackerApp:
         for row in self.tree.get_children():
             self.tree.delete(row)
             
-        # 僅選取 CF, LC, CPE 進入補題列表
         cursor.execute("SELECT id, type, date, div, probs, solved, up_done, c_num FROM contests WHERE type IN ('CF', 'LC', 'CPE') ORDER BY date DESC, time DESC")
         cf_cnt, lc_cnt, cpe_cnt = 0, 0, 0
         tot_solved, tot_up = 0, 0
         
+        last_month = None
+        
         for row in cursor.fetchall():
             c_id, c_type, c_date, c_div, c_probs, c_solved, c_up, c_num = row
+            
+            current_month = c_date[-5:-3] 
+            if current_month != last_month:
+                self.tree.insert("", "end", values=('', f'--- {int(current_month)} 月 ---', '', '', '', ''), tags=('sep',))
+                last_month = current_month
             
             c_solved_clean = (c_solved or "").upper().replace(" ", "").replace(",", "")
             c_up_clean = (c_up or "").upper().replace(" ", "").replace(",", "")
@@ -613,34 +675,113 @@ class CPTrackerApp:
                 else:
                     unsolved_str = "✔"
 
-            disp_row = (c_id, event_str, c_date, c_probs or '-', sol_cnt or '-', unsolved_str)
+            disp_row = (c_id, event_str, c_date[-5:], c_probs or '-', sol_cnt or '-', unsolved_str)
             self.tree.insert("", "end", values=disp_row)
             
             tot_solved += sol_cnt
             tot_up += up_cnt
             
+        self.tree.tag_configure('sep', background='#dcdde1')
+            
         self.lbl_stats.config(text=f"🏆 賽事: CF {cf_cnt} | LC {lc_cnt} | CPE {cpe_cnt}\n🔥 完成進度: {tot_solved} 項 | 🛠️ 賽後補題: {tot_up} 題")
         conn.close()
+
+    # ================= 雙擊顯示上次打卡紀錄功能 (已修復點擊衝突) =================
+    def show_last_checkin(self, event, platform):
+        # 1. 確保先關閉已存在的視窗
+        self.close_popup()
+        
+        # 2. 開啟一個「防呆鎖」，讓系統在 0.2 秒內無視任何單擊事件
+        self.ignore_next_click = True
+        self.root.after(200, lambda: setattr(self, 'ignore_next_click', False))
+        
+        # 3. 查詢資料庫
+        conn = sqlite3.connect(DB_FILE)
+        cursor = conn.cursor()
+        cursor.execute("SELECT last_checkin, current_streak FROM streaks WHERE platform=?", (platform,))
+        row = cursor.fetchone()
+        conn.close()
+        
+        if not row: return
+        last_checkin, streak = row
+        today = datetime.now().strftime('%Y-%m-%d')
+        
+        # 邏輯：取得「不包含今天」的上一次打卡日期
+        if last_checkin == today:
+            if streak >= 2:
+                prev_date = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')
+            else:
+                prev_date = "無"
+        else:
+            prev_date = last_checkin if last_checkin != '2000-01-01' else "無"
+            
+        # 建立彈出小小訊息框 (無邊框視窗)
+        self.checkin_popup = tk.Toplevel(self.root)
+        self.checkin_popup.wm_overrideredirect(True) 
+        self.checkin_popup.attributes("-topmost", True)
+        
+        x = event.x_root + 15
+        y = event.y_root + 15
+        self.checkin_popup.geometry(f"+{x}+{y}")
+        
+        lbl = tk.Label(self.checkin_popup, text=f"上次打卡: {prev_date}", 
+                       bg="#fffae6", fg="#d35400", borderwidth=1, relief="solid", 
+                       font=("Arial", 9), padx=5, pady=2)
+        lbl.pack()
+        
+        # 1 秒 (1000 毫秒) 後自動消失
+        self.popup_timer = self.root.after(1000, self.close_popup)
+
+    def close_popup(self, event=None):
+        # 清除計時器
+        if getattr(self, 'popup_timer', None):
+            self.root.after_cancel(self.popup_timer)
+            self.popup_timer = None
+            
+        # 安全地銷毀視窗
+        if getattr(self, 'checkin_popup', None):
+            try:
+                self.checkin_popup.destroy()
+            except Exception:
+                pass
+            self.checkin_popup = None
+            
+    def close_popup_on_click(self, event):
+        # 檢查防呆鎖，如果才剛開啟 popup 就不處理此點擊 (避免雙擊時的 Button-1 誤判)
+        if getattr(self, 'ignore_next_click', False):
+            return
+            
+        if getattr(self, 'checkin_popup', None) and self.checkin_popup.winfo_exists():
+            try:
+                # 若點擊的地方是彈出視窗本身，就忽略
+                if event.widget == self.checkin_popup or event.widget.master == self.checkin_popup:
+                    return
+            except Exception:
+                pass
+            
+            # 若點到別處，立刻關閉
+            self.close_popup()
 
     def on_tree_double_click(self, event):
         selected = self.tree.selection()
         if not selected: return
         
+        item = self.tree.item(selected[0])
+        cid = item['values'][0]
+        
+        if not str(cid).strip(): return
+        
         if self.upd_win and self.upd_win.winfo_exists():
             self.upd_win.lift()
             return
             
-        item = self.tree.item(selected[0])
-        cid = item['values'][0]
-        cdate = item['values'][2]
-        
         conn = sqlite3.connect(DB_FILE)
         cursor = conn.cursor()
-        cursor.execute("SELECT type, probs, solved, up_done, c_num, div FROM contests WHERE id=?", (cid,))
+        cursor.execute("SELECT type, probs, solved, up_done, c_num, div, date FROM contests WHERE id=?", (cid,))
         row = cursor.fetchone()
         conn.close()
         
-        ctype, cur_probs, cur_solved, cur_up_done, cur_cnum, cur_div = row
+        ctype, cur_probs, cur_solved, cur_up_done, cur_cnum, cur_div, full_date = row
         is_lc = (ctype == "LC")
         is_cpe = (ctype == "CPE")
         is_cf = (ctype == "CF")
@@ -658,7 +799,7 @@ class CPTrackerApp:
         self.upd_win.title("更新進度")
         x = self.root.winfo_x() - 50
         y = self.root.winfo_y() + 50
-        self.upd_win.geometry(f"200x260+{x}+{y}")
+        self.upd_win.geometry(f"240x260+{x}+{y}")
         self.upd_win.attributes('-topmost', True)
         
         header_frame = tk.Frame(self.upd_win)
@@ -672,8 +813,29 @@ class CPTrackerApp:
         ent_cnum = tk.Entry(header_frame, width=5, font=("Arial", 10))
         ent_cnum.insert(0, cur_cnum)
         
-        tk.Label(header_frame, text=f" ({cdate})", font=("Arial", 10, "bold")).grid(row=0, column=2)
+        tk.Label(header_frame, text=" (", font=("Arial", 10, "bold")).grid(row=0, column=2)
+        lbl_date = tk.Label(header_frame, text=full_date, font=("Arial", 10, "bold", "underline"), fg="#3498db", cursor="hand2")
+        lbl_date.grid(row=0, column=3)
+        tk.Label(header_frame, text=")", font=("Arial", 10, "bold")).grid(row=0, column=4)
         
+        ent_date = tk.Entry(header_frame, width=8, font=("Arial", 10))
+        ent_date.insert(0, full_date)
+        
+        def on_date_double_click(e):
+            lbl_date.grid_forget()
+            ent_date.grid(row=0, column=3)
+            ent_date.focus_set()
+            
+        def on_date_focus_out(e):
+            ent_date.grid_forget()
+            new_val = ent_date.get().strip()
+            lbl_date.config(text=new_val if new_val else full_date)
+            lbl_date.grid(row=0, column=3)
+
+        lbl_date.bind("<Double-1>", on_date_double_click)
+        ent_date.bind("<FocusOut>", on_date_focus_out)
+        ent_date.bind("<Return>", on_date_focus_out)
+
         def on_cnum_double_click(e):
             lbl_cnum.grid_forget()
             ent_cnum.grid(row=0, column=1)
@@ -744,11 +906,12 @@ class CPTrackerApp:
             s_val = ent_solved.get().upper().replace(" ", "").replace(",", "")
             u_val = "".join([p for p, var in chk_vars.items() if var.get()])
             new_cnum = ent_cnum.get().strip()
+            new_date = ent_date.get().strip() 
             
             conn = sqlite3.connect(DB_FILE)
             cursor = conn.cursor()
-            cursor.execute("UPDATE contests SET probs=?, solved=?, up_done=?, c_num=? WHERE id=?", 
-                           (p_val, s_val, u_val, new_cnum, cid))
+            cursor.execute("UPDATE contests SET probs=?, solved=?, up_done=?, c_num=?, date=? WHERE id=?", 
+                           (p_val, s_val, u_val, new_cnum, new_date, cid))
             conn.commit()
             conn.close()
             self.refresh_stats()
