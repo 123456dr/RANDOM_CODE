@@ -4,6 +4,8 @@ JUST [C](./Code/)ODE
 ![Repo Snake](https://raw.githubusercontent.com/123456dr/RANDOM_CODE/output/repo-snake-dark.svg)<!--[![GitHub Activity Graph](https://github-readme-activity-graph.vercel.app/graph?username=123456dr&repo=RANDOM_CODE&theme=github-dark)](https://github.com/123456dr/RANDOM_CODE) --><br>![GitHub last commit](https://img.shields.io/github/last-commit/123456dr/RANDOM_CODE?style=flat-square&color=green) ![GitHub commit activity](https://img.shields.io/github/commit-activity/m/123456dr/RANDOM_CODE?style=flat-square&color=green)
 <details><summary>NOTE</summary>
 
+- 確保讀入完全ㄚㄚㄚ
+- 優先級 `==` > `&`
 - BIT => `x & 1`末位一或零, `x >>= 1`除二 
 - `value & 1` 判斷奇偶[== 1 奇; == 0偶]
 - 可以暴力解 => 複雜度 `2e18` 
@@ -32,6 +34,8 @@ JUST [C](./Code/)ODE
 | | | [-](./Code)  | - | ![](https://img.shields.io/badge/--blue) |
 | | | [-](./Code)  | - | ![](https://img.shields.io/badge/--blue) |
 | | | [-](./Code)  | - | ![](https://img.shields.io/badge/--blue) |
+| | CF | [B_2247](./Code/Codeforces/B_2247_constructArr.cpp) 構造最小子陣列長度恰為k且和能被m整除 前綴和同餘 | 2 | ![](https://img.shields.io/badge/-prefix-blue) ![](https://img.shields.io/badge/-formula-blue) ![](https://img.shields.io/badge/-constructive-blue) |
+| ✅ | CF | [C_2247](./Code/Codeforces/C_2246_constructArr_taxi_01subArr.cpp) 奇偶性 10子序列和為奇數可翻轉成相反01 求最少操作 陣列a=b | 1 | ![](https://img.shields.io/badge/-枚舉狀況-blue) ![](https://img.shields.io/badge/-計程車-blue) ![](https://img.shields.io/badge/-constructive-blue) ![](https://img.shields.io/badge/-subsequence-blue) |
 | | CF | [C_1398](./Code/Codeforces/C_1398_prefix_lengthEqualSum_subArray.cpp) 前綴和 子陣列總和等於長度求組合數 | 1 | ![](https://img.shields.io/badge/-subArray-blue) ![](https://img.shields.io/badge/-prefix-blue) ![](https://img.shields.io/badge/-math_formula-blue)|
 | | CF | [C_0466](./Code/Codeforces/C_0466_prefix_linearScan_threeSameSumSubArray.cpp) 含負與零陣列，計算能切三份總和同且「連續」的子陣列切割方法數 | 1 | ![](https://img.shields.io/badge/-prefix-blue) ![](https://img.shields.io/badge/-linear_scan-blue) ![](https://img.shields.io/badge/-subArray-blue) |
 | | CF | [E_2244](./Code/Codeforces/E_2244_prefix_math_TurnLight01.cpp) 點亮燈泡問題 | 3 | ![](https://img.shields.io/badge/-light-blue) |
