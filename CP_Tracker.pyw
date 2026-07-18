@@ -99,19 +99,19 @@ class CPTrackerApp:
         check_frame = tk.LabelFrame(tab, text="今日任務", font=("Arial", 9))
         check_frame.pack(fill="x", padx=10, pady=2)
 
-        self.lbl_cf_streak = tk.Label(check_frame, text="CF 連勝: 0 | 0.0 hr", font=("Arial", 9))
+        self.lbl_cf_streak = tk.Label(check_frame, text="CF cnt: 0 | 0.0 hr", font=("Arial", 9))
         self.lbl_cf_streak.grid(row=0, column=0, sticky="w", padx=5, pady=2)
         tk.Checkbutton(check_frame, text="CF 打卡", variable=self.cf_done, command=lambda: self.handle_checkin('CF')).grid(row=0, column=1, sticky="w")
 
-        self.lbl_cses_streak = tk.Label(check_frame, text="CSES 連勝: 0 | 0.0 hr", font=("Arial", 9))
+        self.lbl_cses_streak = tk.Label(check_frame, text="CSES cnt: 0 | 0.0 hr", font=("Arial", 9))
         self.lbl_cses_streak.grid(row=1, column=0, sticky="w", padx=5, pady=2)
         tk.Checkbutton(check_frame, text="CSES 打卡", variable=self.cses_done, command=lambda: self.handle_checkin('CSES')).grid(row=1, column=1, sticky="w")
 
-        self.lbl_picoctf_streak = tk.Label(check_frame, text="picoCTF 連勝: 0", font=("Arial", 9))
+        self.lbl_picoctf_streak = tk.Label(check_frame, text="picoCTF cnt: 0", font=("Arial", 9))
         self.lbl_picoctf_streak.grid(row=2, column=0, sticky="w", padx=5, pady=2)
         tk.Checkbutton(check_frame, text="picoCTF 打卡", variable=self.picoctf_done, command=lambda: self.handle_checkin('picoCTF')).grid(row=2, column=1, sticky="w")
         
-        self.lbl_project_streak = tk.Label(check_frame, text="專案 連勝: 0", font=("Arial", 9))
+        self.lbl_project_streak = tk.Label(check_frame, text="專案 cnt: 0", font=("Arial", 9))
         self.lbl_project_streak.grid(row=3, column=0, sticky="w", padx=5, pady=2)
         tk.Checkbutton(check_frame, text="專案 打卡", variable=self.project_done, command=lambda: self.handle_checkin('Project')).grid(row=3, column=1, sticky="w")
 
@@ -256,7 +256,8 @@ class CPTrackerApp:
             "📅 賽事與自動化\n"
             "• 點擊行事曆上方標籤可快速跳回「本週」。\n"
             "• 雙擊補題頁面的比賽，再次雙擊「編號」即可原地修改！\n\n"
-            "(本地 db 好耶!"
+            "(本地 db 好耶!\n"
+            "SINCE 115/07/16 RC"
         )
         messagebox.showinfo("每日生存證明", guide_text)
 
@@ -365,7 +366,7 @@ class CPTrackerApp:
         
         if is_checked:
             if last_date != today:
-                streak = streak + 1 if last_date == yesterday else 1
+                streak = streak + 1 #streak + 1 if last_date == yesterday else 1
                 cursor.execute("UPDATE streaks SET current_streak=?, last_checkin=? WHERE platform=?", (streak, today, platform))
         else:
             if last_date == today:
@@ -612,7 +613,7 @@ class CPTrackerApp:
                 else:
                     unsolved_str = "✔"
 
-            disp_row = (c_id, event_str, c_date, c_probs or '-', c_solved or '-', unsolved_str)
+            disp_row = (c_id, event_str, c_date, c_probs or '-', sol_cnt or '-', unsolved_str)
             self.tree.insert("", "end", values=disp_row)
             
             tot_solved += sol_cnt
@@ -642,10 +643,12 @@ class CPTrackerApp:
         ctype, cur_probs, cur_solved, cur_up_done, cur_cnum, cur_div = row
         is_lc = (ctype == "LC")
         is_cpe = (ctype == "CPE")
+        is_cf = (ctype == "CF")
         
         if not cur_probs:
             if is_lc: cur_probs = "1-4"
             elif is_cpe: cur_probs = "1-7"
+            elif is_cf: cur_probs = "A-F"
             else: cur_probs = ""
             
         cur_solved = cur_solved if cur_solved else ""

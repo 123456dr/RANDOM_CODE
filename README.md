@@ -32,7 +32,7 @@ JUST [C](./Code/)ODE
 | | | [-](./Code)  | - | ![](https://img.shields.io/badge/--blue) |
 | | | [-](./Code)  | - | ![](https://img.shields.io/badge/--blue) |
 | | | [-](./Code)  | - | ![](https://img.shields.io/badge/--blue) |
-| | | [-](./Code)  | - | ![](https://img.shields.io/badge/--blue) |
+| | CF | [C_1398](./Code/Codeforces/C_1398_prefix_lengthEqualSum_subArray.cpp) 前綴和 子陣列總和等於長度求組合數 | 1 | ![](https://img.shields.io/badge/-subArray-blue) ![](https://img.shields.io/badge/-prefix-blue) ![](https://img.shields.io/badge/-math_formula-blue)|
 | | CF | [C_0466](./Code/Codeforces/C_0466_prefix_linearScan_threeSameSumSubArray.cpp) 含負與零陣列，計算能切三份總和同且「連續」的子陣列切割方法數 | 1 | ![](https://img.shields.io/badge/-prefix-blue) ![](https://img.shields.io/badge/-linear_scan-blue) ![](https://img.shields.io/badge/-subArray-blue) |
 | | CF | [E_2244](./Code/Codeforces/E_2244_prefix_math_TurnLight01.cpp) 點亮燈泡問題 | 3 | ![](https://img.shields.io/badge/-light-blue) |
 | ✅✅ | CF | [F_2244](./Code/Codeforces/F_2244_DFS_continueTree.cpp) Anya Loves Trees! - 檢查左移子樹連續線段，非遞增落差需<=1 | 7 | ![](https://img.shields.io/badge/-DFS-blue) ![](https://img.shields.io/badge/-Tree-blue) |
