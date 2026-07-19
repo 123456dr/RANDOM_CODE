@@ -21,8 +21,9 @@ JUST [C](./Code/)ODE
     - `lower_bound(...)` // 第一個大於, 最低位
 - `binary search` [左閉右開](./Code/Codeforces/C_0371_binarySearch.cpp)
     - `ans = mid` 迴圈內紀錄
-    - `while l <= r` // 跳出迴圈
-    - `if(x <= bud)ans = mid, l = mid+1; else r = mid-1;`
+    - `while l < r` // 跳出迴圈
+    - `if(x <= bud)ans = mid, l = mid+1; else r = mid;`
+- `for(...){mx = max(mx, cnt);}` 跳出迴圈記得再 `mx = max(mx, cnt)` 更新
 
 - Lamdba: `auto dfs = [&](int x) -> void{// sth};`
 </details>
