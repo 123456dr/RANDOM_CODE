@@ -20,8 +20,9 @@ JUST [C](./Code/)ODE
     - `upper_bound(v.begin()`, `v.end, x) - v.begin()` // 最後小於, 最高位
     - `lower_bound(...)` // 第一個大於, 最低位
 - `binary search` 左閉右開
-    - `while l < r` // 跳出迴圈 l為第一個不滿足
-    - 右開 `r = n(0-index)`, `r = mid` // 不含 r == 右開
+    - `ans = mid` 迴圈內紀錄
+    - `while l <= r` // 跳出迴圈
+    - `if(x <= bud)ans = mid, l = mid+1; else r = mid-1;`
 
 - Lamdba: `auto dfs = [&](int x) -> void{// sth};`
 </details>

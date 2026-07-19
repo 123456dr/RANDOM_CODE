@@ -11,9 +11,17 @@ class CPTrackerApp:
         self.root.title("CP & CTF Tracker")
         
         try:
-            icon_image = tk.PhotoImage(file='./AWARD/mess/CheckIn_py/rc_icon.png')
-            self.root.iconphoto(False, icon_image)
-        except Exception:
+            # 1. 強制告訴 Windows 這是一個獨立程式，這樣工作列才會正確顯示客製化圖示
+            import os
+            if os.name == 'nt':
+                import ctypes
+                ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("my_cp_tracker_app")
+            
+            # 2. 加上 self. 避免圖片被記憶體回收 (GC)
+            self.icon_image = tk.PhotoImage(file='./AWARD/mess/CheckIn_py/rc_icon.png')
+            self.root.iconphoto(False, self.icon_image)
+        except Exception as e:
+            print(f"圖示載入失敗: {e}") # 若路徑出錯，這行會印出錯誤原因
             pass
 
         # --- 精準設定視窗大小與位置 ---
@@ -276,7 +284,17 @@ class CPTrackerApp:
         self.lbl_stats = tk.Label(self.stat_frame, text="資料載入中...", justify=tk.LEFT, bg="#f5f6fa", font=("Arial", 9))
         self.lbl_stats.pack(anchor="w", pady=2, padx=5)
 
-        tk.Label(tab, text="雙擊下方賽事修改進度 (顯示 CF/LC/CPE)", font=("Arial", 8, "bold"), fg="gray").pack(anchor="w", padx=5)
+        # --- 新增過濾標題列 ---
+        header_frame = tk.Frame(tab)
+        header_frame.pack(fill="x", padx=5)
+        
+        tk.Label(header_frame, text="雙擊下方賽事修改進度 (顯示 CF/LC/CPE)", font=("Arial", 8, "bold"), fg="gray").pack(side=tk.LEFT)
+        
+        self.combo_filter = ttk.Combobox(header_frame, values=["所有", "CF", "LC"], width=5, state="readonly")
+        self.combo_filter.set("所有")
+        self.combo_filter.pack(side=tk.RIGHT)
+        self.combo_filter.bind("<<ComboboxSelected>>", lambda e: self.refresh_stats())
+        # ------------------------
 
         cols = ('ID', '賽事', '日期', '題目', '賽中', '未補')
         disp_cols = ('賽事', '日期', '題目', '賽中', '未補')
@@ -621,7 +639,15 @@ class CPTrackerApp:
         for row in self.tree.get_children():
             self.tree.delete(row)
             
-        cursor.execute("SELECT id, type, date, div, probs, solved, up_done, c_num FROM contests WHERE type IN ('CF', 'LC', 'CPE') ORDER BY date DESC, time DESC")
+        # 根據過濾器動態決定 SQL 查詢
+        filter_type = self.combo_filter.get() if hasattr(self, 'combo_filter') else "所有"
+        if filter_type == "CF":
+            cursor.execute("SELECT id, type, date, div, probs, solved, up_done, c_num FROM contests WHERE type='CF' ORDER BY date DESC, time DESC")
+        elif filter_type == "LC":
+            cursor.execute("SELECT id, type, date, div, probs, solved, up_done, c_num FROM contests WHERE type='LC' ORDER BY date DESC, time DESC")
+        else:
+            cursor.execute("SELECT id, type, date, div, probs, solved, up_done, c_num FROM contests WHERE type IN ('CF', 'LC', 'CPE') ORDER BY date DESC, time DESC")
+            
         cf_cnt, lc_cnt, cpe_cnt = 0, 0, 0
         tot_solved, tot_up = 0, 0
         
