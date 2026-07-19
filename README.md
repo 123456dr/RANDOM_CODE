@@ -19,7 +19,7 @@ JUST [C](./Code/)ODE
 - 回傳迭代器, `*it` 取址, 找不到 `== v.end()`
     - `upper_bound(v.begin()`, `v.end, x) - v.begin()` // 最後小於, 最高位
     - `lower_bound(...)` // 第一個大於, 最低位
-- `binary search` 左閉右開
+- `binary search` [左閉右開](./Code/Codeforces/C_0371_binarySearch.cpp)
     - `ans = mid` 迴圈內紀錄
     - `while l <= r` // 跳出迴圈
     - `if(x <= bud)ans = mid, l = mid+1; else r = mid-1;`
@@ -34,7 +34,7 @@ JUST [C](./Code/)ODE
 | :--- | :--- | :--- | :--- | :--- |
 | | | [-](./Code)  | - | ![](https://img.shields.io/badge/--blue) |
 | | | [-](./Code)  | - | ![](https://img.shields.io/badge/--blue) |
-| | | [-](./Code)  | - | ![](https://img.shields.io/badge/--blue) |
+| | CF | [C_0371](./Code/Codeforces/C_0371_binarySearch.cpp) 對答案二分搜 左閉右開 現有部分食材求預算內採購食材湊出最多份漢堡 | 1 | ![](https://img.shields.io/badge/-binary_search-blue) ![](https://img.shields.io/badge/-左閉右開-blue) ![](https://img.shields.io/badge/-對答案二分搜-blue) |
 | | CF | [B_2247](./Code/Codeforces/B_2247_constructArr.cpp) 構造最小子陣列長度恰為k且和能被m整除 前綴和同餘 | 2 | ![](https://img.shields.io/badge/-prefix-blue) ![](https://img.shields.io/badge/-formula-blue) ![](https://img.shields.io/badge/-constructive-blue) |
 | ✅ | CF | [C_2247](./Code/Codeforces/C_2246_constructArr_taxi_01subArr.cpp) 奇偶性 10子序列和為奇數可翻轉成相反01 求最少操作 陣列a=b | 1 | ![](https://img.shields.io/badge/-枚舉狀況-blue) ![](https://img.shields.io/badge/-計程車-blue) ![](https://img.shields.io/badge/-constructive-blue) ![](https://img.shields.io/badge/-subsequence-blue) |
 | | CF | [C_1398](./Code/Codeforces/C_1398_prefix_lengthEqualSum_subArray.cpp) 前綴和 子陣列總和等於長度求組合數 | 1 | ![](https://img.shields.io/badge/-subArray-blue) ![](https://img.shields.io/badge/-prefix-blue) ![](https://img.shields.io/badge/-math_formula-blue)|
