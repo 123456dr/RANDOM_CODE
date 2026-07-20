@@ -25,7 +25,7 @@ class CPTrackerApp:
             pass
 
         # --- 精準設定視窗大小與位置 ---
-        window_width = 380
+        window_width = 400  # 稍微加寬一點以容納新的下拉選單
         window_height = 280
         screen_width = root.winfo_screenwidth()
         screen_height = root.winfo_screenheight()
@@ -58,7 +58,8 @@ class CPTrackerApp:
         self.build_tab_calendar()
         self.build_tab_stats()
 
-        self.check_startup_date()
+        # 替換為支援持續運作的跨日檢查機制
+        self.check_cross_day()
         self.load_daily_status()
         
         # 全域綁定點擊事件以關閉 popup
@@ -109,10 +110,15 @@ class CPTrackerApp:
         ctrl_frame = tk.Frame(tab)
         ctrl_frame.pack(pady=0)
         
+        # 新增目標選擇下拉選單
+        tk.Label(ctrl_frame, text="對象:", font=("Arial", 9)).pack(side=tk.LEFT, padx=2)
+        self.combo_target = ttk.Combobox(ctrl_frame, values=["CF", "CSES"], width=5, state="readonly")
+        self.combo_target.pack(side=tk.LEFT, padx=2)
+        
         tk.Label(ctrl_frame, text="時間:", font=("Arial", 9)).pack(side=tk.LEFT, padx=2)
         self.combo_time = ttk.Combobox(ctrl_frame, values=["1 小時", "2 小時", "3 小時"], width=6, state="readonly")
         self.combo_time.set("3 小時")
-        self.combo_time.pack(side=tk.LEFT, padx=5)
+        self.combo_time.pack(side=tk.LEFT, padx=2)
         self.combo_time.bind("<<ComboboxSelected>>", self.on_time_select)
         
         tk.Button(ctrl_frame, text="開始", command=self.start_timer, bg="#2ecc71", fg="white", width=4).pack(side=tk.LEFT, padx=2)
@@ -334,8 +340,19 @@ class CPTrackerApp:
         else: self.total_seconds = 10800
         self.reset_timer()
 
-    def check_startup_date(self):
-        """比對上次啟動日期，若跨日則重置打卡勾選"""
+    def update_target_default(self):
+        """根據 CF/CSES 打勾狀態自動調整下拉選單"""
+        cf = self.cf_done.get()
+        cses = self.cses_done.get()
+        if not cf and cses:
+            self.combo_target.set("CF")
+        elif cf and not cses:
+            self.combo_target.set("CSES")
+        else:
+            self.combo_target.set("") # 兩者皆勾或皆不勾，預設為空
+
+    def check_cross_day(self):
+        """背景持續檢查跨日狀態，跨日即取消所有打勾並重設 config"""
         today = datetime.now().strftime('%Y-%m-%d')
         
         conn = sqlite3.connect(DB_FILE)
@@ -345,15 +362,23 @@ class CPTrackerApp:
         last_startup = cursor.fetchone()[0]
         
         if last_startup != today:
+            # 清除所有打勾狀態
             self.cf_done.set(False)
             self.cses_done.set(False)
             self.picoctf_done.set(False)
             self.project_done.set(False)
             
+            # 更新跨日紀錄
             cursor.execute("UPDATE app_config SET value=? WHERE key='last_startup'", (today,))
             conn.commit()
             
+            self.update_target_default()
+            self.refresh_stats()
+            
         conn.close()
+        
+        # 每 60000 毫秒(1分鐘)檢查一次跨日
+        self.root.after(60000, self.check_cross_day)
 
     def change_week(self, delta):
         self.week_offset += delta
@@ -372,6 +397,12 @@ class CPTrackerApp:
         self.time_label.config(text=f"{hours:02d}:{mins:02d}:{secs:02d}")
 
     def start_timer(self):
+        # 檢查是否有選擇對象
+        target = self.combo_target.get()
+        if target not in ["CF", "CSES"]:
+            messagebox.showwarning("警告", "請先在下拉選單選擇計時對象 (CF 或 CSES)！")
+            return
+            
         if not self.timer_running and self.remaining_seconds > 0:
             self.timer_running = True
             self.update_timer()
@@ -405,10 +436,20 @@ class CPTrackerApp:
         today = datetime.now().strftime('%Y-%m-%d')
         conn = sqlite3.connect(DB_FILE)
         cursor = conn.cursor()
-        target = 'CSES' if self.cf_done.get() else 'CF'
+        
+        # 改為讀取下拉選單的值
+        target = self.combo_target.get()
+        if target not in ["CF", "CSES"]: 
+            conn.close()
+            return
+            
         cursor.execute("SELECT daily_time, total_time, last_date FROM time_stats WHERE platform=?", (target,))
         row = cursor.fetchone()
-        daily_time, total_time, last_date = row[0], row[1], row[2]
+        
+        if row:
+            daily_time, total_time, last_date = row[0], row[1], row[2]
+        else:
+            daily_time, total_time, last_date = 0, 0, '2000-01-01'
         
         if last_date != today: daily_time = 0 
         cursor.execute("UPDATE time_stats SET daily_time=?, total_time=?, last_date=? WHERE platform=?", 
@@ -445,6 +486,9 @@ class CPTrackerApp:
             
         conn.commit()
         conn.close()
+        
+        # 狀態更新時，自動連動調整預設對象
+        self.update_target_default()
         self.refresh_stats()
 
     def load_daily_status(self):
@@ -467,6 +511,9 @@ class CPTrackerApp:
             self.handle_checkin('CF') 
             
         conn.close()
+        
+        # 啟動並載入日狀態完畢後，連動預設目標
+        self.update_target_default()
 
     def add_contest(self):
         ctype = self.entry_type.get()
@@ -712,7 +759,7 @@ class CPTrackerApp:
         self.lbl_stats.config(text=f"🏆 賽事: CF {cf_cnt} | LC {lc_cnt} | CPE {cpe_cnt}\n🔥 完成進度: {tot_solved} 項 | 🛠️ 賽後補題: {tot_up} 題")
         conn.close()
 
-    # ================= 雙擊顯示上次打卡紀錄功能 (已修復點擊衝突) =================
+    # ================= 雙擊顯示上次打卡紀錄功能 =================
     def show_last_checkin(self, event, platform):
         # 1. 確保先關閉已存在的視窗
         self.close_popup()
