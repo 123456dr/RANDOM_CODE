@@ -111,7 +111,7 @@ class CPTrackerApp:
         ctrl_frame.pack(pady=0)
         
         # 新增目標選擇下拉選單
-        tk.Label(ctrl_frame, text="對象:", font=("Arial", 9)).pack(side=tk.LEFT, padx=2)
+        tk.Label(ctrl_frame, text=" ", font=("Arial", 9)).pack(side=tk.LEFT, padx=2)
         self.combo_target = ttk.Combobox(ctrl_frame, values=["CF", "CSES"], width=5, state="readonly")
         self.combo_target.pack(side=tk.LEFT, padx=2)
         

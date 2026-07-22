@@ -4,6 +4,8 @@ JUST [C](./Code/)ODE
 ![Repo Snake](https://raw.githubusercontent.com/123456dr/RANDOM_CODE/output/repo-snake-dark.svg)<!--[![GitHub Activity Graph](https://github-readme-activity-graph.vercel.app/graph?username=123456dr&repo=RANDOM_CODE&theme=github-dark)](https://github.com/123456dr/RANDOM_CODE) --><br>![GitHub last commit](https://img.shields.io/github/last-commit/123456dr/RANDOM_CODE?style=flat-square&color=green) ![GitHub commit activity](https://img.shields.io/github/commit-activity/m/123456dr/RANDOM_CODE?style=flat-square&color=green)
 <details><summary>NOTE</summary>
 
+- `multiset` => `at.erase(it)`
+- `vector` 去重 => `v.erase(unique(v.begin(), v.end()), v.end())` // `unique` 重複移尾回傳新結尾, `erase` 移出起始到結尾
 - 確保讀入完全ㄚㄚㄚ
 - 優先級 `==` > `&`
 - BIT => `x & 1`末位一或零, `x >>= 1`除二 
@@ -16,9 +18,10 @@ JUST [C](./Code/)ODE
 - `LCM` 最小公倍
 - `MST` 最小生成樹
 - [QuickPower ](./Code/Luogu/QuickPower.cpp)快速冪_位元右移_奇偶 `&1` 交集運算
-- 回傳迭代器, `*it` 取址, 找不到 `== v.end()`
-    - `upper_bound(v.begin()`, `v.end, x) - v.begin()` // 最後小於, 最高位
-    - `lower_bound(...)` // 第一個大於, 最低位
+- **「必須先排序」** 二分搜回傳迭代器, `*it` 取址, 找不到 `== v.end()`
+    - `upper_bound(v.begin()`, `v.end, x) - v.begin()`  // > x
+    - `lower_bound(...)` // >= x
+    - `map` & `set` => `mp.upper_bound(x)`
 - `binary search` [左閉右開](./Code/Codeforces/C_0371_binarySearch.cpp)
     - `ans = mid` 迴圈內紀錄
     - `while l < r` // 跳出迴圈
@@ -34,8 +37,8 @@ JUST [C](./Code/)ODE
 | 再練 | 題源 | 題目與連結 | 難度 | 標籤 |
 | :--- | :--- | :--- | :--- | :--- |
 | | | [-](./Code)  | - | ![](https://img.shields.io/badge/--blue) |
-| | | [-](./Code)  | - | ![](https://img.shields.io/badge/--blue) |
-| | | [-](./Code)  | - | ![](https://img.shields.io/badge/--blue) |
+| | cses | [SortS_1629](./Code/cses/Sorting_Searching/1629_greedy_movie_schedule.cpp) 貪心排程問題 給開始、結尾時間 求安排最多電影數 [貪心最早結束電影]| 0 | ![](https://img.shields.io/badge/-greedy-blue) ![](https://img.shields.io/badge/-排程-blue) |
+| | cses | [SortS_1091](./Code/cses/Sorting_Searching/1091_multiset_upper_bound.cpp) 求多組第一個小於等於並不得重複選取 | 0 | ![](https://img.shields.io/badge/-multiset-blue) ![](https://img.shields.io/badge/-upper_bound_>-blue) ![](https://img.shields.io/badge/-lower_bound_>=-blue) |
 | | cses | [SortS_1661](./Code/cses/Sorting_Searching/1661_prefix_subArr.cpp) 計算subArr 總和符合 tar 的個數: 雜湊紀錄前綴和 並單次遍歷當前之前的雜湊中是否存在 `pref - tar` | 1 | ![](https://img.shields.io/badge/-pref-blue) ![](https://img.shields.io/badge/-subArr-blue) ![](https://img.shields.io/badge/-hash_map-blue) ![](https://img.shields.io/badge/-單次遍歷_one_pass-blue) |
 | | CF | [C_0371](./Code/Codeforces/C_0371_binarySearch.cpp) 對答案二分搜 左閉右開 現有部分食材求預算內採購食材湊出最多份漢堡 | 1 | ![](https://img.shields.io/badge/-binary_search-blue) ![](https://img.shields.io/badge/-左閉右開-blue) ![](https://img.shields.io/badge/-對答案二分搜-blue) |
 | | CF | [B_2247](./Code/Codeforces/B_2247_constructArr.cpp) 構造最小子陣列長度恰為`k`且和能被`m`整除 前綴和同餘 | 2 | ![](https://img.shields.io/badge/-prefix-blue) ![](https://img.shields.io/badge/-formula-blue) ![](https://img.shields.io/badge/-constructive-blue) |
