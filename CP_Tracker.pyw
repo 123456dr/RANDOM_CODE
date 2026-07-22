@@ -81,6 +81,9 @@ class CPTrackerApp:
                           (key TEXT PRIMARY KEY, value TEXT)''')
         cursor.execute("INSERT OR IGNORE INTO app_config VALUES ('last_startup', '2000-01-01')")
         
+        # --- 自動升級資料庫欄位 ---
+        try: cursor.execute("ALTER TABLE streaks ADD COLUMN prev_checkin DATE DEFAULT '2000-01-01'")
+        except: pass
         try: cursor.execute("ALTER TABLE contests ADD COLUMN probs TEXT DEFAULT ''")
         except: pass
         try: cursor.execute("ALTER TABLE contests ADD COLUMN up_done TEXT DEFAULT ''")
@@ -93,7 +96,7 @@ class CPTrackerApp:
         except: pass
             
         for plat in ['CF', 'CSES', 'picoCTF', 'Project']:
-            cursor.execute("INSERT OR IGNORE INTO streaks VALUES (?, 0, '2000-01-01')", (plat,))
+            cursor.execute("INSERT OR IGNORE INTO streaks (platform, current_streak, last_checkin, prev_checkin) VALUES (?, 0, '2000-01-01', '2000-01-01')", (plat,))
             if plat not in ['picoCTF', 'Project']:
                 cursor.execute("INSERT OR IGNORE INTO time_stats VALUES (?, 0, 0, '2000-01-01')", (plat,))
         conn.commit()
@@ -461,22 +464,24 @@ class CPTrackerApp:
     def handle_checkin(self, platform):
         is_checked = getattr(self, f"{platform.lower()}_done").get()
         today = datetime.now().strftime('%Y-%m-%d')
-        yesterday = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')
         
         conn = sqlite3.connect(DB_FILE)
         cursor = conn.cursor()
         
-        cursor.execute("SELECT current_streak, last_checkin FROM streaks WHERE platform=?", (platform,))
-        streak, last_date = cursor.fetchone()
+        # 讀取當前連續紀錄、最後打卡日、以及前次打卡日
+        cursor.execute("SELECT current_streak, last_checkin, prev_checkin FROM streaks WHERE platform=?", (platform,))
+        streak, last_date, prev_date = cursor.fetchone()
         
         if is_checked:
             if last_date != today:
                 streak = streak + 1 
-                cursor.execute("UPDATE streaks SET current_streak=?, last_checkin=? WHERE platform=?", (streak, today, platform))
+                # 打勾時，將原本的 last_date 備份為 prev_checkin
+                cursor.execute("UPDATE streaks SET current_streak=?, last_checkin=?, prev_checkin=? WHERE platform=?", (streak, today, last_date, platform))
         else:
             if last_date == today:
                 streak = max(0, streak - 1)
-                cursor.execute("UPDATE streaks SET current_streak=?, last_checkin=? WHERE platform=?", (streak, yesterday, platform))
+                # 取消打勾時，把時間倒退回正確的 prev_date (而不是強迫寫成昨天)
+                cursor.execute("UPDATE streaks SET current_streak=?, last_checkin=? WHERE platform=?", (streak, prev_date, platform))
                 
         any_checked = self.cf_done.get() or self.cses_done.get() or self.picoctf_done.get() or self.project_done.get()
         if any_checked:
@@ -771,20 +776,17 @@ class CPTrackerApp:
         # 3. 查詢資料庫
         conn = sqlite3.connect(DB_FILE)
         cursor = conn.cursor()
-        cursor.execute("SELECT last_checkin, current_streak FROM streaks WHERE platform=?", (platform,))
+        cursor.execute("SELECT last_checkin, current_streak, prev_checkin FROM streaks WHERE platform=?", (platform,))
         row = cursor.fetchone()
         conn.close()
         
         if not row: return
-        last_checkin, streak = row
+        last_checkin, streak, prev_checkin = row
         today = datetime.now().strftime('%Y-%m-%d')
         
         # 邏輯：取得「不包含今天」的上一次打卡日期
         if last_checkin == today:
-            if streak >= 2:
-                prev_date = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')
-            else:
-                prev_date = "無"
+            prev_date = prev_checkin if prev_checkin != '2000-01-01' else "無"
         else:
             prev_date = last_checkin if last_checkin != '2000-01-01' else "無"
             

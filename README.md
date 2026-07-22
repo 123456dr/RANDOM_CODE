@@ -37,6 +37,9 @@ JUST [C](./Code/)ODE
 | 再練 | 題源 | 題目與連結 | 難度 | 標籤 |
 | :--- | :--- | :--- | :--- | :--- |
 | | | [-](./Code)  | - | ![](https://img.shields.io/badge/--blue) |
+| | | [-](./Code)  | - | ![](https://img.shields.io/badge/--blue) |
+| | | [-](./Code)  | - | ![](https://img.shields.io/badge/--blue) |
+| | | [-](./Code)  | - | ![](https://img.shields.io/badge/--blue) |
 | | cses | [SortS_1629](./Code/cses/Sorting_Searching/1629_greedy_movie_schedule.cpp) 貪心排程問題 給開始、結尾時間 求安排最多電影數 [貪心最早結束電影]| 0 | ![](https://img.shields.io/badge/-greedy-blue) ![](https://img.shields.io/badge/-排程-blue) |
 | | cses | [SortS_1091](./Code/cses/Sorting_Searching/1091_multiset_upper_bound.cpp) 求多組第一個小於等於並不得重複選取 | 0 | ![](https://img.shields.io/badge/-multiset-blue) ![](https://img.shields.io/badge/-upper_bound_>-blue) ![](https://img.shields.io/badge/-lower_bound_>=-blue) |
 | | cses | [SortS_1661](./Code/cses/Sorting_Searching/1661_prefix_subArr.cpp) 計算subArr 總和符合 tar 的個數: 雜湊紀錄前綴和 並單次遍歷當前之前的雜湊中是否存在 `pref - tar` | 1 | ![](https://img.shields.io/badge/-pref-blue) ![](https://img.shields.io/badge/-subArr-blue) ![](https://img.shields.io/badge/-hash_map-blue) ![](https://img.shields.io/badge/-單次遍歷_one_pass-blue) |
