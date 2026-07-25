@@ -4,7 +4,9 @@ JUST [C](./Code/)ODE
 ![Repo Snake](https://raw.githubusercontent.com/123456dr/RANDOM_CODE/output/repo-snake-dark.svg)<!--[![GitHub Activity Graph](https://github-readme-activity-graph.vercel.app/graph?username=123456dr&repo=RANDOM_CODE&theme=github-dark)](https://github.com/123456dr/RANDOM_CODE) --><br>![GitHub last commit](https://img.shields.io/github/last-commit/123456dr/RANDOM_CODE?style=flat-square&color=green) ![GitHub commit activity](https://img.shields.io/github/commit-activity/m/123456dr/RANDOM_CODE?style=flat-square&color=green)
 <details><summary>NOTE</summary>
 
-- `multiset` => `at.erase(it)`
+- `sort(v.rbegin(), v.rend())` => `vector` 大到小
+- `successive` 連續的
+- `multiset` => `at.erase(it)`, `it` 可以是指標或值
 - `vector` 去重 => `v.erase(unique(v.begin(), v.end()), v.end())` // `unique` 重複移尾回傳新結尾, `erase` 移出起始到結尾
 - 確保讀入完全ㄚㄚㄚ
 - 優先級 `==` > `&`
