@@ -48,7 +48,6 @@ class CPTrackerApp:
         self.week_offset = 0
         self.study_week_offset = 0
         self.upd_win = None
-        self.contest_ids = []
         self.checkin_popup = None
         self.popup_timer = None
         self.ignore_next_click = False 
@@ -95,7 +94,6 @@ class CPTrackerApp:
         cursor.execute('''CREATE TABLE IF NOT EXISTS subjects (name TEXT PRIMARY KEY)''')
         cursor.execute('''CREATE TABLE IF NOT EXISTS other_categories (name TEXT PRIMARY KEY)''')
 
-        # 小時排程資料表
         cursor.execute('''CREATE TABLE IF NOT EXISTS hourly_schedule (
                           day_type TEXT, 
                           hour INTEGER, 
@@ -290,9 +288,8 @@ class CPTrackerApp:
 
         self.render_hourly_timeline()
 
-    # --- 時間軸垂直 Overflow 捲動與點擊編輯機制 ---
+    # --- 時間軸機制 ---
     def poll_timeline_update(self):
-        """定時自動檢查時段變動與滿22點轉移邏輯"""
         self.check_night_shift()
         now_h = datetime.now().hour
         if self.last_rendered_hour != now_h:
@@ -300,7 +297,6 @@ class CPTrackerApp:
         self.root.after(30000, self.poll_timeline_update)
 
     def check_night_shift(self):
-        """超過 22 點自動將明天計畫搬移到今天（當天只搬移一次）"""
         now = datetime.now()
         today = now.strftime('%Y-%m-%d')
         
@@ -531,6 +527,45 @@ class CPTrackerApp:
         conn.close()
         self.render_hourly_timeline()
 
+    # --- 輔助選單/分類管理 ---
+    def load_other_categories(self):
+        conn = sqlite3.connect(DB_FILE)
+        cursor = conn.cursor()
+        cursor.execute("SELECT name FROM other_categories")
+        cats = [r[0] for r in cursor.fetchall()]
+        conn.close()
+        self.combo_other['values'] = cats
+
+    def delete_other_category(self):
+        cat = self.combo_other.get().strip()
+        if not cat: return
+        conn = sqlite3.connect(DB_FILE)
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM other_categories WHERE name=?", (cat,))
+        conn.commit()
+        conn.close()
+        self.combo_other.set('')
+        self.load_other_categories()
+
+    def load_subjects(self):
+        conn = sqlite3.connect(DB_FILE)
+        cursor = conn.cursor()
+        cursor.execute("SELECT name FROM subjects")
+        subs = [r[0] for r in cursor.fetchall()]
+        conn.close()
+        self.combo_subject['values'] = subs
+
+    def delete_subject_from_menu(self):
+        subj = self.combo_subject.get().strip()
+        if not subj: return
+        conn = sqlite3.connect(DB_FILE)
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM subjects WHERE name=?", (subj,))
+        conn.commit()
+        conn.close()
+        self.combo_subject.set('')
+        self.load_subjects()
+
     # --- 賽事行事曆 ---
     def build_tab_calendar(self):
         tab = ttk.Frame(self.notebook)
@@ -583,8 +618,10 @@ class CPTrackerApp:
         self.lbl_week.bind("<Button-1>", self.reset_week_view)
         tk.Button(nav_frame, text="▶", command=lambda: self.change_week(1)).pack(side=tk.RIGHT, padx=10)
 
-        canvas_frame = tk.Frame(tab)
-        canvas_frame.pack(fill="x", pady=2)
+        paned_window = ttk.PanedWindow(tab, orient=tk.VERTICAL)
+        paned_window.pack(fill="both", expand=True, padx=5, pady=2)
+
+        canvas_frame = tk.Frame(paned_window)
         
         self.canvas_scrollbar = ttk.Scrollbar(canvas_frame, orient="vertical")
         self.canvas_scrollbar.pack(side=tk.RIGHT, fill="y")
@@ -613,13 +650,329 @@ class CPTrackerApp:
         self.canvas.bind("<Enter>", _bind_mouse)
         self.canvas.bind("<Leave>", _unbind_mouse)
         
-        del_frame = tk.Frame(tab)
-        del_frame.pack(fill="both", expand=True, padx=5, pady=0)
-        self.list_contests = tk.Listbox(del_frame, height=3, font=("Arial", 8))
-        self.list_contests.pack(side=tk.LEFT, fill="both", expand=True)
-        tk.Button(del_frame, text="刪除", command=self.delete_contest, bg="#e74c3c", fg="white").pack(side=tk.RIGHT, padx=2)
+        paned_window.add(canvas_frame, weight=3)
+
+        del_frame = tk.Frame(paned_window)
+
+        contest_cols = ('ID', '日期', '時間', '賽事', '編號', '分類')
+        contest_disp = ('日期', '時間', '賽事', '編號', '分類')
+        self.tree_contests = ttk.Treeview(del_frame, columns=contest_cols, displaycolumns=contest_disp, show='headings', height=2)
+
+        c_widths = {'日期': 50, '時間': 50, '賽事': 45, '編號': 55, '分類': 100}
+        for c in contest_disp:
+            self.tree_contests.heading(c, text=c)
+            self.tree_contests.column(c, width=c_widths.get(c, 50), anchor='center' if c != '分類' else 'w')
+
+        c_scroll = ttk.Scrollbar(del_frame, orient="vertical", command=self.tree_contests.yview)
+        self.tree_contests.configure(yscrollcommand=c_scroll.set)
+
+        self.tree_contests.pack(side=tk.LEFT, fill="both", expand=True)
+        c_scroll.pack(side=tk.LEFT, fill="y")
+        tk.Button(del_frame, text="刪除", command=self.delete_contest, bg="#e74c3c", fg="white", width=4).pack(side=tk.RIGHT, padx=3, fill='y')
+
+        self.tree_contests.bind('<Double-1>', self.on_contest_tree_double_click)
+
+        paned_window.add(del_frame, weight=1)
 
         self.draw_calendar()
+
+    def on_contest_tree_double_click(self, event):
+        region = self.tree_contests.identify_region(event.x, event.y)
+        if region != "cell":
+            return
+            
+        row_id = self.tree_contests.identify_row(event.y)
+        col_id = self.tree_contests.identify_column(event.x)
+        if not row_id or not col_id:
+            return
+
+        col_idx = int(col_id.replace('#', '')) - 1
+        disp_cols = ('日期', '時間', '賽事', '編號', '分類')
+        if col_idx >= len(disp_cols):
+            return
+        field_name = disp_cols[col_idx]
+
+        item_vals = self.tree_contests.item(row_id, 'values')
+        if not item_vals:
+            return
+
+        cid = item_vals[0]
+        cur_val = item_vals[col_idx + 1]
+
+        x, y, w, h = self.tree_contests.bbox(row_id, col_id)
+
+        if field_name == "賽事":
+            edit_widget = ttk.Combobox(self.tree_contests, values=["CF", "LC", "CPE", "Other"], state="readonly", font=("Arial", 8))
+            edit_widget.set(cur_val)
+        else:
+            edit_widget = tk.Entry(self.tree_contests, font=("Arial", 8))
+            edit_widget.insert(0, cur_val)
+
+        edit_widget.place(x=x, y=y, width=w, height=h)
+        edit_widget.focus_set()
+
+        def _save_contest_cell(e=None):
+            new_val = edit_widget.get().strip()
+            edit_widget.destroy()
+
+            if new_val == cur_val:
+                return
+
+            conn = sqlite3.connect(DB_FILE)
+            cursor = conn.cursor()
+
+            if field_name == '日期':
+                tw_year = datetime.now().year - 1911
+                if len(new_val) == 4 and new_val.isdigit():
+                    cdate = f"{tw_year}-{new_val[:2]}-{new_val[2:]}"
+                elif len(new_val) == 5 and '-' in new_val:
+                    cdate = f"{tw_year}-{new_val}"
+                elif len(new_val) >= 8 and '-' in new_val:
+                    cdate = new_val
+                else:
+                    messagebox.showerror("錯誤", "日期格式錯誤 (請輸入 MMDD，例: 0718)")
+                    conn.close()
+                    return
+                cursor.execute("UPDATE contests SET date=? WHERE id=?", (cdate, cid))
+            elif field_name == '時間':
+                if len(new_val) == 4 and new_val.isdigit():
+                    ctime = f"{new_val[:2]}:{new_val[2:]}"
+                elif len(new_val) == 5 and ':' in new_val:
+                    ctime = new_val
+                elif new_val == "":
+                    ctime = "00:00"
+                else:
+                    messagebox.showerror("錯誤", "時間格式錯誤 (請輸入 HHMM，例: 2235)")
+                    conn.close()
+                    return
+                cursor.execute("UPDATE contests SET time=? WHERE id=?", (ctime, cid))
+            elif field_name == '賽事':
+                cursor.execute("UPDATE contests SET type=? WHERE id=?", (new_val, cid))
+            elif field_name == '編號':
+                cursor.execute("UPDATE contests SET c_num=? WHERE id=?", (new_val, cid))
+            elif field_name == '分類':
+                cursor.execute("UPDATE contests SET div=? WHERE id=?", (new_val, cid))
+                cursor.execute("SELECT type FROM contests WHERE id=?", (cid,))
+                ctype_row = cursor.fetchone()
+                if ctype_row and ctype_row[0] == "Other" and new_val:
+                    cursor.execute("INSERT OR IGNORE INTO other_categories (name) VALUES (?)", (new_val,))
+                    self.load_other_categories()
+
+            conn.commit()
+            conn.close()
+            self.draw_calendar()
+            self.refresh_stats()
+
+        edit_widget.bind("<Return>", _save_contest_cell)
+        edit_widget.bind("<FocusOut>", _save_contest_cell)
+        if field_name == "賽事":
+            edit_widget.bind("<<ComboboxSelected>>", _save_contest_cell)
+
+    def on_type_change(self, event=None):
+        self.lbl_div_type.grid_remove()
+        self.entry_div.grid_remove()
+        self.combo_lc_type.grid_remove()
+        self.lbl_other.grid_remove()
+        self.combo_other.grid_remove()
+        self.btn_del_other.grid_remove()
+        self.lbl_cnum.grid_remove()
+        self.entry_cnum.grid_remove()
+        self.entry_time.config(state="normal") 
+        ctype = self.entry_type.get()
+        
+        if ctype == "LC":
+            self.lbl_div_type.config(text="類型:")
+            self.lbl_div_type.grid(row=1, column=0, sticky="e")
+            self.combo_lc_type.grid(row=1, column=1, padx=2, pady=2)
+            self.lbl_cnum.config(text="編號(4碼):")
+            self.lbl_cnum.grid(row=1, column=2, sticky="e")
+            self.entry_cnum.config(state="normal")
+            self.entry_cnum.grid(row=1, column=3, padx=2)
+        elif ctype == "Other":
+            self.lbl_other.grid(row=1, column=0, sticky="e")
+            self.combo_other.grid(row=1, column=1, padx=2, pady=2)
+            self.btn_del_other.grid(row=1, column=2, sticky="w")
+        elif ctype == "CPE":
+            self.entry_time.delete(0, 'end')
+            self.entry_time.config(state="disabled") 
+            self.lbl_cnum.config(text="民國年:")
+            self.lbl_cnum.grid(row=1, column=0, sticky="e")
+            self.entry_cnum.config(state="normal")
+            self.entry_cnum.grid(row=1, column=1, padx=2, pady=2)
+        else:
+            self.lbl_div_type.config(text="Div:")
+            self.lbl_div_type.grid(row=1, column=0, sticky="e")
+            self.entry_div.grid(row=1, column=1, padx=2, pady=2)
+            self.lbl_cnum.config(text="編號(4碼):")
+            self.lbl_cnum.grid(row=1, column=2, sticky="e")
+            self.entry_cnum.config(state="normal")
+            self.entry_cnum.grid(row=1, column=3, padx=2)
+
+    def add_contest(self):
+        ctype = self.entry_type.get()
+        raw_date = self.entry_date.get()
+        raw_time = self.entry_time.get()
+        cdiv = ""
+        cnum = ""
+        
+        if ctype == "LC":
+            cdiv = self.combo_lc_type.get()
+            cnum = self.entry_cnum.get().strip()
+        elif ctype == "Other":
+            cdiv = self.combo_other.get().strip()
+        elif ctype == "CF":
+            cdiv = self.entry_div.get().strip()
+            cnum = self.entry_cnum.get().strip()
+        elif ctype == "CPE":
+            cnum = self.entry_cnum.get().strip()
+            raw_time = "0000"
+            
+        if ctype not in ["Other", "CPE"]:
+            if len(raw_date) != 4 or not raw_date.isdigit() or len(raw_time) != 4 or not raw_time.isdigit():
+                messagebox.showerror("錯誤", "格式錯誤，請輸入 4 碼 (例: 0718)")
+                return
+        elif ctype == "CPE":
+            if len(raw_date) != 4 or not raw_date.isdigit():
+                messagebox.showerror("錯誤", "日期格式錯誤 (例: 0718)")
+                return
+        else:
+            if len(raw_date) != 4 or not raw_date.isdigit():
+                messagebox.showerror("錯誤", "日期格式錯誤 (例: 0718)")
+                return
+            if len(raw_time) != 4 and raw_time != "":
+                 if not raw_time.isdigit():
+                    messagebox.showerror("錯誤", "時間請留空或輸入 4 碼")
+                    return
+            elif raw_time == "": raw_time = "0000"
+            
+        tw_year = datetime.now().year - 1911
+        cdate = f"{tw_year}-{raw_date[:2]}-{raw_date[2:]}"
+        ctime = f"{raw_time[:2]}:{raw_time[2:]}"
+        
+        if ctype == "CF" and cdiv:
+            if not cdiv.lower().startswith("div"):
+                cdiv = f"Div {cdiv}"
+        
+        conn = sqlite3.connect(DB_FILE)
+        cursor = conn.cursor()
+        
+        if ctype == "Other" and cdiv:
+            cursor.execute("INSERT OR IGNORE INTO other_categories (name) VALUES (?)", (cdiv,))
+            self.load_other_categories()
+
+        cursor.execute('''INSERT INTO contests 
+                          (type, date, time, div, solved, upsolved, probs, up_done, c_num) 
+                          VALUES (?, ?, ?, ?, '', '', '', '', ?)''', 
+                       (ctype, cdate, ctime, cdiv, cnum))
+        conn.commit()
+        conn.close()
+        
+        self.entry_date.delete(0, 'end')
+        self.entry_time.delete(0, 'end')
+        if ctype != "Other":
+            self.entry_cnum.delete(0, 'end')
+            
+        self.draw_calendar()
+        self.refresh_stats()
+
+    def delete_contest(self):
+        selected = self.tree_contests.selection()
+        if not selected: return
+        item_vals = self.tree_contests.item(selected[0], 'values')
+        if not item_vals: return
+        cid = item_vals[0]
+        
+        conn = sqlite3.connect(DB_FILE)
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM contests WHERE id=?", (cid,))
+        conn.commit()
+        conn.close()
+        self.draw_calendar()
+        self.refresh_stats()
+
+    def draw_calendar(self):
+        self.canvas.delete("all")
+        for r in self.tree_contests.get_children():
+            self.tree_contests.delete(r)
+        
+        conn = sqlite3.connect(DB_FILE)
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM contests ORDER BY date DESC, time DESC")
+        contests = cursor.fetchall()
+        conn.close()
+        
+        today = datetime.now().date()
+        idx = (today.weekday() + 1) % 7
+        sunday = today - timedelta(days=idx)
+        start_date = sunday + timedelta(weeks=self.week_offset)
+        
+        if self.week_offset == 0:
+            self.lbl_week.config(text="本週", fg="#f39c12") 
+        else:
+            mid_week = start_date + timedelta(days=3)
+            self.lbl_week.config(text=f"{mid_week.month} 月", fg="#3498db")
+        
+        days_zh = ["日", "一", "二", "三", "四", "五", "六"]
+        col_width = 350 / 7  
+        
+        for i in range(7):
+            d = start_date + timedelta(days=i)
+            x_center = i * col_width + (col_width / 2) + 5
+            is_today = (d == today)
+            bg_color = "#ff4757" if is_today else "#1e1e1e"
+            
+            self.canvas.create_text(x_center, 8, text=days_zh[i], fill="#7f8fa6", font=("Arial", 8))
+            if is_today:
+                self.canvas.create_oval(x_center-12, 16, x_center+12, 40, fill=bg_color, outline="")
+            self.canvas.create_text(x_center, 28, text=d.strftime("%d"), fill="white" if is_today else "gray", font=("Arial", 9, "bold"))
+            
+            day_str = d.strftime("%m-%d")
+            y_offset = 46
+            for c in contests:
+                if c[2][-5:] == day_str:
+                    c_type = c[1]
+                    c_div = c[4]
+                    c_num = c[9] if len(c) > 9 else ""
+                    
+                    if c_type == "LC":
+                        text_disp = f"LC {c_num}\n{c_div}"
+                        box_col = "#e67e22"
+                    elif c_type == "Other":
+                        text_disp = f"{c_div[:8]}"
+                        box_col = "#9b59b6" 
+                    elif c_type == "CPE":
+                        text_disp = f"CPE {c_num}"
+                        box_col = "#27ae60"
+                    else:
+                        text_disp = f"CF {c_num}\n{c_div}"
+                        box_col = "#3498db"
+                        
+                    self.canvas.create_rectangle(x_center-col_width/2+2, y_offset, x_center+col_width/2-2, y_offset+25, fill="#2f3542", outline=box_col)
+                    self.canvas.create_text(x_center, y_offset+12, text=text_disp, fill=box_col, font=("Arial", 6))
+                    y_offset += 28
+
+        for c in contests:
+            cid = c[0]
+            c_type = c[1]
+            disp_date = c[2][-5:]
+            ctime = c[3] or "00:00"
+            c_div = c[4] or ""
+            c_num = c[9] if len(c) > 9 else ""
+            self.tree_contests.insert("", "end", values=(cid, disp_date, ctime, c_type, c_num, c_div))
+                
+        self.canvas.yview_moveto(0) 
+        bbox = self.canvas.bbox("all")
+        if bbox:
+            self.canvas.config(scrollregion=(0, 0, bbox[2], max(90, bbox[3] + 10)))
+
+    def change_week(self, delta):
+        self.week_offset += delta
+        self.draw_calendar()
+        
+    def reset_week_view(self, event=None):
+        if self.week_offset != 0:
+            self.week_offset = 0
+            self.draw_calendar()
 
     # --- 課業安排 ---
     def build_tab_study(self):
@@ -694,7 +1047,6 @@ class CPTrackerApp:
 
         paned_window.add(canvas_frame, weight=1)
 
-        # 下方條列處：改用 Treeview 實現單格獨立點擊編輯
         tree_container = tk.Frame(paned_window)
         
         study_cols = ('ID', '日期', '科目', '內容', '急迫性')
@@ -720,7 +1072,6 @@ class CPTrackerApp:
         self.draw_study_calendar()
 
     def on_study_tree_double_click(self, event):
-        """雙擊 Treeview 單元格進行原地獨立編輯"""
         region = self.tree_study.identify_region(event.x, event.y)
         if region != "cell":
             return
@@ -745,7 +1096,6 @@ class CPTrackerApp:
         
         x, y, w, h = self.tree_study.bbox(row_id, col_id)
         
-        # 根據雙擊欄位類型動態生成對應的編輯控制項
         if field_name == "急迫性":
             edit_widget = ttk.Combobox(self.tree_study, values=["紅色緊急", "淺藍色不緊急", "可以放棄的白色"], state="readonly", font=("Arial", 8))
             edit_widget.set(cur_val)
@@ -944,6 +1294,34 @@ class CPTrackerApp:
             self.study_week_offset = 0
             self.draw_study_calendar()
 
+    def add_study_plan(self):
+        subj = self.combo_subject.get().strip()
+        raw_date = self.entry_s_date.get().strip()
+        content = self.entry_s_content.get().strip()
+        urgency = self.combo_urgency.get()
+
+        if not subj or not content:
+            messagebox.showerror("錯誤", "科目與內容不可為空")
+            return
+        if len(raw_date) != 4 or not raw_date.isdigit():
+            messagebox.showerror("錯誤", "日期格式錯誤 (例: 0718)")
+            return
+
+        tw_year = datetime.now().year - 1911
+        sdate = f"{tw_year}-{raw_date[:2]}-{raw_date[2:]}"
+
+        conn = sqlite3.connect(DB_FILE)
+        cursor = conn.cursor()
+        cursor.execute("INSERT OR IGNORE INTO subjects (name) VALUES (?)", (subj,))
+        cursor.execute("INSERT INTO study_plan (subject, date, content, urgency, status) VALUES (?, ?, ?, ?, 0)", (subj, sdate, content, urgency))
+        conn.commit()
+        conn.close()
+
+        self.entry_s_date.delete(0, 'end')
+        self.entry_s_content.delete(0, 'end')
+        self.load_subjects()
+        self.draw_study_calendar()
+
     # --- 戰力與補題 ---
     def build_tab_stats(self):
         tab = ttk.Frame(self.notebook)
@@ -982,6 +1360,104 @@ class CPTrackerApp:
         self.tree.bind('<Double-1>', self.on_tree_double_click)
         self.refresh_stats()
 
+    def refresh_stats(self):
+        conn = sqlite3.connect(DB_FILE)
+        cursor = conn.cursor()
+        
+        for plat in ['C++', '課業', '資安', '專案', '英文', '躲水裡']:
+            cursor.execute("SELECT current_streak FROM streaks WHERE platform=?", (plat,))
+            streak = cursor.fetchone()[0] if cursor.rowcount != 0 else 0
+            
+            cursor.execute("SELECT total_time FROM time_stats WHERE platform=?", (plat,))
+            t_row = cursor.fetchone()
+            total_hours = (t_row[0] / 3600) if t_row else 0
+            time_str = f" | {total_hours:.1f} hr"
+            
+            lbl = getattr(self, f"lbl_{self.plat_map[plat]}_streak")
+            lbl.config(text=f"{plat} D-{streak} {time_str}")
+            
+        cursor.execute("SELECT COUNT(*) FROM activity_log")
+        total_days = cursor.fetchone()[0]
+        self.lbl_total_days.config(text=f"🔥 總累積修煉: {total_days} 天")
+            
+        for row in self.tree.get_children():
+            self.tree.delete(row)
+            
+        filters = []
+        if self.filter_cf.get(): filters.append("'CF'")
+        if self.filter_lc.get(): filters.append("'LC'")
+        if self.filter_cpe.get(): filters.append("'CPE'")
+        if self.filter_other.get(): filters.append("'Other'")
+            
+        if not filters:
+            cursor.execute("SELECT id, type, date, div, probs, solved, up_done, c_num FROM contests WHERE 1=0")
+        else:
+            query = f"SELECT id, type, date, div, probs, solved, up_done, c_num FROM contests WHERE type IN ({','.join(filters)}) ORDER BY date DESC, time DESC"
+            cursor.execute(query)
+            
+        cf_cnt, lc_cnt, cpe_cnt, other_cnt = 0, 0, 0, 0
+        tot_solved, tot_up = 0, 0
+        last_month = None
+        
+        for row in cursor.fetchall():
+            c_id, c_type, c_date, c_div, c_probs, c_solved, c_up, c_num = row
+            
+            current_month = c_date[-5:-3] 
+            if current_month != last_month:
+                self.tree.insert("", "end", values=('', f'--- {int(current_month)} 月 ---', '', '', '', ''), tags=('sep',))
+                last_month = current_month
+            
+            c_solved_clean = (c_solved or "").upper().replace(" ", "").replace(",", "")
+            c_up_clean = (c_up or "").upper().replace(" ", "").replace(",", "")
+            
+            sol_cnt = len(c_solved_clean)
+            up_cnt = len(c_up_clean)
+            
+            if c_type == "CF":
+                event_str = f"CF {c_num}"
+                cf_cnt += 1
+            elif c_type == "LC":
+                event_str = f"LC {c_num}"
+                lc_cnt += 1
+            elif c_type == "CPE":
+                event_str = f"CPE {c_num}"
+                cpe_cnt += 1
+            elif c_type == "Other":
+                event_str = f"{c_div}"
+                other_cnt += 1
+
+            unsolved_str = "-"
+            if c_probs:
+                p_str = c_probs.upper().replace("~", "-")
+                all_probs = []
+                if '-' in p_str:
+                    parts = p_str.split('-')
+                    if len(parts) == 2:
+                        start, end = parts[0], parts[1]
+                        if start.isdigit() and end.isdigit():
+                            all_probs = [str(i) for i in range(int(start), int(end)+1)]
+                        elif start.isalpha() and end.isalpha():
+                            all_probs = [chr(i) for i in range(ord(start), ord(end)+1)]
+                
+                if not all_probs:
+                    all_probs = list(p_str)
+                
+                done_list = list(c_solved_clean + c_up_clean)
+                missing = [p for p in all_probs if p not in done_list]
+                
+                if missing: unsolved_str = "".join(missing)
+                else: unsolved_str = "✔"
+
+            disp_row = (c_id, event_str, c_date[-5:], c_probs or '-', sol_cnt or '-', unsolved_str)
+            self.tree.insert("", "end", values=disp_row)
+            
+            tot_solved += sol_cnt
+            tot_up += up_cnt
+            
+        self.tree.tag_configure('sep', background='#dcdde1')
+        self.lbl_stats.config(text=f"🏆 CF {cf_cnt} | LC {lc_cnt} | CPE {cpe_cnt} | 另 {other_cnt}\n🔥 解出: {tot_solved} 項 | 🛠️ 賽後補題: {tot_up} 題")
+        conn.close()
+
     def add_timer(self, seconds):
         self.total_seconds += seconds
         self.remaining_seconds += seconds
@@ -989,186 +1465,6 @@ class CPTrackerApp:
         mins, secs = divmod(self.remaining_seconds, 60)
         hours, mins = divmod(mins, 60)
         self.time_label.config(text=f"{hours:02d}:{mins:02d}:{secs:02d}")
-
-    def load_other_categories(self):
-        conn = sqlite3.connect(DB_FILE)
-        cursor = conn.cursor()
-        cursor.execute("SELECT name FROM other_categories")
-        cats = [r[0] for r in cursor.fetchall()]
-        conn.close()
-        self.combo_other['values'] = cats
-
-    def delete_other_category(self):
-        cat = self.combo_other.get().strip()
-        if not cat: return
-        conn = sqlite3.connect(DB_FILE)
-        cursor = conn.cursor()
-        cursor.execute("DELETE FROM other_categories WHERE name=?", (cat,))
-        conn.commit()
-        conn.close()
-        self.combo_other.set('')
-        self.load_other_categories()
-
-    def on_type_change(self, event=None):
-        self.lbl_div_type.grid_remove()
-        self.entry_div.grid_remove()
-        self.combo_lc_type.grid_remove()
-        self.lbl_other.grid_remove()
-        self.combo_other.grid_remove()
-        self.btn_del_other.grid_remove()
-        self.lbl_cnum.grid_remove()
-        self.entry_cnum.grid_remove()
-        self.entry_time.config(state="normal") 
-        ctype = self.entry_type.get()
-        
-        if ctype == "LC":
-            self.lbl_div_type.config(text="類型:")
-            self.lbl_div_type.grid(row=1, column=0, sticky="e")
-            self.combo_lc_type.grid(row=1, column=1, padx=2, pady=2)
-            self.lbl_cnum.config(text="編號(4碼):")
-            self.lbl_cnum.grid(row=1, column=2, sticky="e")
-            self.entry_cnum.config(state="normal")
-            self.entry_cnum.grid(row=1, column=3, padx=2)
-        elif ctype == "Other":
-            self.lbl_other.grid(row=1, column=0, sticky="e")
-            self.combo_other.grid(row=1, column=1, padx=2, pady=2)
-            self.btn_del_other.grid(row=1, column=2, sticky="w")
-        elif ctype == "CPE":
-            self.entry_time.delete(0, 'end')
-            self.entry_time.config(state="disabled") 
-            self.lbl_cnum.config(text="民國年:")
-            self.lbl_cnum.grid(row=1, column=0, sticky="e")
-            self.entry_cnum.config(state="normal")
-            self.entry_cnum.grid(row=1, column=1, padx=2, pady=2)
-        else:
-            self.lbl_div_type.config(text="Div:")
-            self.lbl_div_type.grid(row=1, column=0, sticky="e")
-            self.entry_div.grid(row=1, column=1, padx=2, pady=2)
-            self.lbl_cnum.config(text="編號(4碼):")
-            self.lbl_cnum.grid(row=1, column=2, sticky="e")
-            self.entry_cnum.config(state="normal")
-            self.entry_cnum.grid(row=1, column=3, padx=2)
-
-    def load_subjects(self):
-        conn = sqlite3.connect(DB_FILE)
-        cursor = conn.cursor()
-        cursor.execute("SELECT name FROM subjects")
-        subs = [r[0] for r in cursor.fetchall()]
-        conn.close()
-        self.combo_subject['values'] = subs
-
-    def delete_subject_from_menu(self):
-        subj = self.combo_subject.get().strip()
-        if not subj: return
-        conn = sqlite3.connect(DB_FILE)
-        cursor = conn.cursor()
-        cursor.execute("DELETE FROM subjects WHERE name=?", (subj,))
-        conn.commit()
-        conn.close()
-        self.combo_subject.set('')
-        self.load_subjects()
-
-    def add_study_plan(self):
-        subj = self.combo_subject.get().strip()
-        raw_date = self.entry_s_date.get().strip()
-        content = self.entry_s_content.get().strip()
-        urgency = self.combo_urgency.get()
-
-        if not subj or not content:
-            messagebox.showerror("錯誤", "科目與內容不可為空")
-            return
-        if len(raw_date) != 4 or not raw_date.isdigit():
-            messagebox.showerror("錯誤", "日期格式錯誤 (例: 0718)")
-            return
-
-        tw_year = datetime.now().year - 1911
-        sdate = f"{tw_year}-{raw_date[:2]}-{raw_date[2:]}"
-
-        conn = sqlite3.connect(DB_FILE)
-        cursor = conn.cursor()
-        cursor.execute("INSERT OR IGNORE INTO subjects (name) VALUES (?)", (subj,))
-        cursor.execute("INSERT INTO study_plan (subject, date, content, urgency, status) VALUES (?, ?, ?, ?, 0)", (subj, sdate, content, urgency))
-        conn.commit()
-        conn.close()
-
-        self.entry_s_date.delete(0, 'end')
-        self.entry_s_content.delete(0, 'end')
-        self.load_subjects()
-        self.draw_study_calendar()
-
-    def show_guide(self):
-        guide_text = (
-            "🏆 【每日指南】\n\n"
-            "🔴 Part 1: C++\n"
-            "• 解題、看 Tutorial。\n\n"
-            "🔵 Part 2: 課業\n"
-            "• 讀書與整理。\n"
-            "• 課業安排條列處：雙擊「日期 / 科目 / 內容 / 急迫性」任一儲存格可原地單獨修改！\n\n"
-            "📅 賽事與自動化\n"
-            "• Other 類別可以自訂賽事/任務分類，並單獨篩選！\n"
-            "• 雙擊補題頁面的比賽，再次雙擊「編號/分類」即可原地修改！\n\n"
-            "(本地 db 好耶!\n"
-            "SINCE 115/07/16 RC"
-        )
-        messagebox.showinfo("每日生存證明", guide_text)
-
-    def update_target_default(self):
-        cpp = self.cpp_done.get()
-        school = self.school_done.get()
-        sec = self.sec_done.get()
-        project = self.project_done.get()
-        eng = self.eng_done.get()
-        water = self.water_done.get()
-        
-        if not cpp: self.combo_target.set("C++")
-        elif not school: self.combo_target.set("課業")
-        elif not sec: self.combo_target.set("資安")
-        elif not project: self.combo_target.set("專案") 
-        elif not eng: self.combo_target.set("英文")
-        else: self.combo_target.set("躲水裡")
-
-    def check_cross_day(self):
-        today = datetime.now().strftime('%Y-%m-%d')
-        conn = sqlite3.connect(DB_FILE)
-        cursor = conn.cursor()
-        cursor.execute("SELECT value FROM app_config WHERE key='last_startup'")
-        last_startup = cursor.fetchone()[0]
-        
-        if last_startup != today:
-            self.cpp_done.set(False)
-            self.school_done.set(False)
-            self.sec_done.set(False)
-            self.project_done.set(False)
-            self.eng_done.set(False)
-            self.water_done.set(False)
-            
-            cursor.execute("SELECT value FROM app_config WHERE key='timeline_shift_date'")
-            row = cursor.fetchone()
-            last_shift = row[0] if row else '2000-01-01'
-            if last_shift != today:
-                cursor.execute("DELETE FROM hourly_schedule WHERE day_type='today'")
-                cursor.execute("UPDATE hourly_schedule SET day_type='today' WHERE day_type='tomorrow'")
-                cursor.execute("INSERT OR REPLACE INTO app_config (key, value) VALUES ('timeline_shift_date', ?)", (today,))
-
-            cursor.execute("UPDATE app_config SET value=? WHERE key='last_startup'", (today,))
-            conn.commit()
-            
-            self.update_target_default()
-            self.refresh_stats()
-            self.render_hourly_timeline()
-            
-        conn.close()
-        self.check_night_shift()
-        self.root.after(60000, self.check_cross_day)
-
-    def change_week(self, delta):
-        self.week_offset += delta
-        self.draw_calendar()
-        
-    def reset_week_view(self, event=None):
-        if self.week_offset != 0:
-            self.week_offset = 0
-            self.draw_calendar()
 
     def reset_timer(self):
         self.timer_running = False
@@ -1297,263 +1593,70 @@ class CPTrackerApp:
         conn.close()
         self.update_target_default()
 
-    def add_contest(self):
-        ctype = self.entry_type.get()
-        raw_date = self.entry_date.get()
-        raw_time = self.entry_time.get()
-        cdiv = ""
-        cnum = ""
+    def show_guide(self):
+        guide_text = (
+            "🏆 【每日指南】\n\n"
+            "🔴 Part 1: C++\n"
+            "• 解題、看 Tutorial。\n\n"
+            "🔵 Part 2: 課業\n"
+            "• 讀書與整理。\n"
+            "• 課業與賽事條列處：支援上下拖拉分隔與雙擊獨立修改！\n\n"
+            "📅 賽事與自動化\n"
+            "• Other 類別可以自訂賽事/任務分類，並單獨篩選！\n"
+            "• 雙擊戰力補題頁面比賽，可深入勾選各題進度！\n\n"
+            "(本地 db 好耶!\n"
+            "SINCE 115/07/16 RC"
+        )
+        messagebox.showinfo("每日生存證明", guide_text)
+
+    def update_target_default(self):
+        cpp = self.cpp_done.get()
+        school = self.school_done.get()
+        sec = self.sec_done.get()
+        project = self.project_done.get()
+        eng = self.eng_done.get()
+        water = self.water_done.get()
         
-        if ctype == "LC":
-            cdiv = self.combo_lc_type.get()
-            cnum = self.entry_cnum.get().strip()
-        elif ctype == "Other":
-            cdiv = self.combo_other.get().strip()
-        elif ctype == "CF":
-            cdiv = self.entry_div.get().strip()
-            cnum = self.entry_cnum.get().strip()
-        elif ctype == "CPE":
-            cnum = self.entry_cnum.get().strip()
-            raw_time = "0000"
-            
-        if ctype not in ["Other", "CPE"]:
-            if len(raw_date) != 4 or not raw_date.isdigit() or len(raw_time) != 4 or not raw_time.isdigit():
-                messagebox.showerror("錯誤", "格式錯誤，請輸入 4 碼 (例: 0718)")
-                return
-        elif ctype == "CPE":
-            if len(raw_date) != 4 or not raw_date.isdigit():
-                messagebox.showerror("錯誤", "日期格式錯誤 (例: 0718)")
-                return
-        else:
-            if len(raw_date) != 4 or not raw_date.isdigit():
-                messagebox.showerror("錯誤", "日期格式錯誤 (例: 0718)")
-                return
-            if len(raw_time) != 4 and raw_time != "":
-                 if not raw_time.isdigit():
-                    messagebox.showerror("錯誤", "時間請留空或輸入 4 碼")
-                    return
-            elif raw_time == "": raw_time = "0000"
-            
-        tw_year = datetime.now().year - 1911
-        cdate = f"{tw_year}-{raw_date[:2]}-{raw_date[2:]}"
-        ctime = f"{raw_time[:2]}:{raw_time[2:]}"
-        
-        if ctype == "CF" and cdiv:
-            if not cdiv.lower().startswith("div"):
-                cdiv = f"Div {cdiv}"
-        
+        if not cpp: self.combo_target.set("C++")
+        elif not school: self.combo_target.set("課業")
+        elif not sec: self.combo_target.set("資安")
+        elif not project: self.combo_target.set("專案") 
+        elif not eng: self.combo_target.set("英文")
+        else: self.combo_target.set("躲水裡")
+
+    def check_cross_day(self):
+        today = datetime.now().strftime('%Y-%m-%d')
         conn = sqlite3.connect(DB_FILE)
         cursor = conn.cursor()
+        cursor.execute("SELECT value FROM app_config WHERE key='last_startup'")
+        last_startup = cursor.fetchone()[0]
         
-        if ctype == "Other" and cdiv:
-            cursor.execute("INSERT OR IGNORE INTO other_categories (name) VALUES (?)", (cdiv,))
-            self.load_other_categories()
+        if last_startup != today:
+            self.cpp_done.set(False)
+            self.school_done.set(False)
+            self.sec_done.set(False)
+            self.project_done.set(False)
+            self.eng_done.set(False)
+            self.water_done.set(False)
+            
+            cursor.execute("SELECT value FROM app_config WHERE key='timeline_shift_date'")
+            row = cursor.fetchone()
+            last_shift = row[0] if row else '2000-01-01'
+            if last_shift != today:
+                cursor.execute("DELETE FROM hourly_schedule WHERE day_type='today'")
+                cursor.execute("UPDATE hourly_schedule SET day_type='today' WHERE day_type='tomorrow'")
+                cursor.execute("INSERT OR REPLACE INTO app_config (key, value) VALUES ('timeline_shift_date', ?)", (today,))
 
-        cursor.execute('''INSERT INTO contests 
-                          (type, date, time, div, solved, upsolved, probs, up_done, c_num) 
-                          VALUES (?, ?, ?, ?, '', '', '', '', ?)''', 
-                       (ctype, cdate, ctime, cdiv, cnum))
-        conn.commit()
+            cursor.execute("UPDATE app_config SET value=? WHERE key='last_startup'", (today,))
+            conn.commit()
+            
+            self.update_target_default()
+            self.refresh_stats()
+            self.render_hourly_timeline()
+            
         conn.close()
-        
-        self.entry_date.delete(0, 'end')
-        self.entry_time.delete(0, 'end')
-        if ctype != "Other":
-            self.entry_cnum.delete(0, 'end')
-            
-        self.draw_calendar()
-        self.refresh_stats()
-
-    def delete_contest(self):
-        selected = self.list_contests.curselection()
-        if not selected: return
-        idx = selected[0]
-        cid = self.contest_ids[idx]
-        
-        conn = sqlite3.connect(DB_FILE)
-        cursor = conn.cursor()
-        cursor.execute("DELETE FROM contests WHERE id=?", (cid,))
-        conn.commit()
-        conn.close()
-        self.draw_calendar()
-        self.refresh_stats()
-
-    def draw_calendar(self):
-        self.canvas.delete("all")
-        self.list_contests.delete(0, tk.END)
-        self.contest_ids.clear()
-        
-        conn = sqlite3.connect(DB_FILE)
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM contests ORDER BY date DESC, time DESC")
-        contests = cursor.fetchall()
-        conn.close()
-        
-        today = datetime.now().date()
-        idx = (today.weekday() + 1) % 7
-        sunday = today - timedelta(days=idx)
-        start_date = sunday + timedelta(weeks=self.week_offset)
-        
-        if self.week_offset == 0:
-            self.lbl_week.config(text="本週", fg="#f39c12") 
-        else:
-            mid_week = start_date + timedelta(days=3)
-            self.lbl_week.config(text=f"{mid_week.month} 月", fg="#3498db")
-        
-        days_zh = ["日", "一", "二", "三", "四", "五", "六"]
-        col_width = 350 / 7  
-        
-        for i in range(7):
-            d = start_date + timedelta(days=i)
-            x_center = i * col_width + (col_width / 2) + 5
-            is_today = (d == today)
-            bg_color = "#ff4757" if is_today else "#1e1e1e"
-            
-            self.canvas.create_text(x_center, 8, text=days_zh[i], fill="#7f8fa6", font=("Arial", 8))
-            if is_today:
-                self.canvas.create_oval(x_center-12, 16, x_center+12, 40, fill=bg_color, outline="")
-            self.canvas.create_text(x_center, 28, text=d.strftime("%d"), fill="white" if is_today else "gray", font=("Arial", 9, "bold"))
-            
-            day_str = d.strftime("%m-%d")
-            y_offset = 46
-            for c in contests:
-                if c[2][-5:] == day_str:
-                    c_type = c[1]
-                    c_div = c[4]
-                    c_num = c[9] if len(c) > 9 else ""
-                    
-                    if c_type == "LC":
-                        text_disp = f"LC {c_num}\n{c_div}"
-                        box_col = "#e67e22"
-                    elif c_type == "Other":
-                        text_disp = f"{c_div[:8]}"
-                        box_col = "#9b59b6" 
-                    elif c_type == "CPE":
-                        text_disp = f"CPE {c_num}"
-                        box_col = "#27ae60"
-                    else:
-                        text_disp = f"CF {c_num}\n{c_div}"
-                        box_col = "#3498db"
-                        
-                    self.canvas.create_rectangle(x_center-col_width/2+2, y_offset, x_center+col_width/2-2, y_offset+25, fill="#2f3542", outline=box_col)
-                    self.canvas.create_text(x_center, y_offset+12, text=text_disp, fill=box_col, font=("Arial", 6))
-                    y_offset += 28
-
-        for c in contests:
-            self.contest_ids.append(c[0]) 
-            c_type = c[1]
-            c_num = c[9] if len(c) > 9 else ""
-            c_div = c[4]
-            disp_date = c[2][-5:]
-            if c_type == "Other":
-                self.list_contests.insert(tk.END, f"{disp_date} | {c_div}")
-            elif c_type == "CPE":
-                self.list_contests.insert(tk.END, f"{disp_date} | CPE {c_num}年")
-            else:
-                self.list_contests.insert(tk.END, f"{disp_date} {c[3]} | {c_type} {c_num} ({c_div})")
-                
-        self.canvas.yview_moveto(0) 
-        bbox = self.canvas.bbox("all")
-        if bbox:
-            self.canvas.config(scrollregion=(0, 0, bbox[2], max(90, bbox[3] + 10)))
-
-    def refresh_stats(self):
-        conn = sqlite3.connect(DB_FILE)
-        cursor = conn.cursor()
-        
-        for plat in ['C++', '課業', '資安', '專案', '英文', '躲水裡']:
-            cursor.execute("SELECT current_streak FROM streaks WHERE platform=?", (plat,))
-            streak = cursor.fetchone()[0] if cursor.rowcount != 0 else 0
-            
-            cursor.execute("SELECT total_time FROM time_stats WHERE platform=?", (plat,))
-            t_row = cursor.fetchone()
-            total_hours = (t_row[0] / 3600) if t_row else 0
-            time_str = f" | {total_hours:.1f} hr"
-            
-            lbl = getattr(self, f"lbl_{self.plat_map[plat]}_streak")
-            lbl.config(text=f"{plat} D-{streak} {time_str}")
-            
-        cursor.execute("SELECT COUNT(*) FROM activity_log")
-        total_days = cursor.fetchone()[0]
-        self.lbl_total_days.config(text=f"🔥 總累積修煉: {total_days} 天")
-            
-        for row in self.tree.get_children():
-            self.tree.delete(row)
-            
-        filters = []
-        if self.filter_cf.get(): filters.append("'CF'")
-        if self.filter_lc.get(): filters.append("'LC'")
-        if self.filter_cpe.get(): filters.append("'CPE'")
-        if self.filter_other.get(): filters.append("'Other'")
-            
-        if not filters:
-            cursor.execute("SELECT id, type, date, div, probs, solved, up_done, c_num FROM contests WHERE 1=0")
-        else:
-            query = f"SELECT id, type, date, div, probs, solved, up_done, c_num FROM contests WHERE type IN ({','.join(filters)}) ORDER BY date DESC, time DESC"
-            cursor.execute(query)
-            
-        cf_cnt, lc_cnt, cpe_cnt, other_cnt = 0, 0, 0, 0
-        tot_solved, tot_up = 0, 0
-        last_month = None
-        
-        for row in cursor.fetchall():
-            c_id, c_type, c_date, c_div, c_probs, c_solved, c_up, c_num = row
-            
-            current_month = c_date[-5:-3] 
-            if current_month != last_month:
-                self.tree.insert("", "end", values=('', f'--- {int(current_month)} 月 ---', '', '', '', ''), tags=('sep',))
-                last_month = current_month
-            
-            c_solved_clean = (c_solved or "").upper().replace(" ", "").replace(",", "")
-            c_up_clean = (c_up or "").upper().replace(" ", "").replace(",", "")
-            
-            sol_cnt = len(c_solved_clean)
-            up_cnt = len(c_up_clean)
-            
-            if c_type == "CF":
-                event_str = f"CF {c_num}"
-                cf_cnt += 1
-            elif c_type == "LC":
-                event_str = f"LC {c_num}"
-                lc_cnt += 1
-            elif c_type == "CPE":
-                event_str = f"CPE {c_num}"
-                cpe_cnt += 1
-            elif c_type == "Other":
-                event_str = f"{c_div}"
-                other_cnt += 1
-
-            unsolved_str = "-"
-            if c_probs:
-                p_str = c_probs.upper().replace("~", "-")
-                all_probs = []
-                if '-' in p_str:
-                    parts = p_str.split('-')
-                    if len(parts) == 2:
-                        start, end = parts[0], parts[1]
-                        if start.isdigit() and end.isdigit():
-                            all_probs = [str(i) for i in range(int(start), int(end)+1)]
-                        elif start.isalpha() and end.isalpha():
-                            all_probs = [chr(i) for i in range(ord(start), ord(end)+1)]
-                
-                if not all_probs:
-                    all_probs = list(p_str)
-                
-                done_list = list(c_solved_clean + c_up_clean)
-                missing = [p for p in all_probs if p not in done_list]
-                
-                if missing: unsolved_str = "".join(missing)
-                else: unsolved_str = "✔"
-
-            disp_row = (c_id, event_str, c_date[-5:], c_probs or '-', sol_cnt or '-', unsolved_str)
-            self.tree.insert("", "end", values=disp_row)
-            
-            tot_solved += sol_cnt
-            tot_up += up_cnt
-            
-        self.tree.tag_configure('sep', background='#dcdde1')
-        self.lbl_stats.config(text=f"🏆 CF {cf_cnt} | LC {lc_cnt} | CPE {cpe_cnt} | 另 {other_cnt}\n🔥 解出: {tot_solved} 項 | 🛠️ 賽後補題: {tot_up} 題")
-        conn.close()
+        self.check_night_shift()
+        self.root.after(60000, self.check_cross_day)
 
     def show_last_checkin(self, event, platform):
         self.close_popup()
