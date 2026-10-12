@@ -49,7 +49,6 @@ class CPTrackerApp:
         self.study_week_offset = 0
         self.upd_win = None
         self.contest_ids = []
-        self.study_ids = []
         self.checkin_popup = None
         self.popup_timer = None
         self.ignore_next_click = False 
@@ -89,6 +88,7 @@ class CPTrackerApp:
         cursor.execute('''CREATE TABLE IF NOT EXISTS app_config 
                           (key TEXT PRIMARY KEY, value TEXT)''')
         cursor.execute("INSERT OR IGNORE INTO app_config VALUES ('last_startup', '2000-01-01')")
+        cursor.execute("INSERT OR IGNORE INTO app_config VALUES ('timeline_shift_date', '2000-01-01')")
         
         cursor.execute('''CREATE TABLE IF NOT EXISTS study_plan
                           (id INTEGER PRIMARY KEY AUTOINCREMENT, subject TEXT, date TEXT, content TEXT, urgency TEXT, status INTEGER DEFAULT 0)''')
@@ -235,7 +235,6 @@ class CPTrackerApp:
         main_content = tk.Frame(tab)
         main_content.pack(fill="both", expand=True, padx=10, pady=2)
 
-        # 左側任務欄
         check_frame = tk.LabelFrame(main_content, text="今日任務", font=("Arial", 9))
         check_frame.pack(side=tk.LEFT, fill="y", padx=(0, 10), pady=2)
 
@@ -269,7 +268,6 @@ class CPTrackerApp:
         self.lbl_water_streak.bind('<Double-1>', lambda e: self.show_last_checkin(e, '躲水裡'))
         tk.Checkbutton(check_frame, text="", variable=self.water_done, command=lambda: self.handle_checkin('躲水裡')).grid(row=5, column=1, sticky="w")
 
-        # 右側時間軸 (具備垂直 overflow 捲動功能)
         self.timeline_frame = tk.LabelFrame(main_content, text="當下與明日安排 (單擊編輯 | Ctrl+單擊多選合併)", font=("Arial", 8))
         self.timeline_frame.pack(side=tk.LEFT, fill="both", expand=True, pady=2)
 
@@ -294,11 +292,34 @@ class CPTrackerApp:
 
     # --- 時間軸垂直 Overflow 捲動與點擊編輯機制 ---
     def poll_timeline_update(self):
-        """每 30 秒自動更新時間軸 (過期的小時自動消除)"""
+        """定時自動檢查時段變動與滿22點轉移邏輯"""
+        self.check_night_shift()
         now_h = datetime.now().hour
         if self.last_rendered_hour != now_h:
             self.render_hourly_timeline()
         self.root.after(30000, self.poll_timeline_update)
+
+    def check_night_shift(self):
+        """超過 22 點自動將明天計畫搬移到今天（當天只搬移一次）"""
+        now = datetime.now()
+        today = now.strftime('%Y-%m-%d')
+        
+        if now.hour >= 22:
+            conn = sqlite3.connect(DB_FILE)
+            cursor = conn.cursor()
+            cursor.execute("SELECT value FROM app_config WHERE key='timeline_shift_date'")
+            row = cursor.fetchone()
+            last_shift = row[0] if row else '2000-01-01'
+            
+            if last_shift != today:
+                cursor.execute("DELETE FROM hourly_schedule WHERE day_type='today'")
+                cursor.execute("UPDATE hourly_schedule SET day_type='today' WHERE day_type='tomorrow'")
+                cursor.execute("INSERT OR REPLACE INTO app_config (key, value) VALUES ('timeline_shift_date', ?)", (today,))
+                conn.commit()
+                conn.close()
+                self.render_hourly_timeline()
+            else:
+                conn.close()
 
     def render_hourly_timeline(self):
         for widget in self.timeline_grid_frame.winfo_children():
@@ -311,8 +332,8 @@ class CPTrackerApp:
         cur_h = now.hour
         self.last_rendered_hour = cur_h
 
-        today_hours = [h for h in range(cur_h, 23)]  # 當前小時 ~ 22:00
-        tomorrow_hours = [h for h in range(6, 23)]   # 明日固定 06:00 ~ 22:00
+        today_hours = [h for h in range(cur_h, 23)] if cur_h < 23 else []
+        tomorrow_hours = [h for h in range(6, 23)]
 
         conn = sqlite3.connect(DB_FILE)
         cursor = conn.cursor()
@@ -322,7 +343,6 @@ class CPTrackerApp:
             sched_data[(dt, h)] = (mid if mid is not None else h, txt or "")
         conn.close()
 
-        # 垂直捲動容器設置 (Canvas + Scrollbar)
         canvas = tk.Canvas(self.timeline_grid_frame, highlightthickness=0, height=210)
         scrollbar = ttk.Scrollbar(self.timeline_grid_frame, orient="vertical", command=canvas.yview)
         scrollable_frame = tk.Frame(canvas)
@@ -339,7 +359,6 @@ class CPTrackerApp:
         canvas.bind("<Configure>", _on_canvas_configure)
         canvas.configure(yscrollcommand=scrollbar.set)
 
-        # 綁定滑鼠滾輪上下滑動
         def _on_mousewheel(event):
             if getattr(event, 'delta', 0) != 0:
                 direction = -1 if event.delta > 0 else 1
@@ -364,7 +383,6 @@ class CPTrackerApp:
         canvas.pack(side=tk.LEFT, fill="both", expand=True)
         scrollbar.pack(side=tk.RIGHT, fill="y")
 
-        # 兩欄渲染：今日剩餘 與 明日計畫
         scrollable_frame.columnconfigure(1, weight=1)
         scrollable_frame.columnconfigure(4, weight=1)
 
@@ -375,10 +393,10 @@ class CPTrackerApp:
     def _build_col(self, parent, title, day_type, hours, sched_data, col_offset):
         tk.Label(parent, text=title, font=("Arial", 9, "bold"), fg="#2c3e50").grid(row=0, column=col_offset, columnspan=2, pady=(0, 4))
         if not hours:
-            tk.Label(parent, text="今日時段已過完", font=("Arial", 8), fg="gray").grid(row=1, column=col_offset, columnspan=2)
+            msg = "時段已過22:00" if datetime.now().hour >= 22 else "今日時段已過完"
+            tk.Label(parent, text=msg, font=("Arial", 8), fg="gray").grid(row=1, column=col_offset, columnspan=2)
             return
 
-        # 時段分組整合
         groups = []
         cur_mid = None
         cur_group = []
@@ -404,21 +422,17 @@ class CPTrackerApp:
 
             label_str = f"{h_start:02d}:00" if h_start == h_end else f"{h_start:02d}~{h_end+1:02d}"
 
-            # 左側小時刻度
             time_lbl = tk.Label(parent, text=label_str, font=("Arial", 8), width=6, anchor="e", padx=2)
             time_lbl.grid(row=row_idx, column=col_offset, sticky="ns", pady=1)
 
-            # 右側內容框 (預設為灰色背景 Label，寬度固定為 14，點擊切換為 Entry 輸入)
             disp_text = txt if txt else ""
             content_lbl = tk.Label(parent, text=disp_text, font=("Arial", 8), bg="#e0e0e0", fg="#2c3e50",
                                    relief="solid", borderwidth=0, anchor="w", padx=3, height=1, width=14)
             content_lbl.grid(row=row_idx, column=col_offset+1, sticky="w", pady=1, padx=(0, 4))
 
-            # 點擊 Label 即動態建立 Entry 進行編輯
             content_lbl.bind("<Button-1>", lambda e, dt=day_type, m=mid, l=content_lbl, p=parent, r=row_idx, c=col_offset+1: 
                              self.start_edit_cell(e, dt, m, l, p, r, c))
 
-            # Ctrl+單擊多選
             for (h, _) in grp:
                 time_lbl.bind("<Control-Button-1>", lambda e, dt=day_type, hr=h, l=time_lbl: self.toggle_cell_select(dt, hr, l))
                 content_lbl.bind("<Control-Button-1>", lambda e, dt=day_type, hr=h, l=time_lbl: self.toggle_cell_select(dt, hr, l))
@@ -427,7 +441,6 @@ class CPTrackerApp:
             row_idx += 1
 
     def start_edit_cell(self, event, day_type, merge_id, label_widget, parent, row, col):
-        """點擊後將純文字標籤轉換為固定寬度輸入框"""
         current_text = label_widget.cget("text")
         label_widget.grid_remove()
 
@@ -437,15 +450,25 @@ class CPTrackerApp:
         entry.focus_set()
 
         def _finish_edit(e=None):
-            val = entry.get()
+            val = entry.get().strip()
             entry.destroy()
             label_widget.config(text=val)
             label_widget.grid()
             
-            # 存入資料庫
             conn = sqlite3.connect(DB_FILE)
             cursor = conn.cursor()
-            cursor.execute("UPDATE hourly_schedule SET text=? WHERE day_type=? AND merge_id=?", (val, day_type, merge_id))
+            
+            cursor.execute("SELECT hour FROM hourly_schedule WHERE day_type=? AND merge_id=?", (day_type, merge_id))
+            rows = cursor.fetchall()
+
+            if rows:
+                cursor.execute("UPDATE hourly_schedule SET text=? WHERE day_type=? AND merge_id=?", (val, day_type, merge_id))
+            else:
+                cursor.execute('''INSERT INTO hourly_schedule (day_type, hour, merge_id, text)
+                                  VALUES (?, ?, ?, ?)
+                                  ON CONFLICT(day_type, hour) DO UPDATE SET text=excluded.text, merge_id=excluded.merge_id''',
+                               (day_type, merge_id, merge_id, val))
+                
             conn.commit()
             conn.close()
 
@@ -671,13 +694,255 @@ class CPTrackerApp:
 
         paned_window.add(canvas_frame, weight=1)
 
-        del_frame = tk.Frame(paned_window)
-        self.list_study = tk.Listbox(del_frame, height=3, font=("Arial", 8))
-        self.list_study.pack(side=tk.LEFT, fill="both", expand=True)
-        tk.Button(del_frame, text="刪除", command=self.delete_study_plan, bg="#e74c3c", fg="white").pack(side=tk.RIGHT, padx=2)
+        # 下方條列處：改用 Treeview 實現單格獨立點擊編輯
+        tree_container = tk.Frame(paned_window)
+        
+        study_cols = ('ID', '日期', '科目', '內容', '急迫性')
+        study_disp = ('日期', '科目', '內容', '急迫性')
+        self.tree_study = ttk.Treeview(tree_container, columns=study_cols, displaycolumns=study_disp, show='headings', height=4)
+        
+        col_widths = {'日期': 55, '科目': 75, '內容': 160, '急迫性': 90}
+        for c in study_disp:
+            self.tree_study.heading(c, text=c)
+            self.tree_study.column(c, width=col_widths.get(c, 70), anchor='center' if c in ('日期', '急迫性') else 'w')
+            
+        tree_scroll = ttk.Scrollbar(tree_container, orient="vertical", command=self.tree_study.yview)
+        self.tree_study.configure(yscrollcommand=tree_scroll.set)
+        
+        self.tree_study.pack(side=tk.LEFT, fill="both", expand=True)
+        tree_scroll.pack(side=tk.LEFT, fill="y")
+        
+        tk.Button(tree_container, text="刪除", command=self.delete_study_plan, bg="#e74c3c", fg="white", width=4).pack(side=tk.RIGHT, padx=3, fill='y')
+        
+        self.tree_study.bind('<Double-1>', self.on_study_tree_double_click)
 
-        paned_window.add(del_frame, weight=1)
+        paned_window.add(tree_container, weight=1)
         self.draw_study_calendar()
+
+    def on_study_tree_double_click(self, event):
+        """雙擊 Treeview 單元格進行原地獨立編輯"""
+        region = self.tree_study.identify_region(event.x, event.y)
+        if region != "cell":
+            return
+            
+        row_id = self.tree_study.identify_row(event.y)
+        col_id = self.tree_study.identify_column(event.x)
+        if not row_id or not col_id:
+            return
+            
+        col_idx = int(col_id.replace('#', '')) - 1
+        disp_cols = ('日期', '科目', '內容', '急迫性')
+        if col_idx >= len(disp_cols):
+            return
+        field_name = disp_cols[col_idx]
+        
+        item_vals = self.tree_study.item(row_id, 'values')
+        if not item_vals:
+            return
+            
+        plan_id = item_vals[0]
+        cur_val = item_vals[col_idx + 1]
+        
+        x, y, w, h = self.tree_study.bbox(row_id, col_id)
+        
+        # 根據雙擊欄位類型動態生成對應的編輯控制項
+        if field_name == "急迫性":
+            edit_widget = ttk.Combobox(self.tree_study, values=["紅色緊急", "淺藍色不緊急", "可以放棄的白色"], state="readonly", font=("Arial", 8))
+            edit_widget.set(cur_val)
+        else:
+            edit_widget = tk.Entry(self.tree_study, font=("Arial", 8))
+            edit_widget.insert(0, cur_val)
+            
+        edit_widget.place(x=x, y=y, width=w, height=h)
+        edit_widget.focus_set()
+        
+        def _save_study_cell(e=None):
+            new_val = edit_widget.get().strip()
+            edit_widget.destroy()
+            
+            if not new_val or new_val == cur_val:
+                return
+                
+            conn = sqlite3.connect(DB_FILE)
+            cursor = conn.cursor()
+            
+            if field_name == '日期':
+                tw_year = datetime.now().year - 1911
+                if len(new_val) == 4 and new_val.isdigit():
+                    sdate = f"{tw_year}-{new_val[:2]}-{new_val[2:]}"
+                elif len(new_val) == 5 and '-' in new_val:
+                    sdate = f"{tw_year}-{new_val}"
+                elif len(new_val) >= 8 and '-' in new_val:
+                    sdate = new_val
+                else:
+                    messagebox.showerror("錯誤", "日期格式錯誤 (請輸入 MMDD，例: 0718)")
+                    conn.close()
+                    return
+                cursor.execute("UPDATE study_plan SET date=? WHERE id=?", (sdate, plan_id))
+            elif field_name == '科目':
+                cursor.execute("UPDATE study_plan SET subject=? WHERE id=?", (new_val, plan_id))
+                cursor.execute("INSERT OR IGNORE INTO subjects (name) VALUES (?)", (new_val,))
+                self.load_subjects()
+            elif field_name == '內容':
+                cursor.execute("UPDATE study_plan SET content=? WHERE id=?", (new_val, plan_id))
+            elif field_name == '急迫性':
+                cursor.execute("UPDATE study_plan SET urgency=? WHERE id=?", (new_val, plan_id))
+                
+            conn.commit()
+            conn.close()
+            self.draw_study_calendar()
+            
+        edit_widget.bind("<Return>", _save_study_cell)
+        edit_widget.bind("<FocusOut>", _save_study_cell)
+        if field_name == "急迫性":
+            edit_widget.bind("<<ComboboxSelected>>", _save_study_cell)
+
+    def draw_study_calendar(self):
+        self.study_canvas.delete("all")
+        for r in self.tree_study.get_children():
+            self.tree_study.delete(r)
+
+        conn = sqlite3.connect(DB_FILE)
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM study_plan ORDER BY date DESC")
+        plans = cursor.fetchall()
+        cursor.execute("SELECT * FROM contests ORDER BY date DESC, time DESC")
+        contests = cursor.fetchall()
+        conn.close()
+
+        today = datetime.now().date()
+        idx = (today.weekday() + 1) % 7
+        sunday = today - timedelta(days=idx)
+        start_date = sunday + timedelta(weeks=self.study_week_offset)
+
+        if self.study_week_offset == 0:
+            self.lbl_study_week.config(text="本週", fg="#f39c12")
+        else:
+            mid_week = start_date + timedelta(days=3)
+            self.lbl_study_week.config(text=f"{mid_week.month} 月", fg="#3498db")
+
+        days_zh = ["日", "一", "二", "三", "四", "五", "六"]
+        col_width = 350 / 7
+
+        for i in range(7):
+            d = start_date + timedelta(days=i)
+            x_center = i * col_width + (col_width / 2) + 5
+            is_today = (d == today)
+            bg_color = "#ff4757" if is_today else "#1e1e1e"
+
+            self.study_canvas.create_text(x_center, 8, text=days_zh[i], fill="#7f8fa6", font=("Arial", 8))
+            if is_today:
+                self.study_canvas.create_oval(x_center-12, 16, x_center+12, 40, fill=bg_color, outline="")
+            self.study_canvas.create_text(x_center, 28, text=d.strftime("%d"), fill="white" if is_today else "gray", font=("Arial", 9, "bold"))
+
+            day_str = d.strftime("%m-%d")
+            y_offset = 46
+
+            for c in contests:
+                if c[2][-5:] == day_str:
+                    c_type = c[1]
+                    c_div = c[4]
+                    c_num = c[9] if len(c) > 9 else ""
+                    
+                    if c_type == "LC":
+                        text_disp = f"LC {c_num}\n{c_div}"
+                        box_col = "#e67e22"
+                    elif c_type == "Other":
+                        text_disp = f"{c_div[:8]}"
+                        box_col = "#9b59b6" 
+                    elif c_type == "CPE":
+                        text_disp = f"CPE {c_num}"
+                        box_col = "#27ae60"
+                    else:
+                        text_disp = f"CF {c_num}\n{c_div}"
+                        box_col = "#3498db"
+                        
+                    self.study_canvas.create_rectangle(x_center-col_width/2+2, y_offset, x_center+col_width/2-2, y_offset+28, fill="#2f3542", outline=box_col)
+                    self.study_canvas.create_text(x_center, y_offset+14, text=text_disp, fill=box_col, font=("Arial", 7, "bold"), justify="center")
+                    y_offset += 32
+
+            day_plans = [p for p in plans if p[2][-5:] == day_str]
+            def plan_priority(p):
+                status = p[5] if len(p) > 5 else 0
+                u = p[4]
+                u_score = 0 if u == "紅色緊急" else (2 if u == "可以放棄的白色" else 1)
+                return (status, u_score)
+                
+            day_plans.sort(key=plan_priority)
+
+            for p in day_plans:
+                u = p[4]
+                status = p[5] if len(p) > 5 else 0
+                if status == 1:
+                    box_col = "#7f8fa6" 
+                else:
+                    if u == "紅色緊急": box_col = "#e74c3c"
+                    elif u == "可以放棄的白色": box_col = "#ffffff"
+                    else: box_col = "#3498db"
+
+                subj_disp = p[1][:4]
+                cont_disp = p[3][:4]
+                text_disp = f"{subj_disp}\n{cont_disp}"
+
+                self.study_canvas.create_rectangle(x_center-col_width/2+2, y_offset, x_center+col_width/2-2, y_offset+30, fill="#2f3542", outline=box_col, tags=("study_item", f"plan_{p[0]}"))
+                self.study_canvas.create_text(x_center, y_offset+15, text=text_disp, fill=box_col, font=("", 8, ""), justify="center", tags=("study_item", f"plan_{p[0]}"))
+                y_offset += 32
+
+        for p in plans:
+            status = p[5] if len(p) > 5 else 0
+            if status != 1:
+                disp_date = p[2][-5:]
+                self.tree_study.insert("", "end", values=(p[0], disp_date, p[1], p[3], p[4]))
+
+        self.study_canvas.yview_moveto(0)
+        bbox = self.study_canvas.bbox("all")
+        if bbox:
+            self.study_canvas.config(scrollregion=(0, 0, bbox[2], max(90, bbox[3] + 10)))
+
+    def on_study_item_double_click(self, event):
+        item = self.study_canvas.find_withtag("current")
+        if not item: return
+        tags = self.study_canvas.gettags(item[0])
+        plan_id = None
+        for t in tags:
+            if t.startswith("plan_"):
+                plan_id = t.split("_")[1]
+                break
+        
+        if plan_id:
+            conn = sqlite3.connect(DB_FILE)
+            cursor = conn.cursor()
+            cursor.execute("SELECT status FROM study_plan WHERE id=?", (plan_id,))
+            row = cursor.fetchone()
+            if row:
+                new_status = 1 if row[0] == 0 else 0
+                cursor.execute("UPDATE study_plan SET status=? WHERE id=?", (new_status, plan_id))
+                conn.commit()
+            conn.close()
+            self.draw_study_calendar()
+
+    def delete_study_plan(self):
+        selected = self.tree_study.selection()
+        if not selected: return
+        item_vals = self.tree_study.item(selected[0], 'values')
+        if not item_vals: return
+        sid = item_vals[0]
+        
+        conn = sqlite3.connect(DB_FILE)
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM study_plan WHERE id=?", (sid,))
+        conn.commit()
+        conn.close()
+        self.draw_study_calendar()
+
+    def change_study_week(self, delta):
+        self.study_week_offset += delta
+        self.draw_study_calendar()
+        
+    def reset_study_week_view(self, event=None):
+        if self.study_week_offset != 0:
+            self.study_week_offset = 0
+            self.draw_study_calendar()
 
     # --- 戰力與補題 ---
     def build_tab_stats(self):
@@ -831,160 +1096,14 @@ class CPTrackerApp:
         self.load_subjects()
         self.draw_study_calendar()
 
-    def delete_study_plan(self):
-        selected = self.list_study.curselection()
-        if not selected: return
-        idx = selected[0]
-        sid = self.study_ids[idx]
-        
-        conn = sqlite3.connect(DB_FILE)
-        cursor = conn.cursor()
-        cursor.execute("DELETE FROM study_plan WHERE id=?", (sid,))
-        conn.commit()
-        conn.close()
-        self.draw_study_calendar()
-
-    def change_study_week(self, delta):
-        self.study_week_offset += delta
-        self.draw_study_calendar()
-        
-    def reset_study_week_view(self, event=None):
-        if self.study_week_offset != 0:
-            self.study_week_offset = 0
-            self.draw_study_calendar()
-
-    def draw_study_calendar(self):
-        self.study_canvas.delete("all")
-        self.list_study.delete(0, tk.END)
-        self.study_ids.clear()
-
-        conn = sqlite3.connect(DB_FILE)
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM study_plan ORDER BY date DESC")
-        plans = cursor.fetchall()
-        cursor.execute("SELECT * FROM contests ORDER BY date DESC, time DESC")
-        contests = cursor.fetchall()
-        conn.close()
-
-        today = datetime.now().date()
-        idx = (today.weekday() + 1) % 7
-        sunday = today - timedelta(days=idx)
-        start_date = sunday + timedelta(weeks=self.study_week_offset)
-
-        if self.study_week_offset == 0:
-            self.lbl_study_week.config(text="本週", fg="#f39c12")
-        else:
-            mid_week = start_date + timedelta(days=3)
-            self.lbl_study_week.config(text=f"{mid_week.month} 月", fg="#3498db")
-
-        days_zh = ["日", "一", "二", "三", "四", "五", "六"]
-        col_width = 350 / 7
-
-        for i in range(7):
-            d = start_date + timedelta(days=i)
-            x_center = i * col_width + (col_width / 2) + 5
-            is_today = (d == today)
-            bg_color = "#ff4757" if is_today else "#1e1e1e"
-
-            self.study_canvas.create_text(x_center, 8, text=days_zh[i], fill="#7f8fa6", font=("Arial", 8))
-            if is_today:
-                self.study_canvas.create_oval(x_center-12, 16, x_center+12, 40, fill=bg_color, outline="")
-            self.study_canvas.create_text(x_center, 28, text=d.strftime("%d"), fill="white" if is_today else "gray", font=("Arial", 9, "bold"))
-
-            day_str = d.strftime("%m-%d")
-            y_offset = 46
-
-            for c in contests:
-                if c[2][-5:] == day_str:
-                    c_type = c[1]
-                    c_div = c[4]
-                    c_num = c[9] if len(c) > 9 else ""
-                    
-                    if c_type == "LC":
-                        text_disp = f"LC {c_num}\n{c_div}"
-                        box_col = "#e67e22"
-                    elif c_type == "Other":
-                        text_disp = f"{c_div[:8]}"
-                        box_col = "#9b59b6" 
-                    elif c_type == "CPE":
-                        text_disp = f"CPE {c_num}"
-                        box_col = "#27ae60"
-                    else:
-                        text_disp = f"CF {c_num}\n{c_div}"
-                        box_col = "#3498db"
-                        
-                    self.study_canvas.create_rectangle(x_center-col_width/2+2, y_offset, x_center+col_width/2-2, y_offset+28, fill="#2f3542", outline=box_col)
-                    self.study_canvas.create_text(x_center, y_offset+14, text=text_disp, fill=box_col, font=("Arial", 7, "bold"), justify="center")
-                    y_offset += 32
-
-            day_plans = [p for p in plans if p[2][-5:] == day_str]
-            def plan_priority(p):
-                status = p[5] if len(p) > 5 else 0
-                u = p[4]
-                u_score = 0 if u == "紅色緊急" else (2 if u == "可以放棄的白色" else 1)
-                return (status, u_score)
-                
-            day_plans.sort(key=plan_priority)
-
-            for p in day_plans:
-                u = p[4]
-                status = p[5] if len(p) > 5 else 0
-                if status == 1:
-                    box_col = "#7f8fa6" 
-                else:
-                    if u == "紅色緊急": box_col = "#e74c3c"
-                    elif u == "可以放棄的白色": box_col = "#ffffff"
-                    else: box_col = "#3498db"
-
-                subj_disp = p[1][:4]
-                cont_disp = p[3][:4]
-                text_disp = f"{subj_disp}\n{cont_disp}"
-
-                self.study_canvas.create_rectangle(x_center-col_width/2+2, y_offset, x_center+col_width/2-2, y_offset+30, fill="#2f3542", outline=box_col, tags=("study_item", f"plan_{p[0]}"))
-                self.study_canvas.create_text(x_center, y_offset+15, text=text_disp, fill=box_col, font=("", 8, ""), justify="center", tags=("study_item", f"plan_{p[0]}"))
-                y_offset += 32
-
-        for p in plans:
-            status = p[5] if len(p) > 5 else 0
-            if status != 1:
-                self.study_ids.append(p[0])
-                disp_date = p[2][-5:]
-                self.list_study.insert(tk.END, f"{disp_date} | {p[1]} | {p[3]} ({p[4]})")
-
-        self.study_canvas.yview_moveto(0)
-        bbox = self.study_canvas.bbox("all")
-        if bbox:
-            self.study_canvas.config(scrollregion=(0, 0, bbox[2], max(90, bbox[3] + 10)))
-
-    def on_study_item_double_click(self, event):
-        item = self.study_canvas.find_withtag("current")
-        if not item: return
-        tags = self.study_canvas.gettags(item[0])
-        plan_id = None
-        for t in tags:
-            if t.startswith("plan_"):
-                plan_id = t.split("_")[1]
-                break
-        
-        if plan_id:
-            conn = sqlite3.connect(DB_FILE)
-            cursor = conn.cursor()
-            cursor.execute("SELECT status FROM study_plan WHERE id=?", (plan_id,))
-            row = cursor.fetchone()
-            if row:
-                new_status = 1 if row[0] == 0 else 0
-                cursor.execute("UPDATE study_plan SET status=? WHERE id=?", (new_status, plan_id))
-                conn.commit()
-            conn.close()
-            self.draw_study_calendar()
-
     def show_guide(self):
         guide_text = (
             "🏆 【每日指南】\n\n"
             "🔴 Part 1: C++\n"
             "• 解題、看 Tutorial。\n\n"
             "🔵 Part 2: 課業\n"
-            "• 讀書與整理。\n\n"
+            "• 讀書與整理。\n"
+            "• 課業安排條列處：雙擊「日期 / 科目 / 內容 / 急迫性」任一儲存格可原地單獨修改！\n\n"
             "📅 賽事與自動化\n"
             "• Other 類別可以自訂賽事/任務分類，並單獨篩選！\n"
             "• 雙擊補題頁面的比賽，再次雙擊「編號/分類」即可原地修改！\n\n"
@@ -1016,7 +1135,6 @@ class CPTrackerApp:
         last_startup = cursor.fetchone()[0]
         
         if last_startup != today:
-            # 重置今日任務打卡勾選狀態
             self.cpp_done.set(False)
             self.school_done.set(False)
             self.sec_done.set(False)
@@ -1024,12 +1142,13 @@ class CPTrackerApp:
             self.eng_done.set(False)
             self.water_done.set(False)
             
-            # --- 跨日時間軸自動轉移邏輯 ---
-            # 1. 刪除昨天的今日排程
-            cursor.execute("DELETE FROM hourly_schedule WHERE day_type='today'")
-            # 2. 將昨天的明日排程轉移為今日排程
-            cursor.execute("UPDATE hourly_schedule SET day_type='today' WHERE day_type='tomorrow'")
-            # ------------------------------
+            cursor.execute("SELECT value FROM app_config WHERE key='timeline_shift_date'")
+            row = cursor.fetchone()
+            last_shift = row[0] if row else '2000-01-01'
+            if last_shift != today:
+                cursor.execute("DELETE FROM hourly_schedule WHERE day_type='today'")
+                cursor.execute("UPDATE hourly_schedule SET day_type='today' WHERE day_type='tomorrow'")
+                cursor.execute("INSERT OR REPLACE INTO app_config (key, value) VALUES ('timeline_shift_date', ?)", (today,))
 
             cursor.execute("UPDATE app_config SET value=? WHERE key='last_startup'", (today,))
             conn.commit()
@@ -1039,6 +1158,7 @@ class CPTrackerApp:
             self.render_hourly_timeline()
             
         conn.close()
+        self.check_night_shift()
         self.root.after(60000, self.check_cross_day)
 
     def change_week(self, delta):
