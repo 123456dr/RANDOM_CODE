@@ -1,7 +1,8 @@
-import tkinter as tk
-from tkinter import ttk, messagebox
-import sqlite3
 from datetime import datetime, timedelta
+import os
+import sqlite3
+import tkinter as tk
+from tkinter import messagebox, ttk
 
 DB_FILE = 'cp_tracker.db'
 
@@ -11,7 +12,6 @@ class CPTrackerApp:
         self.root.title("RC Tracker")
         
         try:
-            import os
             if os.name == 'nt':
                 import ctypes
                 ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("my_cp_tracker_app")
@@ -53,10 +53,14 @@ class CPTrackerApp:
         self.ignore_next_click = False 
         
         # 時間軸選取管理
-        self.selected_timeline_cells = set() # 格式: (day_type, hour)
-        self.timeline_labels = {}           # 保存標籤元件: (day_type, merge_id) -> widget
+        self.selected_timeline_cells = set() # (day_type, hour)
+        self.timeline_labels = {}           # (day_type, merge_id) -> widget
         self.last_rendered_hour = None
         
+        # 赤榜拖曳管理變數
+        self.drag_item = None
+        self.is_dragging = False
+
         self.notebook = ttk.Notebook(self.root)
         self.notebook.pack(expand=True, fill='both', padx=5, pady=2)
         
@@ -64,6 +68,7 @@ class CPTrackerApp:
         self.build_tab_calendar()
         self.build_tab_study()  
         self.build_tab_stats()
+        self.build_tab_redlist() # 猛的赤榜
 
         self.check_cross_day()
         self.load_daily_status()
@@ -101,6 +106,17 @@ class CPTrackerApp:
                           text TEXT, 
                           PRIMARY KEY(day_type, hour))''')
 
+        # 赤榜資料表 (增加 sort_order 欄位)
+        cursor.execute('''CREATE TABLE IF NOT EXISTS red_list (
+                          id INTEGER PRIMARY KEY AUTOINCREMENT,
+                          dream TEXT,
+                          difficulty TEXT,
+                          time_cost TEXT,
+                          status INTEGER DEFAULT 0,
+                          sort_order INTEGER DEFAULT 0)''')
+
+        try: cursor.execute("ALTER TABLE red_list ADD COLUMN sort_order INTEGER DEFAULT 0")
+        except: pass
         try: cursor.execute("ALTER TABLE streaks ADD COLUMN prev_checkin DATE DEFAULT '2000-01-01'")
         except: pass
         try: cursor.execute("ALTER TABLE contests ADD COLUMN probs TEXT DEFAULT ''")
@@ -453,7 +469,6 @@ class CPTrackerApp:
             
             conn = sqlite3.connect(DB_FILE)
             cursor = conn.cursor()
-            
             cursor.execute("SELECT hour FROM hourly_schedule WHERE day_type=? AND merge_id=?", (day_type, merge_id))
             rows = cursor.fetchall()
 
@@ -1458,6 +1473,259 @@ class CPTrackerApp:
         self.lbl_stats.config(text=f"🏆 CF {cf_cnt} | LC {lc_cnt} | CPE {cpe_cnt} | 另 {other_cnt}\n🔥 解出: {tot_solved} 項 | 🛠️ 賽後補題: {tot_up} 題")
         conn.close()
 
+    # --- 猛的赤榜 ---
+    def build_tab_redlist(self):
+        tab = ttk.Frame(self.notebook)
+        self.notebook.add(tab, text="猛的赤榜")
+
+        input_frame = tk.Frame(tab)
+        input_frame.pack(fill="x", padx=4, pady=3)
+
+        tk.Label(input_frame, text="夢:", font=("Arial", 8)).grid(row=0, column=0, sticky="e")
+        self.entry_red_dream = tk.Entry(input_frame, width=15)
+        self.entry_red_dream.grid(row=0, column=1, padx=2, pady=2, sticky="w")
+
+        tk.Label(input_frame, text="難度:", font=("Arial", 8)).grid(row=0, column=2, sticky="e")
+        self.combo_red_diff = ttk.Combobox(input_frame, values=["高", "中", "低", ""], width=4, state="readonly")
+        self.combo_red_diff.set("中")
+        self.combo_red_diff.grid(row=0, column=3, padx=2, pady=2)
+
+        tk.Label(input_frame, text="耗時:", font=("Arial", 8)).grid(row=0, column=4, sticky="e")
+        self.combo_red_time = ttk.Combobox(input_frame, values=["大", "中", "少", ""], width=4, state="readonly")
+        self.combo_red_time.set("中")
+        self.combo_red_time.grid(row=0, column=5, padx=2, pady=2)
+
+        tk.Button(input_frame, text="新增", command=self.add_red_item, bg="#e74c3c", fg="white", font=("Arial", 8, "bold"), width=5).grid(row=0, column=6, padx=4)
+
+        tk.Label(tab, text="💡 提示：可按住項目上下拖移排序；點擊狀態可切換完成", font=("Arial", 8), fg="gray").pack(anchor="w", padx=6, pady=1)
+
+        table_frame = tk.Frame(tab)
+        table_frame.pack(fill="both", expand=True, padx=4, pady=2)
+
+        cols = ('ID', '狀態', '夢想清單', '難度', '耗時')
+        disp_cols = ('狀態', '夢想清單', '難度', '耗時')
+        self.tree_red = ttk.Treeview(table_frame, columns=cols, displaycolumns=disp_cols, show='headings', selectmode='browse')
+        
+        widths = {'狀態': 55, '夢想清單': 210, '難度': 45, '耗時': 50}
+        for c in disp_cols:
+            self.tree_red.heading(c, text=c, anchor='center')
+            self.tree_red.column(c, width=widths.get(c, 60), anchor='center')
+
+        red_scroll = ttk.Scrollbar(table_frame, orient="vertical", command=self.tree_red.yview)
+        self.tree_red.configure(yscrollcommand=red_scroll.set)
+
+        self.tree_red.pack(side=tk.LEFT, fill="both", expand=True)
+        red_scroll.pack(side=tk.LEFT, fill="y")
+
+        btn_frame = tk.Frame(table_frame)
+        btn_frame.pack(side=tk.RIGHT, fill="y", padx=2)
+        tk.Button(btn_frame, text="刪除", command=self.delete_red_item, bg="#e74c3c", fg="white", font=("Arial", 8), width=4).pack(pady=2, fill="x")
+        
+        # 赤榜專屬說明按鈕
+        btn_red_info = tk.Button(btn_frame, text=" ℹ ", font=("Arial", 9, "bold"), relief="flat", fg="gray", cursor="hand2", command=self.show_red_guide)
+        btn_red_info.pack(side=tk.BOTTOM, pady=2)
+
+        # 綁定拖曳與點擊事件
+        self.tree_red.bind('<Button-1>', self.on_red_tree_press)
+        self.tree_red.bind('<B1-Motion>', self.on_red_tree_drag)
+        self.tree_red.bind('<ButtonRelease-1>', self.on_red_tree_release)
+        self.tree_red.bind('<Double-1>', self.on_red_tree_double_click)
+
+        self.tree_red.tag_configure('done', foreground='#95a5a6')
+        self.tree_red.tag_configure('todo', foreground='#2c3e50')
+
+        self.load_red_items()
+
+    def show_red_guide(self):
+        guide_text = (
+            "🚩 【猛的赤榜指南】\n\n"
+            "• 記錄一直想做但尚未實現的願望清單。\n"
+            "• 長按項目上下拖移即可直接調整先後排序。\n"
+            "• 雙擊內容格子可隨時進行編輯與修改。\n\n"
+            "THIS PAGE SINCE 115/07/16 RC"
+        )
+        messagebox.showinfo("猛的赤榜", guide_text)
+
+    def add_red_item(self):
+        dream = self.entry_red_dream.get().strip()
+        diff = self.combo_red_diff.get().strip()
+        t_cost = self.combo_red_time.get().strip()
+
+        if not dream:
+            messagebox.showerror("錯誤", "夢想項目不可為空！")
+            return
+
+        conn = sqlite3.connect(DB_FILE)
+        cursor = conn.cursor()
+        cursor.execute("SELECT MIN(sort_order) FROM red_list")
+        min_order = cursor.fetchone()[0]
+        new_order = (min_order - 1) if (min_order is not None) else 0
+
+        cursor.execute("INSERT INTO red_list (dream, difficulty, time_cost, status, sort_order) VALUES (?, ?, ?, 0, ?)",
+                       (dream, diff, t_cost, new_order))
+        conn.commit()
+        conn.close()
+
+        self.entry_red_dream.delete(0, 'end')
+        self.load_red_items()
+
+    def load_red_items(self):
+        for r in self.tree_red.get_children():
+            self.tree_red.delete(r)
+
+        conn = sqlite3.connect(DB_FILE)
+        cursor = conn.cursor()
+        cursor.execute("SELECT id, status, dream, difficulty, time_cost FROM red_list ORDER BY sort_order ASC, id DESC")
+        rows = cursor.fetchall()
+        conn.close()
+
+        for r in rows:
+            rid, status, dream, diff, t_cost = r
+            status_icon = "✔" if status == 1 else "⬜"
+            tag = 'done' if status == 1 else 'todo'
+            self.tree_red.insert("", "end", values=(rid, status_icon, dream, diff or "-", t_cost or "-"), tags=(tag,))
+
+    # --- 拖曳排序機制 ---
+    def on_red_tree_press(self, event):
+        region = self.tree_red.identify_region(event.x, event.y)
+        if region != "cell":
+            return
+            
+        col_id = self.tree_red.identify_column(event.x)
+        row_id = self.tree_red.identify_row(event.y)
+
+        # 點擊狀態圖示切換完成狀態
+        if col_id == '#1' and row_id:
+            vals = self.tree_red.item(row_id, 'values')
+            if vals:
+                rid = vals[0]
+                new_status = 0 if vals[1] == "✔" else 1
+
+                conn = sqlite3.connect(DB_FILE)
+                cursor = conn.cursor()
+                cursor.execute("UPDATE red_list SET status=? WHERE id=?", (new_status, rid))
+                conn.commit()
+                conn.close()
+                self.load_red_items()
+                return "break"
+
+        # 記錄準備拖曳的項目
+        if row_id:
+            self.drag_item = row_id
+            self.is_dragging = False
+
+    def on_red_tree_drag(self, event):
+        if not self.drag_item:
+            return
+            
+        self.is_dragging = True
+        target_row = self.tree_red.identify_row(event.y)
+        
+        # 拖曳時動態換位
+        if target_row and target_row != self.drag_item:
+            children = list(self.tree_red.get_children())
+            drag_idx = children.index(self.drag_item)
+            target_idx = children.index(target_row)
+            
+            self.tree_red.move(self.drag_item, '', target_idx)
+            self.tree_red.selection_set(self.drag_item)
+
+    def on_red_tree_release(self, event):
+        if self.is_dragging and self.drag_item:
+            # 放開時儲存新的順序到資料庫
+            self.save_red_item_order()
+            
+        self.drag_item = None
+        self.is_dragging = False
+
+    def save_red_item_order(self):
+        items = self.tree_red.get_children()
+        conn = sqlite3.connect(DB_FILE)
+        cursor = conn.cursor()
+        
+        for idx, item in enumerate(items):
+            rid = self.tree_red.item(item, 'values')[0]
+            cursor.execute("UPDATE red_list SET sort_order=? WHERE id=?", (idx, rid))
+            
+        conn.commit()
+        conn.close()
+
+    def on_red_tree_double_click(self, event):
+        region = self.tree_red.identify_region(event.x, event.y)
+        if region != "cell": return
+        row_id = self.tree_red.identify_row(event.y)
+        col_id = self.tree_red.identify_column(event.x)
+        if not row_id or not col_id: return
+
+        if col_id == '#1':
+            return
+
+        col_idx = int(col_id.replace('#', '')) - 1
+        disp_cols = ('狀態', '夢想清單', '難度', '耗時')
+        if col_idx >= len(disp_cols): return
+        field_name = disp_cols[col_idx]
+
+        item_vals = self.tree_red.item(row_id, 'values')
+        if not item_vals: return
+        rid = item_vals[0]
+        cur_val = item_vals[col_idx + 1]
+
+        x, y, w, h = self.tree_red.bbox(row_id, col_id)
+
+        if field_name == "難度":
+            edit_widget = ttk.Combobox(self.tree_red, values=["高", "中", "低", ""], state="readonly", font=("Arial", 8), justify="center")
+            edit_widget.set(cur_val if cur_val != "-" else "")
+        elif field_name == "耗時":
+            edit_widget = ttk.Combobox(self.tree_red, values=["大", "中", "少", ""], state="readonly", font=("Arial", 8), justify="center")
+            edit_widget.set(cur_val if cur_val != "-" else "")
+        else:
+            edit_widget = tk.Entry(self.tree_red, font=("Arial", 8), justify="center")
+            edit_widget.insert(0, cur_val)
+
+        edit_widget.place(x=x, y=y, width=w, height=h)
+        edit_widget.focus_set()
+
+        def _save_cell(e=None):
+            new_val = edit_widget.get().strip()
+            edit_widget.destroy()
+            if new_val == cur_val: return
+
+            conn = sqlite3.connect(DB_FILE)
+            cursor = conn.cursor()
+            if field_name == "夢想清單":
+                if not new_val:
+                    messagebox.showerror("錯誤", "夢想名稱不能為空！")
+                    conn.close()
+                    return
+                cursor.execute("UPDATE red_list SET dream=? WHERE id=?", (new_val, rid))
+            elif field_name == "難度":
+                cursor.execute("UPDATE red_list SET difficulty=? WHERE id=?", (new_val, rid))
+            elif field_name == "耗時":
+                cursor.execute("UPDATE red_list SET time_cost=? WHERE id=?", (new_val, rid))
+
+            conn.commit()
+            conn.close()
+            self.load_red_items()
+
+        edit_widget.bind("<Return>", _save_cell)
+        edit_widget.bind("<FocusOut>", _save_cell)
+        if field_name in ("難度", "耗時"):
+            edit_widget.bind("<<ComboboxSelected>>", _save_cell)
+
+    def delete_red_item(self):
+        selected = self.tree_red.selection()
+        if not selected: return
+        vals = self.tree_red.item(selected[0], 'values')
+        if not vals: return
+        rid = vals[0]
+
+        conn = sqlite3.connect(DB_FILE)
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM red_list WHERE id=?", (rid,))
+        conn.commit()
+        conn.close()
+        self.load_red_items()
+
     def add_timer(self, seconds):
         self.total_seconds += seconds
         self.remaining_seconds += seconds
@@ -1604,6 +1872,8 @@ class CPTrackerApp:
             "📅 賽事與自動化\n"
             "• Other 類別可以自訂賽事/任務分類，並單獨篩選！\n"
             "• 雙擊戰力補題頁面比賽，可深入勾選各題進度！\n\n"
+            "🚩 猛的赤榜\n"
+            "• 記錄一直想做但尚未實現的願望，可設定難度與耗時，長按項目可拖移排序！\n\n"
             "(本地 db 好耶!\n"
             "SINCE 115/07/16 RC"
         )

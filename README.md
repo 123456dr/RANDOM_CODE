@@ -4,6 +4,9 @@ JUST [C](./Code/)ODE
 ![Repo Snake](https://raw.githubusercontent.com/123456dr/RANDOM_CODE/output/repo-snake-dark.svg)<!--[![GitHub Activity Graph](https://github-readme-activity-graph.vercel.app/graph?username=123456dr&repo=RANDOM_CODE&theme=github-dark)](https://github.com/123456dr/RANDOM_CODE) --><br>![GitHub last commit](https://img.shields.io/github/last-commit/123456dr/RANDOM_CODE?style=flat-square&color=green) ![GitHub commit activity](https://img.shields.io/github/commit-activity/m/123456dr/RANDOM_CODE?style=flat-square&color=green)
 <details><summary>NOTE</summary>
 
+- `vector .erase(指標或範圍)`
+- `GCD` 最大公因 `Greatest Common Divisor`
+- `LCM` 最小公倍 `Least Common Multiple`
 - [二分搜](./Code/UT/ALGO/ME1/b.cpp) => `左閉右閉` & `條件 l <= r`
 - `priority_queue<int, vector<int>, greater<int>> pq` Min-Heap, pq 對應 top()
 - `sort(v.rbegin(), v.rend())` => `vector` 大到小
@@ -18,8 +21,6 @@ JUST [C](./Code/)ODE
 - `printf` 不可 `ios::...` 加速
 - `char ca = 'A' | 32 = 'a'` => `tolower(c), toupper(c)`
 - 三元運算子回傳型別相同 => `a ? to_string(mp[i]-'0) : ""`
-- `GCD` 最大公因
-- `LCM` 最小公倍
 - `MST` 最小生成樹
 - [QuickPower ](./Code/Luogu/QuickPower.cpp)快速冪_位元右移_奇偶 `&1` 交集運算
 - **「必須先排序」** 二分搜回傳迭代器, `*it` 取址, 找不到 `== v.end()`
