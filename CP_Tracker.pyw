@@ -1066,7 +1066,7 @@ class CPTrackerApp:
         
         study_cols = ('ID', '日期', '科目', '內容', '急迫性')
         study_disp = ('日期', '科目', '內容', '急迫性')
-        self.tree_study = ttk.Treeview(tree_container, columns=study_cols, displaycolumns=study_disp, show='headings', height=4)
+        self.tree_study = ttk.Treeview(tree_container, columns=study_cols, displaycolumns=study_disp, show='headings', height=2)
         
         col_widths = {'日期': 55, '科目': 75, '內容': 160, '急迫性': 90}
         for c in study_disp:
@@ -1169,7 +1169,8 @@ class CPTrackerApp:
 
         conn = sqlite3.connect(DB_FILE)
         cursor = conn.cursor()
-        cursor.execute("SELECT * FROM study_plan ORDER BY date DESC")
+        # 改為 date ASC，讓下半部條列與上方關聯清單由近到遠排序
+        cursor.execute("SELECT * FROM study_plan ORDER BY date ASC")
         plans = cursor.fetchall()
         cursor.execute("SELECT * FROM contests ORDER BY date DESC, time DESC")
         contests = cursor.fetchall()
@@ -1253,6 +1254,7 @@ class CPTrackerApp:
                 self.study_canvas.create_text(x_center, y_offset+15, text=text_disp, fill=box_col, font=("", 8, ""), justify="center", tags=("study_item", f"plan_{p[0]}"))
                 y_offset += 32
 
+        # 寫入下方 Treeview（已按照 date ASC 插入，最近的在最上方）
         for p in plans:
             status = p[5] if len(p) > 5 else 0
             if status != 1:
@@ -1263,7 +1265,7 @@ class CPTrackerApp:
         bbox = self.study_canvas.bbox("all")
         if bbox:
             self.study_canvas.config(scrollregion=(0, 0, bbox[2], max(90, bbox[3] + 10)))
-
+    
     def on_study_item_double_click(self, event):
         item = self.study_canvas.find_withtag("current")
         if not item: return
