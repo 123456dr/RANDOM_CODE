@@ -30,13 +30,25 @@ class CPTrackerApp:
         self.root.geometry(f"{window_width}x{window_height}+{x}+{y}")
         
         self.plat_map = {'C++': 'cpp', '課業': 'school', '資安': 'sec', '專案': 'project', '英文': 'eng', '躲水裡': 'water'}
+        self.task_order = ['英文', 'C++', '專案', '課業', '資安']   # 每日打卡順序
         
         self.init_db()
         
+        # ===== 計時器狀態 =====
+        self.WARMUP_SEC = 300        # 開始時先倒數 5 分鐘
+        self.FOCUS_CYCLE_SEC = 1500  # 碼表每 25 分鐘提醒休息
+        self.BREAK_SEC = 300         # 休息 5 分鐘
+        self.timer_phase = 'idle'    # idle / warmup / focus / break
         self.timer_running = False
-        self.total_seconds = 0
-        self.remaining_seconds = self.total_seconds
-        self.alerted_checkpoints = set()
+        self.phase_remaining = self.WARMUP_SEC
+        self.focus_elapsed = 0       # 碼表顯示的總時間
+        self.cycle_elapsed = 0       # 這一輪番茄已經數了多久
+        self.pomodoro_count = 0
+        self.session_work_sec = 0    # 這次總共專注幾秒（不含休息）
+        self.unrecorded = 0          # 還沒寫進資料庫的秒數
+        self.current_timer_target = None
+        self._timer_job = None
+        self.timer_popup = None
         
         self.cpp_done = tk.BooleanVar(value=False)
         self.school_done = tk.BooleanVar(value=False)
@@ -44,6 +56,10 @@ class CPTrackerApp:
         self.project_done = tk.BooleanVar(value=False)
         self.eng_done = tk.BooleanVar(value=False)
         self.water_done = tk.BooleanVar(value=False)
+
+        self.task_labels = {}        # 目前畫面上的打卡標籤
+        self.show_others = False     # 是否展開其他項目
+        self.plan_entries = {}       # (day_type, slot) -> Entry
         
         self.week_offset = 0
         self.study_week_offset = 0
@@ -52,10 +68,10 @@ class CPTrackerApp:
         self.popup_timer = None
         self.ignore_next_click = False 
         
-        # 時間軸選取管理
-        self.selected_timeline_cells = set() # (day_type, hour)
-        self.timeline_labels = {}           # (day_type, merge_id) -> widget
+        # 時間軸
+        self.timeline_labels = {}
         self.last_rendered_hour = None
+        self.editable_hours = set()
         
         # 赤榜拖曳管理變數
         self.drag_item = None
@@ -73,8 +89,10 @@ class CPTrackerApp:
         self.check_cross_day()
         self.load_daily_status()
         self.poll_timeline_update()
+        self.update_today_accum_label()
         
         self.root.bind_all("<Button-1>", self.close_popup_on_click, add="+")
+        self.root.protocol("WM_DELETE_WINDOW", self.on_close)
 
     def init_db(self):
         conn = sqlite3.connect(DB_FILE)
@@ -106,7 +124,7 @@ class CPTrackerApp:
                           text TEXT, 
                           PRIMARY KEY(day_type, hour))''')
 
-        # 赤榜資料表 (增加 sort_order 欄位)
+        # 赤榜資料表
         cursor.execute('''CREATE TABLE IF NOT EXISTS red_list (
                           id INTEGER PRIMARY KEY AUTOINCREMENT,
                           dream TEXT,
@@ -115,9 +133,18 @@ class CPTrackerApp:
                           status INTEGER DEFAULT 0,
                           sort_order INTEGER DEFAULT 0)''')
 
+        # 今日 / 明日計畫（各 4 格）
+        cursor.execute('''CREATE TABLE IF NOT EXISTS plan_slots (
+                          day_type TEXT,
+                          slot INTEGER,
+                          text TEXT,
+                          PRIMARY KEY(day_type, slot))''')
+
         try: cursor.execute("ALTER TABLE red_list ADD COLUMN sort_order INTEGER DEFAULT 0")
         except: pass
         try: cursor.execute("ALTER TABLE streaks ADD COLUMN prev_checkin DATE DEFAULT '2000-01-01'")
+        except: pass
+        try: cursor.execute("ALTER TABLE streaks ADD COLUMN manually_unchecked_date DATE DEFAULT '2000-01-01'")
         except: pass
         try: cursor.execute("ALTER TABLE contests ADD COLUMN probs TEXT DEFAULT ''")
         except: pass
@@ -151,9 +178,9 @@ class CPTrackerApp:
             cursor.execute("SELECT current_streak, last_checkin, prev_checkin FROM streaks WHERE platform='Project'")
             proj_s = cursor.fetchone() or (0, '2000-01-01', '2000-01-01')
 
-            cursor.execute("INSERT OR REPLACE INTO streaks VALUES (?, ?, ?, ?)", ('C++', cpp_streak, cpp_last, cpp_prev))
-            cursor.execute("INSERT OR REPLACE INTO streaks VALUES (?, ?, ?, ?)", ('資安', pico_s[0], pico_s[1], pico_s[2]))
-            cursor.execute("INSERT OR REPLACE INTO streaks VALUES (?, ?, ?, ?)", ('專案', proj_s[0], proj_s[1], proj_s[2]))
+            cursor.execute("INSERT OR REPLACE INTO streaks (platform, current_streak, last_checkin, prev_checkin) VALUES (?, ?, ?, ?)", ('C++', cpp_streak, cpp_last, cpp_prev))
+            cursor.execute("INSERT OR REPLACE INTO streaks (platform, current_streak, last_checkin, prev_checkin) VALUES (?, ?, ?, ?)", ('資安', pico_s[0], pico_s[1], pico_s[2]))
+            cursor.execute("INSERT OR REPLACE INTO streaks (platform, current_streak, last_checkin, prev_checkin) VALUES (?, ?, ?, ?)", ('專案', proj_s[0], proj_s[1], proj_s[2]))
             cursor.execute("DELETE FROM streaks WHERE platform IN ('CF', 'CSES', 'picoCTF', 'Project')")
 
             cursor.execute("SELECT daily_time, total_time, last_date FROM time_stats WHERE platform='CF'")
@@ -193,105 +220,76 @@ class CPTrackerApp:
                 cursor.execute("UPDATE time_stats SET daily_time=0, total_time=0, last_date='2000-01-01' WHERE platform='課業'")
 
         for plat in ['C++', '課業', '資安', '專案', '英文', '躲水裡']:
-            cursor.execute("INSERT OR IGNORE INTO streaks (platform, current_streak, last_checkin, prev_checkin) VALUES (?, 0, '2000-01-01', '2000-01-01')", (plat,))
+            cursor.execute("INSERT OR IGNORE INTO streaks (platform, current_streak, last_checkin, prev_checkin, manually_unchecked_date) VALUES (?, 0, '2000-01-01', '2000-01-01', '2000-01-01')", (plat,))
             cursor.execute("INSERT OR IGNORE INTO time_stats VALUES (?, 0, 0, '2000-01-01')", (plat,))
                 
         conn.commit()
         conn.close()
 
-    def show_center_alert(self, title, message):
-        popup = tk.Toplevel(self.root)
-        popup.title(title)
-        popup.attributes("-topmost", True)
-        
-        w, h = 300, 150
-        sw = popup.winfo_screenwidth()
-        sh = popup.winfo_screenheight()
-        cx = int((sw - w) / 2)
-        cy = int((sh - h) / 2)
-        popup.geometry(f"{w}x{h}+{cx}+{cy}")
-        popup.resizable(False, False)
+    def get_today_total_study_seconds(self):
+        today = datetime.now().strftime('%Y-%m-%d')
+        conn = sqlite3.connect(DB_FILE)
+        cursor = conn.cursor()
+        cursor.execute("SELECT SUM(daily_time) FROM time_stats WHERE last_date=?", (today,))
+        row = cursor.fetchone()
+        conn.close()
+        return row[0] if row and row[0] else 0
 
-        frame = tk.Frame(popup, padx=15, pady=15)
-        frame.pack(expand=True, fill="both")
-
-        lbl = tk.Label(frame, text=message, font=("Arial", 11, "bold"), fg="#e74c3c", wraplength=260)
-        lbl.pack(expand=True, pady=(10, 15))
-
-        btn = tk.Button(frame, text="我知道了", command=popup.destroy, bg="#3498db", fg="white", width=10, relief="groove")
-        btn.pack()
-        
-        popup.grab_set()
-        popup.focus_force()
+    def update_today_accum_label(self):
+        if not hasattr(self, 'lbl_today_accum'):
+            return
+        total_sec = self.get_today_total_study_seconds()
+        hrs = total_sec // 3600
+        mins = (total_sec % 3600) // 60
+        self.lbl_today_accum.config(text=f"今日累積: {hrs}h {mins}m")
 
     def build_tab_daily(self):
         tab = ttk.Frame(self.notebook)
         self.notebook.add(tab, text="日常打卡")
 
-        self.time_label = tk.Label(tab, text="00:00:00", font=("Helvetica", 28, "bold"), fg="#e74c3c")
-        self.time_label.pack(pady=1)
+        timer_container = tk.Frame(tab)
+        timer_container.pack(pady=(1, 0), fill="x")
+
+        self.time_label = tk.Label(timer_container, text="00:05:00", font=("Helvetica", 28, "bold"), fg="#e74c3c")
+        self.time_label.pack()
+
+        self.lbl_today_accum = tk.Label(timer_container, text="今日累積: 0h 0m", font=("Arial", 8), fg="#7f8c8d")
+        self.lbl_today_accum.place(relx=1.0, rely=1.0, anchor="se", x=-18, y=-2)
+
+        self.lbl_phase = tk.Label(timer_container, text="", font=("Arial", 8), fg="#7f8c8d")
+        self.lbl_phase.place(relx=0.0, rely=1.0, anchor="sw", x=18, y=-2)
         
         ctrl_frame = tk.Frame(tab)
         ctrl_frame.pack(pady=0)
         
         tk.Label(ctrl_frame, text=" ", font=("Arial", 9)).pack(side=tk.LEFT, padx=2)
-        self.combo_target = ttk.Combobox(ctrl_frame, values=["C++", "課業", "資安", "專案", "英文", "躲水裡"], width=5, state="readonly")
+        self.combo_target = ttk.Combobox(ctrl_frame, values=self.task_order, width=5, state="readonly")
         self.combo_target.pack(side=tk.LEFT, padx=2)
+        self.combo_target.bind("<<ComboboxSelected>>", self.on_target_changed)
         
-        tk.Button(ctrl_frame, text="+1小時", command=lambda: self.add_timer(3600), font=("Arial", 8)).pack(side=tk.LEFT, padx=2)
-        tk.Button(ctrl_frame, text="+15分", command=lambda: self.add_timer(900), font=("Arial", 8)).pack(side=tk.LEFT, padx=2)
-        tk.Button(ctrl_frame, text="+5分", command=lambda: self.add_timer(300), font=("Arial", 8)).pack(side=tk.LEFT, padx=2)
-        
-        tk.Button(ctrl_frame, text="開始", command=self.start_timer, bg="#2ecc71", fg="white", width=4).pack(side=tk.LEFT, padx=2)
-        tk.Button(ctrl_frame, text="暫停", command=self.stop_timer, bg="#f39c12", fg="white", width=4).pack(side=tk.LEFT, padx=2)
-        tk.Button(ctrl_frame, text="重置", command=self.reset_timer, bg="#34495e", fg="white", width=4).pack(side=tk.LEFT, padx=2)
+        self.btn_start_pause = tk.Button(ctrl_frame, text="開始", command=self.toggle_timer, bg="#2ecc71", fg="white", width=4)
+        self.btn_start_pause.pack(side=tk.LEFT, padx=2)
+        tk.Button(ctrl_frame, text="結束", command=self.end_timer, bg="#34495e", fg="white", width=4).pack(side=tk.LEFT, padx=2)
 
         main_content = tk.Frame(tab)
         main_content.pack(fill="both", expand=True, padx=10, pady=2)
 
-        check_frame = tk.LabelFrame(main_content, text="今日任務", font=("Arial", 9))
-        check_frame.pack(side=tk.LEFT, fill="y", padx=(0, 10), pady=2)
+        self.check_frame = tk.LabelFrame(main_content, text="今日任務", font=("Arial", 9))
+        self.check_frame.pack(side=tk.LEFT, fill="y", padx=(0, 10), pady=2)
+        self.check_frame.columnconfigure(0, minsize=140)
 
-        self.lbl_cpp_streak = tk.Label(check_frame, text="C++ cnt: 0 | 0.0 hr", font=("Arial", 9))
-        self.lbl_cpp_streak.grid(row=0, column=0, sticky="w", padx=5, pady=2)
-        self.lbl_cpp_streak.bind('<Double-1>', lambda e: self.show_last_checkin(e, 'C++'))
-        tk.Checkbutton(check_frame, text="", variable=self.cpp_done, command=lambda: self.handle_checkin('C++')).grid(row=0, column=1, sticky="w")
-
-        self.lbl_school_streak = tk.Label(check_frame, text="課業 cnt: 0 | 0.0 hr", font=("Arial", 9))
-        self.lbl_school_streak.grid(row=1, column=0, sticky="w", padx=5, pady=2)
-        self.lbl_school_streak.bind('<Double-1>', lambda e: self.show_last_checkin(e, '課業'))
-        tk.Checkbutton(check_frame, text="", variable=self.school_done, command=lambda: self.handle_checkin('課業')).grid(row=1, column=1, sticky="w")
-
-        self.lbl_sec_streak = tk.Label(check_frame, text="資安 cnt: 0 | 0.0 hr", font=("Arial", 9))
-        self.lbl_sec_streak.grid(row=2, column=0, sticky="w", padx=5, pady=2)
-        self.lbl_sec_streak.bind('<Double-1>', lambda e: self.show_last_checkin(e, '資安'))
-        tk.Checkbutton(check_frame, text="", variable=self.sec_done, command=lambda: self.handle_checkin('資安')).grid(row=2, column=1, sticky="w")
-        
-        self.lbl_project_streak = tk.Label(check_frame, text="專案 cnt: 0 | 0.0 hr", font=("Arial", 9))
-        self.lbl_project_streak.grid(row=3, column=0, sticky="w", padx=5, pady=2)
-        self.lbl_project_streak.bind('<Double-1>', lambda e: self.show_last_checkin(e, '專案'))
-        tk.Checkbutton(check_frame, text="", variable=self.project_done, command=lambda: self.handle_checkin('專案')).grid(row=3, column=1, sticky="w")
-
-        self.lbl_eng_streak = tk.Label(check_frame, text="英文 cnt: 0 | 0.0 hr", font=("Arial", 9))
-        self.lbl_eng_streak.grid(row=4, column=0, sticky="w", padx=5, pady=2)
-        self.lbl_eng_streak.bind('<Double-1>', lambda e: self.show_last_checkin(e, '英文'))
-        tk.Checkbutton(check_frame, text="", variable=self.eng_done, command=lambda: self.handle_checkin('英文')).grid(row=4, column=1, sticky="w")
-        
-        self.lbl_water_streak = tk.Label(check_frame, text="躲水裡 cnt: 0 | 0.0 hr", font=("Arial", 9))
-        self.lbl_water_streak.grid(row=5, column=0, sticky="w", padx=5, pady=2)
-        self.lbl_water_streak.bind('<Double-1>', lambda e: self.show_last_checkin(e, '躲水裡'))
-        tk.Checkbutton(check_frame, text="", variable=self.water_done, command=lambda: self.handle_checkin('躲水裡')).grid(row=5, column=1, sticky="w")
-
-        self.timeline_frame = tk.LabelFrame(main_content, text="當下與明日安排 (單擊編輯 | Ctrl+單擊多選合併)", font=("Arial", 8))
+        self.timeline_frame = tk.LabelFrame(main_content, text="當下與今明計畫 (單擊編輯當前兩小時)", font=("Arial", 8))
         self.timeline_frame.pack(side=tk.LEFT, fill="both", expand=True, pady=2)
-
-        action_bar = tk.Frame(self.timeline_frame)
-        action_bar.pack(fill="x", padx=5, pady=1)
-        tk.Button(action_bar, text="合併選取", font=("Arial", 8), command=self.merge_selected_timeline).pack(side=tk.LEFT, padx=2)
-        tk.Button(action_bar, text="取消合併", font=("Arial", 8), command=self.unmerge_selected_timeline).pack(side=tk.LEFT, padx=2)
 
         self.timeline_grid_frame = tk.Frame(self.timeline_frame)
         self.timeline_grid_frame.pack(fill="both", expand=True, padx=2, pady=1)
+
+        # 右：今日 / 明日計畫；左：今日剩餘時程
+        self.plan_area = tk.Frame(self.timeline_grid_frame)
+        self.plan_area.pack(side=tk.RIGHT, fill="y", padx=(0, 2))
+        ttk.Separator(self.timeline_grid_frame, orient='vertical').pack(side=tk.RIGHT, fill='y', padx=6)
+        self.hours_area = tk.Frame(self.timeline_grid_frame)
+        self.hours_area.pack(side=tk.LEFT, fill="both", expand=True)
 
         bottom_frame = tk.Frame(tab)
         bottom_frame.pack(fill="x", side=tk.BOTTOM, pady=2, padx=10)
@@ -302,61 +300,150 @@ class CPTrackerApp:
         btn_info = tk.Button(bottom_frame, text=" ℹ ", font=("Arial", 10, "bold"), relief="flat", fg="gray", cursor="hand2", command=self.show_guide)
         btn_info.pack(side=tk.RIGHT)
 
+        self.build_plan_area()
         self.render_hourly_timeline()
+        self.render_checkin_panel()
+        self._show_time()
 
-    # --- 時間軸機制 ---
+    # --- 每日打卡（一次一項） ---
+    def done_var(self, plat):
+        return getattr(self, f"{self.plat_map[plat]}_done")
+
+    def task_label_text(self, plat):
+        conn = sqlite3.connect(DB_FILE)
+        cursor = conn.cursor()
+        cursor.execute("SELECT current_streak FROM streaks WHERE platform=?", (plat,))
+        s_row = cursor.fetchone()
+        cursor.execute("SELECT total_time FROM time_stats WHERE platform=?", (plat,))
+        t_row = cursor.fetchone()
+        conn.close()
+        streak = s_row[0] if s_row else 0
+        hours = (t_row[0] / 3600) if t_row else 0
+        return f"{plat} D-{streak} | {hours:.1f} hr"
+
+    def render_checkin_panel(self):
+        for w in self.check_frame.winfo_children():
+            w.destroy()
+        self.task_labels.clear()
+
+        current = next((p for p in self.task_order if not self.done_var(p).get()), None)
+        row = 0
+
+        if current:
+            tk.Label(self.check_frame, text="現在輪到：", font=("Arial", 8), fg="gray").grid(row=row, column=0, columnspan=2, sticky="w", padx=5, pady=(2, 0))
+            row += 1
+            self._make_task_row(current, row, big=True)
+            row += 1
+        else:
+            tk.Label(self.check_frame, text="🎉 今日任務全部完成！", font=("Arial", 9, "bold"), fg="#27ae60").grid(row=row, column=0, columnspan=2, sticky="w", padx=5, pady=6)
+            row += 1
+
+        arrow = "▲ 收起" if self.show_others else "▼ 其他項目"
+        tk.Button(self.check_frame, text=arrow, relief="flat", font=("Arial", 8), fg="gray", cursor="hand2",
+                  command=self.toggle_others).grid(row=row, column=0, columnspan=2, sticky="w", padx=2)
+        row += 1
+
+        if self.show_others:
+            for p in self.task_order:
+                if p != current:
+                    self._make_task_row(p, row)
+                    row += 1
+
+    def _make_task_row(self, plat, row, big=False):
+        done = self.done_var(plat).get()
+        font = ("Arial", 10, "bold") if big else ("Arial", 9)
+        lbl = tk.Label(self.check_frame, text=self.task_label_text(plat), font=font,
+                       fg="#95a5a6" if done else "#2c3e50")
+        lbl.grid(row=row, column=0, sticky="w", padx=5, pady=4 if big else 2)
+        lbl.bind('<Double-1>', lambda e, p=plat: self.show_last_checkin(e, p))
+        tk.Checkbutton(self.check_frame, text="", variable=self.done_var(plat),
+                       command=lambda p=plat: self.handle_checkin(p)).grid(row=row, column=1, sticky="w")
+        self.task_labels[plat] = lbl
+
+    def toggle_others(self):
+        self.show_others = not self.show_others
+        self.render_checkin_panel()
+
+    # --- 今日 / 明日計畫（各 4 格） ---
+    def build_plan_area(self):
+        for w in self.plan_area.winfo_children():
+            w.destroy()
+        self.plan_entries.clear()
+
+        row = 0
+        for day_type, title in (('today', '今日計畫'), ('tomorrow', '明日計畫')):
+            if day_type == 'tomorrow':
+                ttk.Separator(self.plan_area, orient='horizontal').grid(row=row, column=0, sticky='ew', pady=6)
+                row += 1
+            tk.Label(self.plan_area, text=title, font=("Arial", 9, "bold"), fg="#2c3e50").grid(row=row, column=0, pady=(0, 4))
+            row += 1
+            for slot in range(4):
+                key = (day_type, slot)
+                ent = tk.Entry(self.plan_area, font=("Arial", 8), width=16, bg="#e0e0e0", relief="flat")
+                ent.grid(row=row, column=0, sticky="ew", pady=1, ipady=1)
+                ent.bind("<FocusOut>", lambda e, k=key: self.save_plan_slot(k))
+                ent.bind("<Return>", lambda e, k=key: self._on_plan_return(k))
+                self.plan_entries[key] = ent
+                row += 1
+
+        self.load_plan_entries()
+
+    def _on_plan_return(self, key):
+        self.save_plan_slot(key)
+        self.root.focus_set()   # 按 Enter 後離開輸入框
+
+    def load_plan_entries(self):
+        conn = sqlite3.connect(DB_FILE)
+        cursor = conn.cursor()
+        cursor.execute("SELECT day_type, slot, text FROM plan_slots")
+        data = {(dt, s): (t or "") for dt, s, t in cursor.fetchall()}
+        conn.close()
+        for key, ent in self.plan_entries.items():
+            ent.delete(0, 'end')
+            ent.insert(0, data.get(key, ""))
+
+    def save_plan_slot(self, key):
+        ent = self.plan_entries.get(key)
+        if not ent:
+            return
+        text = ent.get().strip()
+        conn = sqlite3.connect(DB_FILE)
+        cursor = conn.cursor()
+        cursor.execute("INSERT OR REPLACE INTO plan_slots (day_type, slot, text) VALUES (?, ?, ?)",
+                       (key[0], key[1], text))
+        conn.commit()
+        conn.close()
+
+    # --- 時間軸機制（今日剩餘，只能編輯當前兩小時） ---
     def poll_timeline_update(self):
-        self.check_night_shift()
         now_h = datetime.now().hour
         if self.last_rendered_hour != now_h:
             self.render_hourly_timeline()
         self.root.after(30000, self.poll_timeline_update)
 
-    def check_night_shift(self):
-        now = datetime.now()
-        today = now.strftime('%Y-%m-%d')
-        
-        if now.hour >= 22:
-            conn = sqlite3.connect(DB_FILE)
-            cursor = conn.cursor()
-            cursor.execute("SELECT value FROM app_config WHERE key='timeline_shift_date'")
-            row = cursor.fetchone()
-            last_shift = row[0] if row else '2000-01-01'
-            
-            if last_shift != today:
-                cursor.execute("DELETE FROM hourly_schedule WHERE day_type='today'")
-                cursor.execute("UPDATE hourly_schedule SET day_type='today' WHERE day_type='tomorrow'")
-                cursor.execute("INSERT OR REPLACE INTO app_config (key, value) VALUES ('timeline_shift_date', ?)", (today,))
-                conn.commit()
-                conn.close()
-                self.render_hourly_timeline()
-            else:
-                conn.close()
-
     def render_hourly_timeline(self):
-        for widget in self.timeline_grid_frame.winfo_children():
+        for widget in self.hours_area.winfo_children():
             widget.destroy()
 
         self.timeline_labels.clear()
-        self.selected_timeline_cells.clear()
         
         now = datetime.now()
         cur_h = now.hour
         self.last_rendered_hour = cur_h
+        self.editable_hours = {cur_h, cur_h + 1}
 
         today_hours = [h for h in range(cur_h, 23)] if cur_h < 23 else []
-        tomorrow_hours = [h for h in range(6, 23)]
 
         conn = sqlite3.connect(DB_FILE)
         cursor = conn.cursor()
-        cursor.execute("SELECT day_type, hour, merge_id, text FROM hourly_schedule")
+        cursor.execute("SELECT hour, merge_id, text FROM hourly_schedule WHERE day_type='today'")
         sched_data = {}
-        for dt, h, mid, txt in cursor.fetchall():
-            sched_data[(dt, h)] = (mid if mid is not None else h, txt or "")
+        for h, mid, txt in cursor.fetchall():
+            sched_data[h] = (mid if mid is not None else h, txt or "")
         conn.close()
 
-        canvas = tk.Canvas(self.timeline_grid_frame, highlightthickness=0, height=210)
-        scrollbar = ttk.Scrollbar(self.timeline_grid_frame, orient="vertical", command=canvas.yview)
+        canvas = tk.Canvas(self.hours_area, highlightthickness=0, height=210)
+        scrollbar = ttk.Scrollbar(self.hours_area, orient="vertical", command=canvas.yview)
         scrollable_frame = tk.Frame(canvas)
 
         def _on_frame_configure(e):
@@ -396,24 +483,19 @@ class CPTrackerApp:
         scrollbar.pack(side=tk.RIGHT, fill="y")
 
         scrollable_frame.columnconfigure(1, weight=1)
-        scrollable_frame.columnconfigure(4, weight=1)
+        self._build_today_col(scrollable_frame, today_hours, sched_data)
 
-        self._build_col(scrollable_frame, "今日剩餘", "today", today_hours, sched_data, 0)
-        ttk.Separator(scrollable_frame, orient='vertical').grid(row=0, column=2, rowspan=30, sticky='ns', padx=6)
-        self._build_col(scrollable_frame, "明日計畫", "tomorrow", tomorrow_hours, sched_data, 3)
-
-    def _build_col(self, parent, title, day_type, hours, sched_data, col_offset):
-        tk.Label(parent, text=title, font=("Arial", 9, "bold"), fg="#2c3e50").grid(row=0, column=col_offset, columnspan=2, pady=(0, 4))
+    def _build_today_col(self, parent, hours, sched_data):
+        tk.Label(parent, text="今日剩餘", font=("Arial", 9, "bold"), fg="#2c3e50").grid(row=0, column=0, columnspan=2, pady=(0, 4))
         if not hours:
-            msg = "時段已過22:00" if datetime.now().hour >= 22 else "今日時段已過完"
-            tk.Label(parent, text=msg, font=("Arial", 8), fg="gray").grid(row=1, column=col_offset, columnspan=2)
+            tk.Label(parent, text="今日時段已過完", font=("Arial", 8), fg="gray").grid(row=1, column=0, columnspan=2)
             return
 
         groups = []
         cur_mid = None
         cur_group = []
         for h in hours:
-            mid, txt = sched_data.get((day_type, h), (h, ""))
+            mid, txt = sched_data.get(h, (h, ""))
             if cur_mid is None:
                 cur_mid = mid
                 cur_group = [(h, txt)]
@@ -428,28 +510,29 @@ class CPTrackerApp:
 
         row_idx = 1
         for mid, grp in groups:
-            h_start = grp[0][0]
-            h_end = grp[-1][0]
+            grp_hours = [h for h, _ in grp]
+            h_start, h_end = grp_hours[0], grp_hours[-1]
             txt = grp[0][1]
+            editable = any(h in self.editable_hours for h in grp_hours)
 
             label_str = f"{h_start:02d}:00" if h_start == h_end else f"{h_start:02d}~{h_end+1:02d}"
 
-            time_lbl = tk.Label(parent, text=label_str, font=("Arial", 8), width=6, anchor="e", padx=2)
-            time_lbl.grid(row=row_idx, column=col_offset, sticky="ns", pady=1)
+            time_lbl = tk.Label(parent, text=label_str, font=("Arial", 8), width=6, anchor="e", padx=2,
+                                fg="#2c3e50" if editable else "#bdc3c7")
+            time_lbl.grid(row=row_idx, column=0, sticky="ns", pady=1)
 
-            disp_text = txt if txt else ""
-            content_lbl = tk.Label(parent, text=disp_text, font=("Arial", 8), bg="#e0e0e0", fg="#2c3e50",
-                                   relief="solid", borderwidth=0, anchor="w", padx=3, height=1, width=14)
-            content_lbl.grid(row=row_idx, column=col_offset+1, sticky="w", pady=1, padx=(0, 4))
+            content_lbl = tk.Label(parent, text=txt, font=("Arial", 8),
+                                   bg="#e0e0e0" if editable else "#f4f4f4",
+                                   fg="#2c3e50" if editable else "#bdc3c7",
+                                   relief="solid", borderwidth=0, anchor="w", padx=3, height=1, width=14,
+                                   cursor="hand2" if editable else "")
+            content_lbl.grid(row=row_idx, column=1, sticky="w", pady=1, padx=(0, 4))
 
-            content_lbl.bind("<Button-1>", lambda e, dt=day_type, m=mid, l=content_lbl, p=parent, r=row_idx, c=col_offset+1: 
-                             self.start_edit_cell(e, dt, m, l, p, r, c))
+            if editable:   # 只有當前兩小時可以點擊編輯
+                content_lbl.bind("<Button-1>", lambda e, m=mid, l=content_lbl, p=parent, r=row_idx:
+                                 self.start_edit_cell(e, 'today', m, l, p, r, 1))
 
-            for (h, _) in grp:
-                time_lbl.bind("<Control-Button-1>", lambda e, dt=day_type, hr=h, l=time_lbl: self.toggle_cell_select(dt, hr, l))
-                content_lbl.bind("<Control-Button-1>", lambda e, dt=day_type, hr=h, l=time_lbl: self.toggle_cell_select(dt, hr, l))
-
-            self.timeline_labels[(day_type, mid)] = content_lbl
+            self.timeline_labels[('today', mid)] = content_lbl
             row_idx += 1
 
     def start_edit_cell(self, event, day_type, merge_id, label_widget, parent, row, col):
@@ -461,7 +544,13 @@ class CPTrackerApp:
         entry.grid(row=row, column=col, sticky="w", pady=1, padx=(0, 4))
         entry.focus_set()
 
+        finished = False
+
         def _finish_edit(e=None):
+            nonlocal finished
+            if finished:   # Enter 和 FocusOut 可能都觸發，只存一次
+                return
+            finished = True
             val = entry.get().strip()
             entry.destroy()
             label_widget.config(text=val)
@@ -485,62 +574,6 @@ class CPTrackerApp:
 
         entry.bind("<FocusOut>", _finish_edit)
         entry.bind("<Return>", _finish_edit)
-
-    def toggle_cell_select(self, day_type, hour, label_widget):
-        item = (day_type, hour)
-        if item in self.selected_timeline_cells:
-            self.selected_timeline_cells.remove(item)
-            label_widget.config(bg=self.root.cget('bg'), fg='black')
-        else:
-            self.selected_timeline_cells.add(item)
-            label_widget.config(bg="#3498db", fg="white")
-
-    def merge_selected_timeline(self):
-        if len(self.selected_timeline_cells) < 2:
-            return
-
-        days = {d for d, h in self.selected_timeline_cells}
-        if len(days) > 1:
-            messagebox.showwarning("警告", "無法跨天合併時段！")
-            return
-
-        day_type = list(days)[0]
-        hours = sorted([h for d, h in self.selected_timeline_cells])
-
-        for i in range(len(hours) - 1):
-            if hours[i+1] != hours[i] + 1:
-                messagebox.showwarning("警告", "選取的小時必須連續才能合併！")
-                return
-
-        new_mid = hours[0]
-        conn = sqlite3.connect(DB_FILE)
-        cursor = conn.cursor()
-
-        cursor.execute("SELECT text FROM hourly_schedule WHERE day_type=? AND hour=?", (day_type, new_mid))
-        row = cursor.fetchone()
-        orig_text = row[0] if row else ""
-
-        for h in hours:
-            cursor.execute('''INSERT INTO hourly_schedule (day_type, hour, merge_id, text)
-                              VALUES (?, ?, ?, ?)
-                              ON CONFLICT(day_type, hour) DO UPDATE SET merge_id=?, text=?''',
-                           (day_type, h, new_mid, orig_text, new_mid, orig_text))
-
-        conn.commit()
-        conn.close()
-        self.render_hourly_timeline()
-
-    def unmerge_selected_timeline(self):
-        if not self.selected_timeline_cells:
-            return
-
-        conn = sqlite3.connect(DB_FILE)
-        cursor = conn.cursor()
-        for day_type, h in self.selected_timeline_cells:
-            cursor.execute("UPDATE hourly_schedule SET merge_id=? WHERE day_type=? AND hour=?", (h, day_type, h))
-        conn.commit()
-        conn.close()
-        self.render_hourly_timeline()
 
     # --- 輔助選單/分類管理 ---
     def load_other_categories(self):
@@ -645,6 +678,9 @@ class CPTrackerApp:
         self.canvas_scrollbar.config(command=self.canvas.yview)
 
         def _on_mousewheel(event):
+            first, last = self.canvas.yview()
+            if first <= 0 and last >= 1:   # 內容沒超出畫面，不用捲
+                return
             if getattr(event, 'delta', 0) != 0:
                 direction = -1 if event.delta > 0 else 1
                 self.canvas.yview_scroll(direction, "units")
@@ -664,6 +700,7 @@ class CPTrackerApp:
 
         self.canvas.bind("<Enter>", _bind_mouse)
         self.canvas.bind("<Leave>", _unbind_mouse)
+        self.canvas.bind("<Configure>", lambda e: self._fit_scrollregion(self.canvas))
         
         paned_window.add(canvas_frame, weight=3)
 
@@ -905,6 +942,16 @@ class CPTrackerApp:
         self.draw_calendar()
         self.refresh_stats()
 
+    def _fit_scrollregion(self, canvas):
+        """讓捲動範圍至少跟畫面一樣高，內容不夠高時就固定在最上面"""
+        bbox = canvas.bbox("all")
+        visible_h = max(canvas.winfo_height(), 1)
+        content_h = (bbox[3] + 10) if bbox else 0
+        width = bbox[2] if bbox else canvas.winfo_width()
+        canvas.config(scrollregion=(0, 0, width, max(visible_h, content_h)))
+        if content_h <= visible_h:
+            canvas.yview_moveto(0)
+
     def draw_calendar(self):
         self.canvas.delete("all")
         for r in self.tree_contests.get_children():
@@ -975,10 +1022,8 @@ class CPTrackerApp:
             c_num = c[9] if len(c) > 9 else ""
             self.tree_contests.insert("", "end", values=(cid, disp_date, ctime, c_type, c_num, c_div))
                 
-        self.canvas.yview_moveto(0) 
-        bbox = self.canvas.bbox("all")
-        if bbox:
-            self.canvas.config(scrollregion=(0, 0, bbox[2], max(90, bbox[3] + 10)))
+        self.canvas.yview_moveto(0)
+        self._fit_scrollregion(self.canvas)
 
     def change_week(self, delta):
         self.week_offset += delta
@@ -1008,6 +1053,7 @@ class CPTrackerApp:
         tk.Label(input_frame, text="日期(MMDD):", font=("Arial", 8)).grid(row=0, column=3, sticky="e")
         self.entry_s_date = tk.Entry(input_frame, width=5)
         self.entry_s_date.grid(row=0, column=4, padx=2)
+        self.entry_s_date.insert(0, datetime.now().strftime("%m%d"))
 
         tk.Button(input_frame, text="新增", command=self.add_study_plan, bg="#3498db", fg="white", height=1).grid(row=0, column=5, rowspan=2, padx=5, sticky="nsew")
 
@@ -1169,7 +1215,6 @@ class CPTrackerApp:
 
         conn = sqlite3.connect(DB_FILE)
         cursor = conn.cursor()
-        # 改為 date ASC，讓下半部條列與上方關聯清單由近到遠排序
         cursor.execute("SELECT * FROM study_plan ORDER BY date ASC")
         plans = cursor.fetchall()
         cursor.execute("SELECT * FROM contests ORDER BY date DESC, time DESC")
@@ -1254,7 +1299,6 @@ class CPTrackerApp:
                 self.study_canvas.create_text(x_center, y_offset+15, text=text_disp, fill=box_col, font=("", 8, ""), justify="center", tags=("study_item", f"plan_{p[0]}"))
                 y_offset += 32
 
-        # 寫入下方 Treeview（已按照 date ASC 插入，最近的在最上方）
         for p in plans:
             status = p[5] if len(p) > 5 else 0
             if status != 1:
@@ -1335,6 +1379,7 @@ class CPTrackerApp:
         conn.close()
 
         self.entry_s_date.delete(0, 'end')
+        self.entry_s_date.insert(0, datetime.now().strftime("%m%d"))
         self.entry_s_content.delete(0, 'end')
         self.load_subjects()
         self.draw_study_calendar()
@@ -1378,20 +1423,15 @@ class CPTrackerApp:
         self.refresh_stats()
 
     def refresh_stats(self):
+        # 更新打卡面板上目前看得到的標籤
+        for plat, lbl in list(self.task_labels.items()):
+            try:
+                lbl.config(text=self.task_label_text(plat))
+            except tk.TclError:
+                pass
+
         conn = sqlite3.connect(DB_FILE)
         cursor = conn.cursor()
-        
-        for plat in ['C++', '課業', '資安', '專案', '英文', '躲水裡']:
-            cursor.execute("SELECT current_streak FROM streaks WHERE platform=?", (plat,))
-            streak = cursor.fetchone()[0] if cursor.rowcount != 0 else 0
-            
-            cursor.execute("SELECT total_time FROM time_stats WHERE platform=?", (plat,))
-            t_row = cursor.fetchone()
-            total_hours = (t_row[0] / 3600) if t_row else 0
-            time_str = f" | {total_hours:.1f} hr"
-            
-            lbl = getattr(self, f"lbl_{self.plat_map[plat]}_streak")
-            lbl.config(text=f"{plat} D-{streak} {time_str}")
             
         cursor.execute("SELECT COUNT(*) FROM activity_log")
         total_days = cursor.fetchone()[0]
@@ -1523,11 +1563,9 @@ class CPTrackerApp:
         btn_frame.pack(side=tk.RIGHT, fill="y", padx=2)
         tk.Button(btn_frame, text="刪除", command=self.delete_red_item, bg="#e74c3c", fg="white", font=("Arial", 8), width=4).pack(pady=2, fill="x")
         
-        # 赤榜專屬說明按鈕
         btn_red_info = tk.Button(btn_frame, text=" ℹ ", font=("Arial", 9, "bold"), relief="flat", fg="gray", cursor="hand2", command=self.show_red_guide)
         btn_red_info.pack(side=tk.BOTTOM, pady=2)
 
-        # 綁定拖曳與點擊事件
         self.tree_red.bind('<Button-1>', self.on_red_tree_press)
         self.tree_red.bind('<B1-Motion>', self.on_red_tree_drag)
         self.tree_red.bind('<ButtonRelease-1>', self.on_red_tree_release)
@@ -1587,7 +1625,6 @@ class CPTrackerApp:
             tag = 'done' if status == 1 else 'todo'
             self.tree_red.insert("", "end", values=(rid, status_icon, dream, diff or "-", t_cost or "-"), tags=(tag,))
 
-    # --- 拖曳排序機制 ---
     def on_red_tree_press(self, event):
         region = self.tree_red.identify_region(event.x, event.y)
         if region != "cell":
@@ -1596,7 +1633,6 @@ class CPTrackerApp:
         col_id = self.tree_red.identify_column(event.x)
         row_id = self.tree_red.identify_row(event.y)
 
-        # 點擊狀態圖示切換完成狀態
         if col_id == '#1' and row_id:
             vals = self.tree_red.item(row_id, 'values')
             if vals:
@@ -1611,7 +1647,6 @@ class CPTrackerApp:
                 self.load_red_items()
                 return "break"
 
-        # 記錄準備拖曳的項目
         if row_id:
             self.drag_item = row_id
             self.is_dragging = False
@@ -1623,10 +1658,8 @@ class CPTrackerApp:
         self.is_dragging = True
         target_row = self.tree_red.identify_row(event.y)
         
-        # 拖曳時動態換位
         if target_row and target_row != self.drag_item:
             children = list(self.tree_red.get_children())
-            drag_idx = children.index(self.drag_item)
             target_idx = children.index(target_row)
             
             self.tree_red.move(self.drag_item, '', target_idx)
@@ -1634,7 +1667,6 @@ class CPTrackerApp:
 
     def on_red_tree_release(self, event):
         if self.is_dragging and self.drag_item:
-            # 放開時儲存新的順序到資料庫
             self.save_red_item_order()
             
         self.drag_item = None
@@ -1728,74 +1760,186 @@ class CPTrackerApp:
         conn.close()
         self.load_red_items()
 
-    def add_timer(self, seconds):
-        self.total_seconds += seconds
-        self.remaining_seconds += seconds
-        self.alerted_checkpoints = {cp for cp in self.alerted_checkpoints if self.remaining_seconds < cp}
-        mins, secs = divmod(self.remaining_seconds, 60)
-        hours, mins = divmod(mins, 60)
-        self.time_label.config(text=f"{hours:02d}:{mins:02d}:{secs:02d}")
+    # --- 計時器：暖身 5 分鐘 → 碼表 + 番茄鐘循環 ---
+    def _fmt(self, s):
+        h, rem = divmod(max(0, s), 3600)
+        m, sec = divmod(rem, 60)
+        return f"{h:02d}:{m:02d}:{sec:02d}"
 
-    def reset_timer(self):
-        self.timer_running = False
-        self.total_seconds = 0
-        self.remaining_seconds = self.total_seconds
-        self.alerted_checkpoints.clear()
-        mins, secs = divmod(self.remaining_seconds, 60)
-        hours, mins = divmod(mins, 60)
-        self.time_label.config(text=f"{hours:02d}:{mins:02d}:{secs:02d}")
+    def _show_time(self):
+        p = self.timer_phase
+        if p == 'idle':
+            text, color, status = self._fmt(self.WARMUP_SEC), "#e74c3c", "暖身 5 分鐘"
+        elif p == 'warmup':
+            text, color, status = self._fmt(self.phase_remaining), "#e74c3c", "🔥 暖身倒數"
+        elif p == 'focus':
+            left = self.FOCUS_CYCLE_SEC - self.cycle_elapsed
+            text, color = self._fmt(self.focus_elapsed), "#27ae60"
+            status = f"🍅 專注｜{left // 60:02d}:{left % 60:02d}後休息"
+        else:
+            text, color, status = self._fmt(self.phase_remaining), "#3498db", "☕ 休息倒數"
+        if p != 'idle' and not self.timer_running:
+            status += "（暫停）"
+        self.time_label.config(text=text, fg=color)
+        self.lbl_phase.config(text=status)
+        # 按鈕的文字和顏色跟著計時狀態走
+        if hasattr(self, 'btn_start_pause'):
+            if self.timer_running:
+                self.btn_start_pause.config(text="暫停", bg="#f39c12")
+            elif p != 'idle':
+                self.btn_start_pause.config(text="繼續", bg="#2ecc71")
+            else:
+                self.btn_start_pause.config(text="開始", bg="#2ecc71")
+
+    def show_timer_popup(self, title, message):
+        if self.timer_popup is not None and self.timer_popup.winfo_exists():
+            self.timer_popup.destroy()
+        self.root.bell()
+
+        pop = tk.Toplevel(self.root)
+        pop.title(title)
+        pop.attributes("-topmost", True)
+        w, h = 300, 170
+        cx = int((pop.winfo_screenwidth() - w) / 2)
+        cy = int((pop.winfo_screenheight() - h) / 2)
+        pop.geometry(f"{w}x{h}+{cx}+{cy}")
+        pop.resizable(False, False)
+
+        frame = tk.Frame(pop, padx=15, pady=10)
+        frame.pack(expand=True, fill="both")
+        tk.Label(frame, text=title, font=("Arial", 12, "bold"), fg="#2c3e50").pack(pady=(4, 4))
+        tk.Label(frame, text=message, font=("Arial", 10), wraplength=260, justify="center").pack(pady=(0, 10))
+        tk.Button(frame, text="好", command=pop.destroy, bg="#3498db", fg="white", width=10, relief="groove").pack()
+        self.timer_popup = pop
+
+    def _cancel_timer_job(self):
+        if self._timer_job:
+            try: self.root.after_cancel(self._timer_job)
+            except Exception: pass
+            self._timer_job = None
+
+    def toggle_timer(self):
+        if self.timer_running:
+            self.stop_timer()
+        else:
+            self.start_timer()
 
     def start_timer(self):
         target = self.combo_target.get()
         if not target:
             messagebox.showwarning("警告", "請先在下拉選單選擇計時對象！")
             return
-            
-        if not self.timer_running and self.remaining_seconds > 0:
-            self.timer_running = True
-            self.update_timer()
+        if self.timer_running:
+            return
+
+        # 按下開始就自動幫目前選的項目打勾
+        # auto_jump=False：打勾後下拉選單不跳到下一項，計時對象保持不變
+        if target in self.plat_map and not self.done_var(target).get():
+            self.done_var(target).set(True)
+            self.handle_checkin(target, auto_jump=False)
+
+        if self.timer_phase == 'idle':   # 全新開始
+            self.current_timer_target = target
+            self.timer_phase = 'warmup'
+            self.phase_remaining = self.WARMUP_SEC
+            self.focus_elapsed = 0
+            self.cycle_elapsed = 0
+            self.pomodoro_count = 0
+            self.session_work_sec = 0
+            self.unrecorded = 0
+
+        self.timer_running = True
+        self._show_time()
+        self._cancel_timer_job()
+        self._timer_job = self.root.after(1000, self._tick)
 
     def stop_timer(self):
+        if not self.timer_running:
+            return
+        self._cancel_timer_job()
         self.timer_running = False
+        self.flush_record()
+        self._show_time()
 
-    def update_timer(self):
-        if self.timer_running and self.remaining_seconds > 0:
-            mins, secs = divmod(self.remaining_seconds, 60)
-            hours, mins = divmod(mins, 60)
-            self.time_label.config(text=f"{hours:02d}:{mins:02d}:{secs:02d}")
-            
-            if self.remaining_seconds == 900 and 900 not in self.alerted_checkpoints:
-                self.alerted_checkpoints.add(900)
-                self.show_center_alert("時間提醒", "⏰ 倒數剩餘 15 分鐘！")
+    def end_timer(self):
+        self._cancel_timer_job()
+        was_active = self.timer_phase != 'idle'
+        self.flush_record()
+        work_min = self.session_work_sec // 60
+        tomatoes = self.pomodoro_count
 
-            elif self.remaining_seconds == 300 and 300 not in self.alerted_checkpoints:
-                self.alerted_checkpoints.add(300)
-                self.show_center_alert("時間提醒", "⚠️ 倒數剩餘 5 分鐘！")
+        self.timer_running = False
+        self.timer_phase = 'idle'
+        self.phase_remaining = self.WARMUP_SEC
+        self.focus_elapsed = 0
+        self.cycle_elapsed = 0
+        self.pomodoro_count = 0
+        self.session_work_sec = 0
+        self.unrecorded = 0
+        self._show_time()
 
-            elapsed = self.total_seconds - self.remaining_seconds
-            if elapsed > 0 and elapsed % 60 == 0:
-                self.record_time()
+        if was_active and work_min > 0:
+            self.show_timer_popup("本次結束", f"這次一共專注了 {work_min} 分鐘\n完成 {tomatoes} 顆番茄 🍅\n辛苦了！")
 
-            self.remaining_seconds -= 1
-            self.root.after(1000, self.update_timer)
-        elif self.remaining_seconds <= 0:
-            self.time_label.config(text="00:00:00")
-            self.timer_running = False
-            self.record_time()
-            if 0 not in self.alerted_checkpoints:
-                self.alerted_checkpoints.add(0)
-                self.show_center_alert("計時結束", "🔔 倒數結束！請記得休息或打卡。")
+    def _tick(self):
+        if not self.timer_running:
+            return
 
-    def record_time(self):
+        # 暖身和專注的時間才算進統計，休息不算
+        if self.timer_phase in ('warmup', 'focus'):
+            self.session_work_sec += 1
+            self.unrecorded += 1
+            if self.unrecorded >= 60:
+                self.flush_record()
+
+        if self.timer_phase == 'warmup':
+            self.phase_remaining -= 1
+            if self.phase_remaining <= 0:
+                self.timer_phase = 'focus'
+                self.focus_elapsed = self.WARMUP_SEC   # 碼表接著暖身的 5 分鐘往上數
+                self.cycle_elapsed = 0
+                self.show_timer_popup("✅ 暖身 5 分鐘完成！", "接下來改成碼表計時，\n每 25 分鐘會提醒你休息 5 分鐘。")
+
+        elif self.timer_phase == 'focus':
+            self.focus_elapsed += 1
+            self.cycle_elapsed += 1
+            if self.cycle_elapsed >= self.FOCUS_CYCLE_SEC:
+                self.pomodoro_count += 1
+                self.timer_phase = 'break'
+                self.phase_remaining = self.BREAK_SEC
+                self.show_timer_popup(f"🍅 完成第 {self.pomodoro_count} 顆番茄！", "休息 5 分鐘，\n起來走走、喝口水。")
+
+        elif self.timer_phase == 'break':
+            self.phase_remaining -= 1
+            if self.phase_remaining <= 0:
+                self.timer_phase = 'focus'
+                self.cycle_elapsed = 0
+                self.show_timer_popup("☀️ 休息結束", "碼表繼續計時，回來吧！")
+
+        self._show_time()
+        self._timer_job = self.root.after(1000, self._tick)
+
+    def on_target_changed(self, event=None):
+        new = self.combo_target.get()
+        if new == self.current_timer_target:
+            return
+        if self.timer_phase != 'idle':
+            self.flush_record()   # 還沒記的秒數先算給舊項目，計時繼續不中斷
+        self.current_timer_target = new
+
+    def flush_record(self):
+        if self.unrecorded > 0:
+            self.record_time(self.unrecorded)
+        self.unrecorded = 0
+
+    def record_time(self, seconds):
+        target = self.current_timer_target or self.combo_target.get()
+        if not target or target not in self.plat_map:
+            return
+
         today = datetime.now().strftime('%Y-%m-%d')
         conn = sqlite3.connect(DB_FILE)
         cursor = conn.cursor()
-        
-        target = self.combo_target.get()
-        if not target: 
-            conn.close()
-            return
-            
         cursor.execute("SELECT daily_time, total_time, last_date FROM time_stats WHERE platform=?", (target,))
         row = cursor.fetchone()
         
@@ -1806,14 +1950,21 @@ class CPTrackerApp:
         
         if last_date != today: daily_time = 0 
         cursor.execute("UPDATE time_stats SET daily_time=?, total_time=?, last_date=? WHERE platform=?", 
-                       (daily_time + 60, total_time + 60, today, target))
+                       (daily_time + seconds, total_time + seconds, today, target))
         conn.commit()
         conn.close()
-        self.refresh_stats()
 
-    def handle_checkin(self, platform):
-        var_name = self.plat_map[platform]
-        is_checked = getattr(self, f"{var_name}_done").get()
+        self.refresh_stats()
+        self.update_today_accum_label()
+
+    def on_close(self):
+        try: self.flush_record()
+        except Exception: pass
+        self.root.destroy()
+
+    # --- 打卡邏輯 ---
+    def handle_checkin(self, platform, auto_jump=True):
+        is_checked = self.done_var(platform).get()
         today = datetime.now().strftime('%Y-%m-%d')
         
         conn = sqlite3.connect(DB_FILE)
@@ -1824,13 +1975,17 @@ class CPTrackerApp:
         if is_checked:
             if last_date != today:
                 streak = streak + 1 
-                cursor.execute("UPDATE streaks SET current_streak=?, last_checkin=?, prev_checkin=? WHERE platform=?", (streak, today, last_date, platform))
+                cursor.execute("UPDATE streaks SET current_streak=?, last_checkin=?, prev_checkin=?, manually_unchecked_date='2000-01-01' WHERE platform=?", (streak, today, last_date, platform))
+            else:
+                cursor.execute("UPDATE streaks SET manually_unchecked_date='2000-01-01' WHERE platform=?", (platform,))
         else:
             if last_date == today:
                 streak = max(0, streak - 1)
-                cursor.execute("UPDATE streaks SET current_streak=?, last_checkin=? WHERE platform=?", (streak, prev_date, platform))
+                cursor.execute("UPDATE streaks SET current_streak=?, last_checkin=?, manually_unchecked_date=? WHERE platform=?", (streak, prev_date, today, platform))
+            else:
+                cursor.execute("UPDATE streaks SET manually_unchecked_date=? WHERE platform=?", (today, platform))
                 
-        any_checked = self.cpp_done.get() or self.school_done.get() or self.sec_done.get() or self.project_done.get() or self.eng_done.get() or self.water_done.get()
+        any_checked = any(self.done_var(p).get() for p in self.plat_map)
         if any_checked:
             cursor.execute("INSERT OR IGNORE INTO activity_log (date) VALUES (?)", (today,))
         else:
@@ -1838,8 +1993,13 @@ class CPTrackerApp:
             
         conn.commit()
         conn.close()
-        
-        self.update_target_default()
+
+        # 畫面在這次點擊處理完之後才重畫，避免刪掉正在被點的勾選框
+        self.root.after_idle(self.render_checkin_panel)
+
+        # 勾掉的是「正在計時的項目」→ 自動切到下一項，計時接續
+        if auto_jump and is_checked and self.combo_target.get() == platform:
+            self.update_target_default()
         self.refresh_stats()
 
     def load_daily_status(self):
@@ -1850,51 +2010,60 @@ class CPTrackerApp:
         
         conn = sqlite3.connect(DB_FILE)
         cursor = conn.cursor()
-        for plat in ['C++', '課業', '資安', '專案', '英文', '躲水裡']:
+        for plat in self.plat_map:
             cursor.execute("SELECT last_checkin FROM streaks WHERE platform=?", (plat,))
-            if cursor.fetchone()[0] == today:
-                getattr(self, f"{self.plat_map[plat]}_done").set(True)
+            row = cursor.fetchone()
+            if row and row[0] == today:
+                self.done_var(plat).set(True)
                 
-        cursor.execute("SELECT id FROM contests WHERE type='CF' AND date=?", (today_tw,))
-        if cursor.fetchone() and not self.cpp_done.get():
-            self.cpp_done.set(True)
-            self.handle_checkin('C++') 
+        cursor.execute("SELECT manually_unchecked_date FROM streaks WHERE platform='C++'")
+        cpp_m_row = cursor.fetchone()
+        cpp_manually_unchecked = cpp_m_row[0] if cpp_m_row else '2000-01-01'
+
+        if cpp_manually_unchecked != today:
+            cursor.execute("SELECT id FROM contests WHERE type='CF' AND date=?", (today_tw,))
+            if cursor.fetchone() and not self.cpp_done.get():
+                self.cpp_done.set(True)
+                self.handle_checkin('C++', auto_jump=False) 
             
         conn.close()
+        self.render_checkin_panel()
         self.update_target_default()
 
     def show_guide(self):
         guide_text = (
             "🏆 【每日指南】\n\n"
-            "🔴 Part 1: C++\n"
-            "• 解題、看 Tutorial。\n\n"
-            "🔵 Part 2: 課業\n"
-            "• 讀書與整理。\n"
-            "• 課業與賽事條列處：支援上下拖拉分隔與雙擊獨立修改！\n\n"
+            "✅ 今日任務\n"
+            "• 一次只顯示一項，打勾後才出現下一項。\n"
+            "• 順序：英文 → C++ → 專案 → 課業 → 資安\n"
+            "• 點「▼ 其他項目」可以手動勾選任何一項。\n\n"
+            "⏱️ 計時器\n"
+            "• 開始：先倒數 5 分鐘暖身。\n"
+            "• 暖身完自動變碼表，每 25 分鐘休息 5 分鐘，循環到按「結束」。\n"
+            "• 中途切換項目不會中斷，時間接續記到新項目。\n\n"
+            "🕐 時程與計畫\n"
+            "• 今日剩餘只能編輯當前兩小時。\n"
+            "• 右邊上半今日計畫、下半明日計畫，過午夜明日會變今日。\n\n"
             "📅 賽事與自動化\n"
             "• Other 類別可以自訂賽事/任務分類，並單獨篩選！\n"
             "• 雙擊戰力補題頁面比賽，可深入勾選各題進度！\n\n"
             "🚩 猛的赤榜\n"
-            "• 記錄一直想做但尚未實現的願望，可設定難度與耗時，長按項目可拖移排序！\n\n"
+            "• 記錄一直想做但尚未實現的願望，長按項目可拖移排序！\n\n"
             "(本地 db 好耶!\n"
             "SINCE 115/07/16 RC"
         )
         messagebox.showinfo("每日生存證明", guide_text)
 
     def update_target_default(self):
-        cpp = self.cpp_done.get()
-        school = self.school_done.get()
-        sec = self.sec_done.get()
-        project = self.project_done.get()
-        eng = self.eng_done.get()
-        water = self.water_done.get()
-        
-        if not cpp: self.combo_target.set("C++")
-        elif not school: self.combo_target.set("課業")
-        elif not sec: self.combo_target.set("資安")
-        elif not project: self.combo_target.set("專案") 
-        elif not eng: self.combo_target.set("英文")
-        else: self.combo_target.set("躲水裡")
+        nxt = next((p for p in self.task_order if not self.done_var(p).get()), None)
+        if nxt is None:   # 全部完成：保留目前選擇
+            if not self.combo_target.get():
+                self.combo_target.set(self.task_order[0])
+                self.on_target_changed()
+            return
+        if self.combo_target.get() != nxt:
+            self.combo_target.set(nxt)
+            self.on_target_changed()
 
     def check_cross_day(self):
         today = datetime.now().strftime('%Y-%m-%d')
@@ -1904,12 +2073,8 @@ class CPTrackerApp:
         last_startup = cursor.fetchone()[0]
         
         if last_startup != today:
-            self.cpp_done.set(False)
-            self.school_done.set(False)
-            self.sec_done.set(False)
-            self.project_done.set(False)
-            self.eng_done.set(False)
-            self.water_done.set(False)
+            for plat in self.plat_map:
+                self.done_var(plat).set(False)
             
             cursor.execute("SELECT value FROM app_config WHERE key='timeline_shift_date'")
             row = cursor.fetchone()
@@ -1919,15 +2084,21 @@ class CPTrackerApp:
                 cursor.execute("UPDATE hourly_schedule SET day_type='today' WHERE day_type='tomorrow'")
                 cursor.execute("INSERT OR REPLACE INTO app_config (key, value) VALUES ('timeline_shift_date', ?)", (today,))
 
+            # 計畫換日：明日計畫 → 今日計畫，明日清空
+            cursor.execute("DELETE FROM plan_slots WHERE day_type='today'")
+            cursor.execute("UPDATE plan_slots SET day_type='today' WHERE day_type='tomorrow'")
+
             cursor.execute("UPDATE app_config SET value=? WHERE key='last_startup'", (today,))
             conn.commit()
             
+            self.render_checkin_panel()
             self.update_target_default()
             self.refresh_stats()
             self.render_hourly_timeline()
+            self.load_plan_entries()
+            self.update_today_accum_label()
             
         conn.close()
-        self.check_night_shift()
         self.root.after(60000, self.check_cross_day)
 
     def show_last_checkin(self, event, platform):
