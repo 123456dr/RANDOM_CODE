@@ -1,0 +1,980 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>貪婪演算法 手寫模擬特訓</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@400;700&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: one reading column like an exam notebook; sticky chapter strip on top; simulators sit inside the column as "worksheet" panels. */
+:root{
+  --bg:#F3F5F9; --surface:#FFFFFF; --ink:#17202C; --muted:#5A6576; --line:#D7DDE7;
+  --accent:#2445C2; --accent-soft:#E6EBFB; --mark:#FFE27A; --mark-ink:#17202C;
+  --ok:#1C8448; --ok-soft:#E2F4E9; --bad:#C3362B; --bad-soft:#FBE7E5; --cand:#C97D00; --cand-soft:#FFF2D9;
+  --edge:#A3AEBD; --node:#FFFFFF;
+  --f-display:"LXGW WenKai TC","Noto Sans TC","PingFang TC","Microsoft JhengHei",serif;
+  --f-body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0F141B; --surface:#171E28; --ink:#E5EAF1; --muted:#9AA5B5; --line:#2A3443;
+  --accent:#93A9FF; --accent-soft:#1E2846; --mark:#5B4A0E; --mark-ink:#FFF0B5;
+  --ok:#4CC27F; --ok-soft:#14301F; --bad:#FF7A6E; --bad-soft:#3A1916; --cand:#F2B33D; --cand-soft:#3A2A0C;
+  --edge:#566376; --node:#1C2531; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#0F141B; --surface:#171E28; --ink:#E5EAF1; --muted:#9AA5B5; --line:#2A3443;
+  --accent:#93A9FF; --accent-soft:#1E2846; --mark:#5B4A0E; --mark-ink:#FFF0B5;
+  --ok:#4CC27F; --ok-soft:#14301F; --bad:#FF7A6E; --bad-soft:#3A1916; --cand:#F2B33D; --cand-soft:#3A2A0C;
+  --edge:#566376; --node:#1C2531; color-scheme:dark;}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.75;}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+.wrap{max-width:880px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:8px 80px}
+header.hero{padding-block:36px 20px}
+.eyebrow{font-size:13px;letter-spacing:.12em;color:var(--muted);text-transform:uppercase}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;line-height:1.3}
+h1{font-size:clamp(30px,6vw,44px);margin:6px 0 10px}
+h2{font-size:clamp(24px,4.5vw,32px);margin:0 0 4px}
+h3{font-size:21px;margin:28px 0 8px}
+p{margin:10px 0}
+.lede{font-size:18px;color:var(--muted);max-width:62ch}
+nav.chap{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line)}
+nav.chap .in{max-width:880px;margin:0 auto;display:flex;gap:6px;overflow-x:auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:8px;scrollbar-width:thin}
+nav.chap a{flex:none;font-size:14px;color:var(--ink);text-decoration:none;padding:4px 10px;border-radius:999px;border:1px solid var(--line);white-space:nowrap}
+nav.chap a:hover,nav.chap a:focus-visible{border-color:var(--accent);color:var(--accent);outline:none}
+section.ch{padding-top:40px;scroll-margin-top:56px}
+.pages{font-family:var(--f-mono);font-size:13px;color:var(--accent);background:var(--accent-soft);padding:2px 8px;border-radius:6px;display:inline-block;margin-bottom:6px}
+mark{background:var(--mark);color:var(--mark-ink);padding:0 3px;border-radius:3px}
+code,.mono{font-family:var(--f-mono);font-size:.92em}
+.b{font-weight:700}
+.walk{list-style:none;padding:0;margin:14px 0;display:grid;gap:6px}
+.walk li{display:grid;grid-template-columns:56px 1fr;gap:10px;align-items:baseline;padding:6px 0;border-bottom:1px dashed var(--line)}
+.walk li>span:first-child{font-family:var(--f-mono);font-size:13px;color:var(--muted)}
+.box{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:14px 16px;margin:16px 0}
+.box.key{border-left:4px solid var(--accent)}
+.box.warn{border-left:4px solid var(--bad)}
+.box.exam{border-left:4px solid var(--ok)}
+.box h4{margin:0 0 6px;font-family:var(--f-display);font-size:18px}
+.formula{font-family:var(--f-mono);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;overflow-x:auto;white-space:pre;font-size:14px;line-height:1.6}
+.tbl{overflow-x:auto;margin:12px 0}
+table{border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums;min-width:100%}
+th,td{border:1px solid var(--line);padding:5px 9px;text-align:center;white-space:nowrap}
+th{background:var(--bg);font-weight:600}
+td.l,th.l{text-align:left;white-space:normal}
+details{border:1px solid var(--line);border-radius:10px;background:var(--surface);margin:10px 0}
+details>summary{cursor:pointer;padding:10px 14px;font-weight:600;list-style:none}
+details>summary::-webkit-details-marker{display:none}
+details>summary::before{content:"▸ ";color:var(--accent)}
+details[open]>summary::before{content:"▾ "}
+details>div{padding:0 14px 12px;border-top:1px dashed var(--line)}
+.q{font-weight:600}
+/* simulator */
+.sim{border:1.5px solid var(--ink);border-radius:12px;background:var(--surface);margin:20px 0;overflow:hidden}
+.sim-head{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--line);background:var(--bg)}
+.sim-title{font-family:var(--f-display);font-size:18px;font-weight:700}
+.seg{display:flex;gap:4px;flex-wrap:wrap}
+button{font:inherit;font-size:14px;cursor:pointer;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;padding:5px 12px}
+button:hover{border-color:var(--accent)}
+button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button.on{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+button.primary{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+button:disabled{opacity:.4;cursor:default}
+.sim-body{padding:14px;display:grid;gap:12px}
+.sim-body>*{min-width:0}
+.ctrl{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.ctrl .count{font-family:var(--f-mono);font-size:13px;color:var(--muted);margin-left:auto}
+.viz{overflow-x:auto;display:flex;justify-content:center}
+.viz svg{max-width:100%;height:auto}
+.msg{background:var(--cand-soft);border-radius:8px;padding:10px 12px;min-height:3em}
+.msg b{color:var(--ink)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.legend i{display:inline-block;width:18px;height:4px;border-radius:2px;vertical-align:middle;margin-right:4px}
+input[type=text],input[type=number]{font:inherit;font-family:var(--f-mono);font-size:14px;padding:5px 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);min-width:0}
+label.f{display:flex;flex-direction:column;gap:2px;font-size:13px;color:var(--muted);flex:1 1 140px;min-width:0}
+td.ok{background:var(--ok-soft);color:var(--ok);font-weight:700}
+td.bad{background:var(--bad-soft);color:var(--bad);font-weight:700}
+td.cur{outline:2px solid var(--cand);outline-offset:-2px;background:var(--cand-soft)}
+td.ref{background:var(--accent-soft)}
+td.hit{background:var(--mark);color:var(--mark-ink);font-weight:700}
+td.dim{color:var(--muted)}
+.dp td{cursor:pointer;min-width:34px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-family:var(--f-mono);font-size:13px;border:1px solid var(--line);border-radius:6px;padding:2px 8px;background:var(--bg)}
+.chip.ok{border-color:var(--ok);color:var(--ok)}
+.chip.bad{border-color:var(--bad);color:var(--bad);text-decoration:line-through}
+.chip.cur{border-color:var(--cand);background:var(--cand-soft)}
+.cheat{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px}
+.cheat .box{margin:0}
+footer{margin-top:60px;color:var(--muted);font-size:13px}
+@media (prefers-reduced-motion:no-preference){.msg{transition:background .2s}}
+</style>
+
+<nav class="chap" aria-label="章節"><div class="in">
+<a href="#start">怎麼讀</a><a href="#greedy">貪婪＆找零</a><a href="#mst">生成樹</a><a href="#prim">Prim</a><a href="#kruskal">Kruskal</a><a href="#dijkstra">Dijkstra</a><a href="#sched">排程</a><a href="#huff">霍夫曼</a><a href="#vsdp">貪婪 vs DP</a><a href="#knap">背包</a><a href="#dp">DP 背包</a><a href="#big">複雜度</a><a href="#mock">模擬考</a>
+</div></nav>
+
+<div class="wrap">
+<header class="hero" id="start">
+  <div class="eyebrow">演算法 · Chapter 4 · Greedy Algorithms</div>
+  <h1>貪婪演算法 手寫模擬特訓</h1>
+  <p class="lede">照投影片 55 頁的順序走一遍。每個演算法都有：白話解釋 → 投影片例題一步一步跑 → 考試答題格式 → 換一組測資自己練。數學只用到加減乘除和「比大小」。</p>
+
+  <div class="box key">
+    <h4>整章只要記住一句話</h4>
+    <p><mark>貪婪 = 每一步都挑「現在看起來最好的」，挑了就不回頭。</mark>每個演算法的差別只在於「最好」是用什麼標準來比。</p>
+  </div>
+
+  <h3>手寫模擬題的拿分公式</h3>
+  <p>考卷上的「模擬演算法」題，老師看的是你<b>每一步的狀態</b>對不對，不只看答案。所以每題都照這四步寫：</p>
+  <ol>
+    <li><b>寫規則</b>：一句話寫出這個演算法每步貪什麼（例：Kruskal：挑最小且不會形成環的邊）。</li>
+    <li><b>畫表格</b>：每一步一列，寫出當下的狀態（下面每個演算法都有給你表格長相）。</li>
+    <li><b>寫理由</b>：每一列寫「為什麼選它／為什麼丟掉它」。</li>
+    <li><b>寫答案＋驗算</b>：最後寫總花費／最短距離／總位元數，再用一個簡單方法驗算（每章都有教驗算招式）。</li>
+  </ol>
+  <p>題目如果叫你「自己舉一組測資並模擬」，最安全的做法是：<b>拿投影片的例題改幾個數字</b>（點數 5～6 個就夠），而且故意放一個「平手」或「會被更新」的情況，展現你懂細節。每章最後的「換你出題」都有示範。</p>
+
+  <div class="tbl"><table>
+    <tr><th>演算法</th><th class="l">每一步貪什麼</th><th>一定拿到最佳解？</th><th>時間複雜度</th></tr>
+    <tr><td>找零錢</td><td class="l">先拿面額最大的硬幣</td><td>不一定</td><td>—</td></tr>
+    <tr><td>Prim</td><td class="l">從「樹」往外連出去的邊裡挑最小</td><td>是</td><td>Θ(n²)</td></tr>
+    <tr><td>Kruskal</td><td class="l">全部邊裡挑最小、不形成環的</td><td>是</td><td>Θ(m lg m)</td></tr>
+    <tr><td>Dijkstra</td><td class="l">還沒確定的點裡，挑目前距離最小的</td><td>是（權重不能是負的）</td><td>Θ(n²)</td></tr>
+    <tr><td>最小系統時間排程</td><td class="l">服務時間短的先做</td><td>是</td><td>排序</td></tr>
+    <tr><td>截止期限排程</td><td class="l">利潤高的先試，排得進去就收</td><td>是</td><td>Θ(n²)</td></tr>
+    <tr><td>霍夫曼</td><td class="l">每次合併最小的兩棵樹</td><td>是</td><td>—</td></tr>
+    <tr><td>0-1 背包</td><td class="l">（貪婪會失敗，改用 DP）</td><td>貪婪不行</td><td>DP：Θ(nW)</td></tr>
+    <tr><td>Fractional 背包</td><td class="l">每公斤最值錢的先拿，可以切</td><td>是</td><td>排序</td></tr>
+  </table></div>
+</header>
+
+<!-- ================= 1 GREEDY ================= -->
+<section class="ch" id="greedy">
+  <span class="pages">p.1 – p.6</span>
+  <h2>貪婪是什麼？用找零錢來理解</h2>
+  <ul class="walk">
+    <li><span>p.2</span><span>「小氣財神」比喻：每天只想多賺一點金幣，不想前因後果。貪婪演算法的每個決定<b>只看現在</b>，跟之前、之後的決定無關。跟動態規劃（DP）比：DP 會把問題切成小問題；貪婪不切，直接每步選當下最好。</span></li>
+    <li><span>p.3–4</span><span>找 87 分，硬幣有 50、25、10、5、1。貪婪：先拿最大能拿的 → 50、25、10、1、1，共 <b>5 枚</b>。這次剛好是最少的。</span></li>
+    <li><span>p.5</span><span>如果多一種 <b>12 分</b>硬幣，找 16 分：貪婪先拿 12 → 剩 4 → 1、1、1、1，共 5 枚。但 10 + 5 + 1 只要 <b>3 枚</b>！貪婪失敗。</span></li>
+    <li><span>p.6</span><span>結論：<mark>貪婪不保證最佳解</mark>。本章會看到哪些問題貪婪「剛好」會對（MST、Dijkstra、排程、霍夫曼、Fractional 背包），哪個會錯（0-1 背包）。</span></li>
+  </ul>
+
+  <div class="box key"><h4>為什麼 p.5 會失敗？</h4>
+  <p>因為貪婪選了 12 之後就<b>不回頭</b>。它不知道「先不要拿 12」反而更好。這就是貪婪的本質弱點：只看眼前。</p></div>
+
+  <div class="sim" id="sim-coin">
+    <div class="sim-head"><span class="sim-title">找零模擬器</span><span class="legend">改數字自己出題</span></div>
+    <div class="sim-body">
+      <div class="ctrl">
+        <label class="f">找多少錢<input type="number" id="coin-amt" value="16" min="1" max="999"></label>
+        <label class="f">硬幣面額（逗號分隔）<input type="text" id="coin-set" value="1,5,10,12,25,50"></label>
+      </div>
+      <div class="seg">
+        <button data-c="87|1,5,10,25,50">p.4：87 分</button>
+        <button data-c="16|1,5,10,12,25,50">p.5：16 分</button>
+        <button data-c="8|1,4,6">練習：{1,4,6} 找 8</button>
+      </div>
+      <div id="coin-out"></div>
+    </div>
+  </div>
+
+  <h3>換你練習</h3>
+  <details><summary>練習 1：硬幣 {1,5,10,25,50}，找 63 分，貪婪會拿哪些？</summary><div>
+    <p>63 → 拿 50（剩 13）→ 拿 10（剩 3）→ 1、1、1。共 <b>5 枚</b>：50＋10＋1＋1＋1。</p>
+    <p>美國硬幣這組面額，貪婪剛好永遠是最少枚數，所以這題是最佳解。</p>
+  </div></details>
+  <details><summary>練習 2：舉一組「貪婪找零會失敗」的測資</summary><div>
+    <p>硬幣 {1, 4, 6}，找 8 分。貪婪：6＋1＋1 = 3 枚。最佳：4＋4 = 2 枚。</p>
+    <p>出題訣竅：放一個「大但不剛好」的面額（6），讓目標金額剛好是某個小面額的倍數（8 = 4×2）。</p>
+  </div></details>
+</section>
+
+<!-- ================= 2 MST ================= -->
+<section class="ch" id="mst">
+  <span class="pages">p.7</span>
+  <h2>最小生成樹（MST）</h2>
+  <p>先拆字：</p>
+  <ul>
+    <li><b>生成樹（展開樹）</b>：從圖裡挑一些邊，讓<b>所有點都連在一起</b>、而且<b>沒有環</b>。n 個點的生成樹一定剛好有 <mark>n − 1 條邊</mark>。</li>
+    <li><b>最小</b>：挑的邊權重加起來（cost）最小。</li>
+    <li>MST 可能不只一棵（權重有平手時），但<b>最小的 cost 只有一個值</b>。</li>
+  </ul>
+  <p>生活例子：要在 6 個村莊之間鋪電線，讓每個村都通電、總電線長度最短。</p>
+
+  <div class="sim" id="sim-mst7">
+    <div class="sim-head"><span class="sim-title">p.7 的圖 G</span>
+      <div class="seg"><button data-t="T1" class="on">T1</button><button data-t="T2">T2</button><button data-t="T3">T3</button><button data-t="MST">真正的 MST</button></div></div>
+    <div class="sim-body"><div class="viz" id="mst7-viz"></div><div class="msg" id="mst7-msg"></div></div>
+  </div>
+
+  <div class="box warn"><h4>投影片小陷阱（考試會加分的觀察）</h4>
+  <p>p.7 的 T2、T3 cost = 10，是用來說明「不同生成樹 cost 不同」。但這張圖真正的最小是 <b>(a,d)=1、(b,d)=2、(c,d)=5，cost = 8</b>。用下面的 Kruskal 跑一次就會得到 8。學會演算法後，任何「看起來最小」的樹都可以自己驗算。</p></div>
+
+  <details><summary>自我檢查：一個有 8 個點的連通圖，生成樹有幾條邊？如果挑了 8 條邊會怎樣？</summary><div>
+    <p>7 條（n − 1）。挑 8 條一定會出現環，就不是樹了。這是 Prim 和 Kruskal 「什麼時候停」的依據：邊數到 n − 1 就停。</p>
+  </div></details>
+</section>
+
+<!-- ================= 3 PRIM ================= -->
+<section class="ch" id="prim">
+  <span class="pages">p.8 – p.10</span>
+  <h2>Prim 演算法</h2>
+  <ul class="walk">
+    <li><span>p.8</span><span>流程圖：任選一個起點放進樹 T。重複：在「<b>一端在樹裡 u ∈ V(T)、另一端在樹外 v ∉ V(T)</b>」的邊裡挑最小的 (u,v)，把 v 和這條邊加進 T。直到邊數 = 點數 − 1。</span></li>
+    <li><span>p.9</span><span>例題：從 a 開始，依序加入 (a,b)5、(b,c)4、(c,d)2、(c,f)3、(e,f)4。總 cost = 18。</span></li>
+    <li><span>p.10</span><span>時間複雜度 Θ(n²)（看 <a href="#big">複雜度章</a>）。</span></li>
+  </ul>
+  <div class="box key"><h4>白話版</h4>
+  <p>想像樹是一塊會長大的「領土」。每一輪，看所有<b>從領土跨出去</b>的邊，挑最便宜的那條，把對面的點併進來。<br>注意：兩端都已經在領土裡的邊<b>不能選</b>（會形成環），兩端都在外面的邊<b>也不能選</b>（連不到領土）。</p></div>
+
+  <div class="sim" id="sim-prim"></div>
+
+  <div class="box exam"><h4>考卷上這樣寫（Prim）</h4>
+  <p>每一輪一列，<b>一定要列出候選邊</b>，老師才看得出你懂「跨越邊」的概念：</p>
+  <div class="tbl"><table>
+    <tr><th>輪</th><th class="l">候選邊（一端在 T 內）</th><th>選</th><th class="l">V(T)</th><th>cost</th></tr>
+    <tr><td>1</td><td class="l">(a,b)5, (a,e)5, (a,d)6</td><td>(a,b)</td><td class="l">{a,b}</td><td>5</td></tr>
+    <tr><td>2</td><td class="l">(a,e)5, (a,d)6, (b,c)4</td><td>(b,c)</td><td class="l">{a,b,c}</td><td>9</td></tr>
+    <tr><td>…</td><td class="l">…</td><td>…</td><td class="l">…</td><td>…</td></tr>
+  </table></div>
+  <p>平手（例如 (a,b)5 和 (a,e)5）時任選一個，註明「平手任選」。選法可能不同，但最後總 cost 一定一樣。</p></div>
+
+  <details><summary>換你出題：自己設計一組 Prim 測資</summary><div>
+    <p>模擬器上方切到「練習圖」就是一組示範：5 個點 A～E，邊 A-B 2、A-C 3、B-C 1、B-D 4、C-D 5、C-E 6、D-E 3。</p>
+    <p>從 A 開始：(A,B)2 → (B,C)1 → (B,D)4 → (D,E)3，cost = 10。</p>
+    <p>這組的亮點：第 3 輪時 (A,C)3 是最小的邊，但 A、C 都已經在樹裡了，<b>不能選</b>。考試寫出這一點，代表你真的懂。</p>
+  </div></details>
+</section>
+
+<!-- ================= 4 KRUSKAL ================= -->
+<section class="ch" id="kruskal">
+  <span class="pages">p.11 – p.14</span>
+  <h2>Kruskal 演算法</h2>
+  <ul class="walk">
+    <li><span>p.11</span><span>流程：先把<b>所有邊由小到大排序</b>，一條一條看：會形成環就丟掉，不會就加入。直到邊數 = 點數 − 1。</span></li>
+    <li><span>p.12</span><span>例題排序：(c,d)2、(c,f)3、(d,f)3、(b,c)4、(e,f)4、(a,b)5、(a,e)5、(a,d)6、(d,e)7。(d,f) 會造成 c-d-f 環，打 ✗。加到 (a,b) 就滿 5 條，cost = 18（跟 Prim 一樣！）。</span></li>
+    <li><span>p.13</span><span>時間複雜度：排序最花時間，Θ(m lg m)，m 是邊數。</span></li>
+    <li><span>p.14</span><span>Prim vs Kruskal：邊少（接近 n − 1）用 Kruskal；邊多（接近 n(n−1)/2）用 Prim。</span></li>
+  </ul>
+  <div class="box key"><h4>怎麼判斷「會不會形成環」？用分組法</h4>
+  <p>一開始每個點自己一組：{a}{b}{c}{d}{e}{f}。<br>看一條邊 (u,v)：<b>u 和 v 在不同組 → 加入，並把兩組合併</b>；<b>在同一組 → 已經連通了，再連就是環 → 丟掉</b>。<br>手寫時每一步都把分組寫出來，比在圖上用眼睛找環安全多了。</p></div>
+
+  <div class="sim" id="sim-kruskal"></div>
+
+  <div class="box exam"><h4>考卷上這樣寫（Kruskal）</h4>
+  <div class="tbl"><table>
+    <tr><th>邊（已排序）</th><th>權重</th><th>結果</th><th class="l">分組（加完後）</th></tr>
+    <tr><td>(c,d)</td><td>2</td><td>✓</td><td class="l">{c,d}{a}{b}{e}{f}</td></tr>
+    <tr><td>(c,f)</td><td>3</td><td>✓</td><td class="l">{c,d,f}{a}{b}{e}</td></tr>
+    <tr><td>(d,f)</td><td>3</td><td>✗ d、f 同組→環</td><td class="l">不變</td></tr>
+    <tr><td>…</td><td>…</td><td>…</td><td class="l">…</td></tr>
+  </table></div></div>
+
+  <h3>Prim 和 Kruskal 的差別（常考問答）</h3>
+  <div class="tbl"><table>
+    <tr><th></th><th class="l">Prim</th><th class="l">Kruskal</th></tr>
+    <tr><td>看的範圍</td><td class="l">只看跟目前這棵樹相連的邊</td><td class="l">看全部的邊</td></tr>
+    <tr><td>過程中</td><td class="l">永遠是一棵連在一起的樹</td><td class="l">可能是好幾塊（森林），最後才連成一棵</td></tr>
+    <tr><td>複雜度</td><td class="l">Θ(n²)</td><td class="l">Θ(m lg m)</td></tr>
+    <tr><td>適合</td><td class="l">邊很多（稠密圖）</td><td class="l">邊很少（稀疏圖）</td></tr>
+  </table></div>
+  <details><summary>為什麼邊數接近 n(n−1)/2 時 Kruskal 變成 Θ(n² lg n)？</summary><div>
+    <p>把 m ≈ n²/2 代進 m lg m：(n²/2)·lg(n²/2) ≈ (n²/2)·2 lg n = n² lg n。比 Prim 的 n² 多了一個 lg n，所以邊多時 Prim 比較快。</p>
+    <p>（lg(n²) = 2 lg n，跟高中 log 的次方規則一樣。）</p>
+  </div></details>
+</section>
+
+<!-- ================= 5 DIJKSTRA ================= -->
+<section class="ch" id="dijkstra">
+  <span class="pages">p.15 – p.16</span>
+  <h2>Dijkstra 演算法（單一起點最短路徑）</h2>
+  <ul class="walk">
+    <li><span>p.15</span><span>問題：在<b>有向</b>權重圖中，求 v1 到其他每個點的最短路徑。</span></li>
+    <li><span>p.16</span><span>時間複雜度 Θ(n²)，結構跟 Prim 一模一樣（repeat 裡兩個 for）。</span></li>
+  </ul>
+  <div class="box key"><h4>白話版</h4>
+  <p>準備一張「目前已知最短距離」表，起點是 0，其他先填直接連過去的距離，連不到就寫 ∞。<br>每一輪：</p>
+  <ol>
+    <li>在<b>還沒確定</b>的點中，挑距離最小的點 x，把它<b>確定</b>（之後不會再變）。</li>
+    <li>用 x 當跳板更新別人：如果「到 x 的距離 ＋ x→y 的邊」比 y 目前的距離小，就把 y 改小（這叫 <b>relax 鬆弛</b>）。</li>
+  </ol>
+  <p>它跟 Prim 很像，差別在：<mark>Prim 比「單一條邊」的長度，Dijkstra 比「從起點走過來的總長度」</mark>。</p></div>
+
+  <div class="sim" id="sim-dij"></div>
+
+  <div class="box exam"><h4>考卷上這樣寫（Dijkstra）</h4>
+  <p>每一輪一列，欄位是每個點的距離。被確定的點畫圈或打 ✔，有被更新的數字用箭頭標出「舊→新」。最後另外寫每個點的路徑。</p>
+  <div class="tbl"><table>
+    <tr><th>輪</th><th>確定</th><th>v2</th><th>v3</th><th>v4</th><th>v5</th></tr>
+    <tr><td>0</td><td>v1</td><td>7</td><td>4</td><td>6</td><td>1</td></tr>
+    <tr><td>1</td><td>v5</td><td>7</td><td>4</td><td>6→2</td><td>✔1</td></tr>
+    <tr><td>2</td><td>v4</td><td>7→5</td><td>4</td><td>✔2</td><td>✔</td></tr>
+    <tr><td>…</td><td>…</td><td>…</td><td>…</td><td>…</td><td>…</td></tr>
+  </table></div></div>
+
+  <div class="box warn"><h4>常見錯誤</h4>
+  <ul>
+    <li>有向圖<b>只能順著箭頭</b>走。v4→v2 有邊，不代表 v2→v4 有。</li>
+    <li>點一旦確定就不能改；如果你發現想改已確定的點，表示前面挑錯了。</li>
+    <li>Dijkstra 不能處理<b>負的</b>權重（貪婪「確定了就不回頭」會出錯）。</li>
+  </ul></div>
+
+  <details><summary>換你出題：示範一組有「更新」的測資</summary><div>
+    <p>模擬器切到「練習圖」：A→B 4、A→C 1、C→B 2、B→D 1、C→D 5、D→E 3、C→E 8，起點 A。</p>
+    <p>答案：C=1、B=3（A→C→B，比直接 4 短）、D=4（A→C→B→D）、E=7（…→D→E，比 C→E 的 9 短）。</p>
+    <p>這組故意讓 B、D、E 都被更新過，最能展示 relax。</p>
+  </div></details>
+</section>
+
+<!-- ================= 6 SCHEDULING ================= -->
+<section class="ch" id="sched">
+  <span class="pages">p.17 – p.23</span>
+  <h2>排程問題</h2>
+  <h3>A. 最小化總系統時間（p.17 – p.19）</h3>
+  <ul class="walk">
+    <li><span>p.17</span><span>髮型師一次服務一個客人。每個客人的<b>系統時間 = 等待時間 ＋ 服務時間</b>，也就是「從進門到離開」的時間。目標：所有人加起來最小。</span></li>
+    <li><span>p.18</span><span>t1=5、t2=10、t3=4，6 種順序全部算一遍，[3,1,2] = 32 最小。</span></li>
+    <li><span>p.19</span><span>定理 4.3：<mark>服務時間由小到大（非遞減）排，總系統時間最小</mark>。</span></li>
+  </ul>
+  <div class="box key"><h4>為什麼短的先做？（不用證明公式也能懂）</h4>
+  <p>以 [3,1,2] 為例：</p>
+  <div class="formula">客人3 離開時間 = 4
+客人1 離開時間 = 4 + 5
+客人2 離開時間 = 4 + 5 + 10
+總和 = 4×3 + 5×2 + 10×1 = 32</div>
+  <p>排第 1 個的人的服務時間會被<b>算 3 次</b>（因為後面每個人都要等他），排最後的只算 1 次。所以把<b>最小的數字</b>放在<b>乘最多次</b>的位置，總和就最小。</p></div>
+
+  <div class="sim" id="sim-spt">
+    <div class="sim-head"><span class="sim-title">系統時間計算器</span></div>
+    <div class="sim-body">
+      <div class="ctrl"><label class="f">每個工作的服務時間（逗號分隔，最多 5 個會列出所有排列）<input type="text" id="spt-in" value="5,10,4"></label></div>
+      <div class="seg"><button data-s="5,10,4">p.18 例題</button><button data-s="6,2,9,3">練習：6,2,9,3</button></div>
+      <div id="spt-out"></div>
+    </div>
+  </div>
+
+  <h3>B. 依截止期限排程，求最大利潤（p.20 – p.23）</h3>
+  <ul class="walk">
+    <li><span>p.20</span><span>每個工作都花 1 單位時間；每個工作有截止期限和利潤；在截止期限<b>以前或剛好</b>完成才拿得到利潤。</span></li>
+    <li><span>p.21</span><span>4 個工作全部列舉：[4,1] 總利潤 70 最大。觀察：期限 1 的工作 2、4 只能選一個，選利潤高的 4；期限 2 的 1、3 選利潤高的 1。</span></li>
+    <li><span>p.22</span><span>貪婪做法：<b>依利潤由高到低</b>一個一個試，加進去還「可行」就留，不可行就丟。7 個工作的答案是 {1,2,4}，順序 [2,1,4]。</span></li>
+    <li><span>p.23</span><span>最差情況 Θ(n²)。</span></li>
+  </ul>
+  <div class="box key"><h4>怎麼判斷一個集合「可行」？</h4>
+  <p>把集合裡的工作<b>按截止期限由小到大排</b>。排在第 k 個的工作，截止期限必須 ≥ k。全部都符合就可行。</p>
+  <p>例：{1,2,3}，期限是 3、1、1 → 排成 [2,3,1]：工作 3 排第 2 個但期限只有 1 → ✗ 不可行。</p></div>
+
+  <div class="sim" id="sim-dl"></div>
+
+  <details><summary>換你出題：5 個工作的截止期限排程</summary><div>
+    <div class="tbl"><table><tr><th>工作</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th></tr>
+    <tr><td>期限</td><td>2</td><td>1</td><td>3</td><td>2</td><td>1</td></tr>
+    <tr><td>利潤</td><td>60</td><td>100</td><td>20</td><td>40</td><td>20</td></tr></table></div>
+    <p>依利潤排：2(100)、1(60)、4(40)、3(20)、5(20)。<br>
+    {2} ✓ → {2,1}：[2,1] ✓ → {2,1,4}：[2,1,4]，工作 4 排第 3 但期限 2 ✗ → {2,1,3}：[2,1,3] ✓ → {2,1,3,5}：4 個工作但最大期限只有 3 ✗。<br>
+    答案：<b>[2,1,3]，利潤 180</b>。模擬器切到「練習」可以一步一步看。</p>
+  </div></details>
+</section>
+
+<!-- ================= 7 HUFFMAN ================= -->
+<section class="ch" id="huff">
+  <span class="pages">p.24 – p.39</span>
+  <h2>霍夫曼編碼（Huffman Code）</h2>
+  <ul class="walk">
+    <li><span>p.24</span><span>目的：資料壓縮，讓檔案用最少的位元存。</span></li>
+    <li><span>p.25</span><span><b>固定長度</b>：每個字都用一樣多位元（a=00, b=01, c=11），ababcbbbc 要 18 位元。<b>可變長度</b>：常出現的字用短碼（b=0, a=10, c=11），只要 13 位元。</span></li>
+    <li><span>p.26</span><span><b>前置碼 prefix code</b>：沒有任何一個字碼是另一個字碼的開頭。a=01、b=011 就不行（讀到 01 時不知道是 a 還是 b 的前半）。前置碼可以畫成二元樹，字元都在<b>樹葉</b>上。</span></li>
+    <li><span>p.27–28</span><span>6 個字元的頻率表：固定長度 255、某可變長度 231、霍夫曼 212 位元（最少）。算法：頻率 × 字碼長度，全部加起來。</span></li>
+    <li><span>p.29</span><span>名詞：內部路徑長（到內部節點的深度和）、外部路徑長（到樹葉的深度和）、<b>加權外部路徑長 WE = Σ（樹葉深度 × 樹葉權重）</b>。</span></li>
+    <li><span>p.30</span><span>WE 最小的樹叫霍夫曼樹。直覺：<mark>權重大的樹葉要靠近樹根</mark>（例：C=9 放在深度 1，WE=39 最小）。</span></li>
+    <li><span>p.31</span><span>演算法：樹葉依權重由小到大排；每次拿出<b>最小的兩個</b>合併成新樹（權重相加），插回串列並保持排序；直到只剩一棵。</span></li>
+    <li><span>p.32–36</span><span>例題 A15 B8 C30 D27 E5 F15：E+B=13(G)、G+A=28(H)、F+D=42(I)、H+C=58(J)、I+J=100(K)。</span></li>
+    <li><span>p.37</span><span>左邊 0、右邊 1，從樹根走到樹葉就是字碼：A=101, B=1001, C=11, D=01, E=1000, F=00。</span></li>
+    <li><span>p.38</span><span>1000 個字母：不編碼要 3000 位元，霍夫曼只要 2410 位元。</span></li>
+    <li><span>p.39</span><span>解碼 01100010100：從樹根出發，碰到樹葉就輸出一個字，再回樹根 → D E A F。</span></li>
+  </ul>
+
+  <div class="sim" id="sim-huff"></div>
+
+  <div class="box exam"><h4>考卷上這樣寫（霍夫曼）</h4>
+  <p>每一步寫一行「目前的串列」，把要合併的兩個圈起來：</p>
+  <div class="formula">初始：E5  B8  A15  F15  D27  C30
+步1 ：(E5+B8)=G13 → G13 A15 F15 D27 C30
+步2 ：(G13+A15)=H28 → F15 D27 H28 C30
+步3 ：(F15+D27)=I42 → H28 C30 I42
+步4 ：(H28+C30)=J58 → I42 J58
+步5 ：(I42+J58)=K100 → 結束</div>
+  <p>然後畫樹、標 0/1、列字碼表、算總位元數。</p>
+  <p><b>驗算招式</b>：總位元數（WE）＝<mark>所有合併出來的新節點權重相加</mark>。13+28+42+58+100 = 241，跟 Σ(權重×深度) = 241 一樣。算錯一定抓得到！（241 是百分比，乘上 1000/100 = 10 倍就是 p.38 的 2410。）</p></div>
+
+  <div class="box warn"><h4>平手怎麼辦？</h4>
+  <p>例題中 A15 和 F15 平手，投影片選了先出現的 A。考試時平手可以任選，<b>樹的形狀和字碼可能不同，但總位元數一定一樣</b>。寫一句「平手任選，總位元數不變」最保險。左 0 右 1 也只要自己全程一致就好。</p></div>
+
+  <div class="sim" id="sim-dec">
+    <div class="sim-head"><span class="sim-title">解碼練習（用 p.37 的字碼表）</span></div>
+    <div class="sim-body">
+      <div class="ctrl"><label class="f">輸入 0/1 字串<input type="text" id="dec-in" value="01100010100"></label></div>
+      <div class="seg"><button data-d="01100010100">p.39 例題</button><button data-d="111001100001">練習 1</button><button data-d="00101011001">練習 2</button></div>
+      <div id="dec-out"></div>
+    </div>
+  </div>
+
+  <details><summary>自我檢查：p.30 為什麼 WE1 = 39 最小？</summary><div>
+    <p>A8、B7、C9 三個樹葉。WE1 把最重的 C(9) 放在深度 1，A、B 在深度 2：2×8 + 2×7 + 1×9 = 39。把 A 或 B 放到深度 1，就會讓更重的 C 被乘 2，總和變大。這就是霍夫曼「先合併最小的」的道理：最小的被合併得最早，就會在最深的地方。</p>
+  </div></details>
+  <details><summary>換你出題：一組沒有平手的霍夫曼測資</summary><div>
+    <p>模擬器切到「練習」：a5 b9 c12 d13 e16 f45。<br>
+    合併：a+b=14 → c+d=25 → 14+e=30 → 25+30=55 → f+55=100。<br>
+    字碼：f=0, c=100, d=101, a=1100, b=1101, e=111。<br>
+    總位元數 = 45×1+12×3+13×3+5×4+9×4+16×3 = 224；驗算 14+25+30+55+100 = 224 ✓。</p>
+  </div></details>
+</section>
+
+<!-- ================= 8 VS DP ================= -->
+<section class="ch" id="vsdp">
+  <span class="pages">p.40</span>
+  <h2>貪婪 vs 動態規劃</h2>
+  <div class="tbl"><table>
+    <tr><th></th><th class="l">貪婪</th><th class="l">動態規劃 DP</th></tr>
+    <tr><td>做法</td><td class="l">每步選當下最好，不回頭</td><td class="l">把小問題答案存成表，組合出大問題</td></tr>
+    <tr><td>例子</td><td class="l">Dijkstra Θ(n²)（單一起點）</td><td class="l">Floyd Θ(n³)（所有點對）</td></tr>
+    <tr><td>優點</td><td class="l">簡單、快</td><td class="l">只要符合「最佳化原則」就一定對</td></tr>
+    <tr><td>缺點</td><td class="l">很難確定會不會拿到最佳解，要另外證明</td><td class="l">通常比較慢、要記很多表格</td></tr>
+  </table></div>
+  <p><b>最佳化原則</b>：最佳解裡面的每一小段，本身也是那一小段問題的最佳解。（例：A→C 的最短路經過 B，那 A→B 那段也一定是 A 到 B 的最短路。）</p>
+</section>
+
+<!-- ================= 9 KNAPSACK ================= -->
+<section class="ch" id="knap">
+  <span class="pages">p.41 – p.47</span>
+  <h2>背包問題：貪婪在這裡翻車</h2>
+  <ul class="walk">
+    <li><span>p.41</span><span><b>0-1 背包</b>：每個東西只能整個拿或不拿（金磚）。<b>Fractional 背包</b>：東西可以切一部分拿（金粉）。</span></li>
+    <li><span>p.42–43</span><span>5 個寶物、背包 15kg。暴力法：每個拿或不拿，共 2⁵ = 32 種組合全部試。最佳是拿寶物 2、3、4、5，價值 15。</span></li>
+    <li><span>p.44</span><span>貪婪①「價值高的先拿」失敗：12kg$10 先拿，兩個 7kg$9 都放不下 → $10；但拿兩個 7kg 是 $18。</span></li>
+    <li><span>p.45</span><span>貪婪②「重量輕的先拿」失敗：兩個 7kg（$4、$2）→ $6；但 12kg$10 單拿就 $10。</span></li>
+    <li><span>p.46</span><span>貪婪③「每公斤最值錢的先拿」也失敗：2kg$20（10元/kg）、10kg$80（8元/kg）→ 12kg $100，剩 3kg 放不下 5kg$30，<b>浪費 3kg</b>；最佳是 5kg+10kg = $110。</span></li>
+    <li><span>p.47</span><span>但如果可以切（Fractional）：先拿 2kg、10kg，剩 3kg 切 5kg 那個的 3/5 → $30×3/5 = $18，總共 <b>$118</b>。這時貪婪③一定最佳。</span></li>
+  </ul>
+  <div class="box key"><h4>為什麼 Fractional 可以、0-1 不行？</h4>
+  <p>0-1 背包會「浪費空間」：剩下的空間塞不進整個東西。Fractional 可以切，所以永遠能把背包塞滿，而且塞的永遠是每公斤最值錢的，不可能更好。</p></div>
+
+  <div class="box exam"><h4>Fractional 背包答題格式</h4>
+  <div class="tbl"><table>
+    <tr><th>物品</th><th>重量</th><th>價值</th><th>每公斤</th><th>拿多少</th><th>得到</th><th>剩餘容量</th></tr>
+    <tr><td>①</td><td>2</td><td>20</td><td>10</td><td>全部</td><td>20</td><td>13</td></tr>
+    <tr><td>③</td><td>10</td><td>80</td><td>8</td><td>全部</td><td>80</td><td>3</td></tr>
+    <tr><td>②</td><td>5</td><td>30</td><td>6</td><td>3/5</td><td>18</td><td>0</td></tr>
+    <tr><td colspan="5">總價值</td><td><b>118</b></td><td></td></tr>
+  </table></div></div>
+
+  <details><summary>換你出題：一組讓三種貪婪都看得出差別的測資</summary><div>
+    <p>背包 W = 50；物品①10kg $60、②20kg $100、③30kg $120。每公斤：6、5、4。</p>
+    <p><b>Fractional</b>：拿①、② 全部（30kg，$160），剩 20kg 拿 ③ 的 20/30 → $80。總共 <b>$240</b>。</p>
+    <p><b>0-1 用每公斤貪婪</b>：①＋② = $160，③ 放不下。<b>但最佳是 ②＋③ = $220</b>。貪婪失敗。</p>
+  </div></details>
+</section>
+
+<!-- ================= 10 DP KNAPSACK ================= -->
+<section class="ch" id="dp">
+  <span class="pages">p.48 – p.55</span>
+  <h2>用 DP 解 0-1 背包</h2>
+  <ul class="walk">
+    <li><span>p.48</span><span>符合最佳化原則：看最後一個物品 n。最佳解 A <b>不拿</b> item n → A 就是「前 n−1 個、容量 W」的最佳解；A <b>拿</b> item n → 剩下的是「前 n−1 個、容量 W − wₙ」的最佳解，再加上 pₙ。</span></li>
+    <li><span>p.49–50</span><span>畫一張表 P[i][w]：前 i 個物品、容量 w 時最多能拿多少錢。第 0 列、第 0 行都是 0。P[n][W] 由上一列的兩格決定。</span></li>
+    <li><span>p.51–53</span><span>例題：物品①2kg$20、②5kg$30、③10kg$80，W=15。只算需要的格子：P[3][15] ← P[2][15]、P[2][5] ← P[1][15]、P[1][10]、P[1][5]、P[1][0]。答案 110。</span></li>
+    <li><span>p.54–55</span><span>只算需要的格子：第 3 列 1 格、第 2 列 2 格、第 1 列 4 格，最多 1+2+4+…+2ⁿ⁻¹ = 2ⁿ − 1 格。所以複雜度 O(min(2ⁿ, nW))。</span></li>
+  </ul>
+  <div class="box key"><h4>核心公式（一定要背，要會用）</h4>
+  <div class="formula">P[i][w] = max( P[i-1][w] ,  pᵢ + P[i-1][w - wᵢ] )   如果 wᵢ ≤ w
+P[i][w] = P[i-1][w]                                如果 wᵢ > w
+P[0][w] = 0 ,  P[i][0] = 0</div>
+  <p>白話：考慮第 i 個物品時只有兩條路——</p>
+  <ul>
+    <li><b>不拿</b>：答案跟「只有前 i−1 個物品」一樣 → 看<b>正上方</b>那格。</li>
+    <li><b>拿</b>：先賺 pᵢ、花掉 wᵢ 的空間，剩下 w − wᵢ 的空間交給前 i−1 個 → 看<b>上一列、往左 wᵢ 格</b>那格，再加 pᵢ。</li>
+    <li>兩個取大的。放不下（wᵢ &gt; w）就只能不拿。</li>
+  </ul></div>
+
+  <div class="sim" id="sim-dp"></div>
+
+  <div class="box exam"><h4>算完表之後：怎麼找出「拿了哪些」？（回溯）</h4>
+  <p>從右下角 P[n][W] 開始往上看：</p>
+  <ul>
+    <li>P[i][w] ≠ P[i−1][w] → 第 i 個<b>有拿</b>，w 減掉 wᵢ，往上一列。</li>
+    <li>P[i][w] = P[i−1][w] → 第 i 個<b>沒拿</b>，w 不變，往上一列。</li>
+  </ul>
+  <p>例題：P[3][15]=110 ≠ P[2][15]=50 → 拿③，w=5；P[2][5]=30 ≠ P[1][5]=20 → 拿②，w=0；P[1][0]=0 = P[0][0] → 沒拿①。答案 {②,③}，110 元。</p></div>
+
+  <details><summary>換你出題：W=5 的小表格</summary><div>
+    <p>物品①2kg$3、②3kg$4、③4kg$5、④5kg$6，W=5。模擬器切「練習」可以看完整的表。</p>
+    <p>答案 P[4][5] = 7，拿 ①② （2+3=5kg，3+4=7 元）。</p>
+  </div></details>
+</section>
+
+<!-- ================= 11 BIG-O ================= -->
+<section class="ch" id="big">
+  <h2>時間複雜度：數學不好也能拿分</h2>
+  <div class="box key"><h4>三個符號，白話翻譯</h4>
+  <ul>
+    <li><b>Θ(…)</b>：「大約跟…一樣快長大」。只留<b>最大的那一項</b>，常數係數丟掉。例：2n² − 4n + 2 → 留 2n² → 丟掉 2 → Θ(n²)。</li>
+    <li><b>lg n</b>：「2 的幾次方等於 n」。lg 8 = 3、lg 1024 = 10。它長得很慢。</li>
+    <li><b>Σ（sigma）</b>：「全部加起來」。Σᵢ₌₂ⁿ 就是把 i = 2, 3, …, n 的值都加起來。</li>
+  </ul></div>
+
+  <div class="tbl"><table>
+    <tr><th>演算法</th><th class="l">怎麼算出來（考試要會寫這行）</th><th>結果</th></tr>
+    <tr><td>Prim</td><td class="l">repeat 跑 n−1 次，裡面 2 個 for 各跑 n−1 次 → 2(n−1)(n−1)</td><td>Θ(n²)</td></tr>
+    <tr><td>Dijkstra</td><td class="l">跟 Prim 完全一樣的迴圈結構 → 2(n−1)(n−1)</td><td>Θ(n²)</td></tr>
+    <tr><td>Kruskal</td><td class="l">排序 m 條邊要 m lg m；最差情況 m 條邊都要看過</td><td>Θ(m lg m)</td></tr>
+    <tr><td>截止期限排程</td><td class="l">第 i 個工作：插入要 i−1 次比較、檢查可行要 i 次 → Σᵢ₌₂ⁿ (2i−1) = n² − 1</td><td>Θ(n²)</td></tr>
+    <tr><td>0-1 背包 DP</td><td class="l">整張表 n 列 × W 行；只算需要的格子最多 2ⁿ − 1</td><td>O(min(2ⁿ, nW))</td></tr>
+    <tr><td>Floyd（對照）</td><td class="l">三層迴圈</td><td>Θ(n³)</td></tr>
+  </table></div>
+
+  <details><summary>Σᵢ₌₂ⁿ (2i−1) = n² − 1 怎麼來的？（高中程度就懂）</summary><div>
+    <p>2i − 1 在 i = 1, 2, 3, … 時是 1, 3, 5, …，就是奇數。</p>
+    <p>前 n 個奇數加起來 = n²（1 = 1、1+3 = 4、1+3+5 = 9，可以自己驗）。</p>
+    <p>這裡從 i = 2 開始，少了第一個奇數 1，所以是 n² − 1。</p>
+  </div></details>
+  <details><summary>為什麼 1 + 2 + 4 + … + 2ⁿ⁻¹ = 2ⁿ − 1？</summary><div>
+    <p>試幾個：1 = 2¹−1、1+2 = 3 = 2²−1、1+2+4 = 7 = 2³−1。每次加上去的數剛好把它補到下一個 2 的次方減 1。</p>
+  </div></details>
+</section>
+
+<!-- ================= 12 MOCK ================= -->
+<section class="ch" id="mock">
+  <h2>模擬考：先自己在紙上寫，再打開答案</h2>
+  <p>每題都用前面教的表格格式寫。寫完再對答案，錯在哪一步就回去那章的模擬器重跑。</p>
+
+  <div class="box"><p class="q">第 1 題（MST）</p>
+  <p>無向圖：P-Q 7、P-R 4、Q-R 2、Q-S 5、R-S 6、R-T 9、S-T 3。(a) 用 Kruskal 求 MST，寫出分組變化。(b) 從 P 開始用 Prim，寫出每輪候選邊。</p></div>
+  <details><summary>第 1 題答案</summary><div>
+    <p>(a) 排序：Q-R2, S-T3, P-R4, Q-S5, R-S6, P-Q7, R-T9。<br>
+    Q-R ✓ {Q,R} → S-T ✓ {S,T} → P-R ✓ {P,Q,R} → Q-S ✓ {P,Q,R,S,T}，已 4 條 = 5−1，停。cost = 2+3+4+5 = <b>14</b>。</p>
+    <p>(b) 輪1 候選 P-Q7、P-R4 → 選 P-R。輪2 候選 P-Q7、Q-R2、R-S6、R-T9 → 選 Q-R。輪3 候選 Q-S5、R-S6、R-T9（P-Q 兩端都在樹內，不算）→ 選 Q-S。輪4 候選 R-T9、S-T3 → 選 S-T。cost = <b>14</b>，跟 Kruskal 一樣 ✓。</p>
+  </div></details>
+
+  <div class="box"><p class="q">第 2 題（Dijkstra）</p>
+  <p>有向圖：S→A 2、S→B 6、A→B 3、A→C 7、B→C 1、B→D 5、C→D 2。求 S 到各點最短距離與路徑。</p></div>
+  <details><summary>第 2 題答案</summary><div>
+    <div class="tbl"><table>
+      <tr><th>輪</th><th>確定</th><th>A</th><th>B</th><th>C</th><th>D</th></tr>
+      <tr><td>0</td><td>S</td><td>2</td><td>6</td><td>∞</td><td>∞</td></tr>
+      <tr><td>1</td><td>A</td><td>✔2</td><td>6→5</td><td>∞→9</td><td>∞</td></tr>
+      <tr><td>2</td><td>B</td><td>✔</td><td>✔5</td><td>9→6</td><td>∞→10</td></tr>
+      <tr><td>3</td><td>C</td><td>✔</td><td>✔</td><td>✔6</td><td>10→8</td></tr>
+      <tr><td>4</td><td>D</td><td>✔</td><td>✔</td><td>✔</td><td>✔8</td></tr>
+    </table></div>
+    <p>路徑：A：S→A(2)；B：S→A→B(5)；C：S→A→B→C(6)；D：S→A→B→C→D(8)。</p>
+  </div></details>
+
+  <div class="box"><p class="q">第 3 題（霍夫曼）</p>
+  <p>字元出現次數 v1、y3、z4、x7、w10。畫出霍夫曼樹（左 0 右 1），寫出字碼與總位元數。</p></div>
+  <details><summary>第 3 題答案</summary><div>
+    <div class="formula">初始：v1 y3 z4 x7 w10
+步1：v1+y3=4  → z4  (4) x7 w10      ← 平手時新節點排在後面
+步2：z4+(4)=8 → x7 (8) w10
+步3：x7+(8)=15 → w10 (15)
+步4：w10+(15)=25 結束</div>
+    <p>字碼：w=0、x=10、z=110、v=1110、y=1111。<br>
+    總位元 = 10×1 + 7×2 + 4×3 + 1×4 + 3×4 = <b>52</b>。驗算：4+8+15+25 = 52 ✓</p>
+    <p>（平手如果選不同的合併順序，字碼會不同，但總位元一定是 52。）</p>
+  </div></details>
+
+  <div class="box"><p class="q">第 4 題（0-1 背包 DP）</p>
+  <p>W = 7；物品①1kg$1、②3kg$4、③4kg$5、④5kg$7。(a) 畫出 P 表，求最大價值與拿哪些。(b) 如果用「每公斤最值錢先拿」的貪婪，會得到多少？(c) 如果是 Fractional 呢？</p></div>
+  <details><summary>第 4 題答案</summary><div>
+    <div class="tbl"><table>
+      <tr><th>i \ w</th><th>0</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th></tr>
+      <tr><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+      <tr><td>1</td><td>0</td><td>1</td><td>1</td><td>1</td><td>1</td><td>1</td><td>1</td><td>1</td></tr>
+      <tr><td>2</td><td>0</td><td>1</td><td>1</td><td>4</td><td>5</td><td>5</td><td>5</td><td>5</td></tr>
+      <tr><td>3</td><td>0</td><td>1</td><td>1</td><td>4</td><td>5</td><td>6</td><td>6</td><td>9</td></tr>
+      <tr><td>4</td><td>0</td><td>1</td><td>1</td><td>4</td><td>5</td><td>7</td><td>8</td><td>9</td></tr>
+    </table></div>
+    <p>(a) P[4][7] = max(P[3][7]=9, 7+P[3][2]=8) = <b>9</b>。回溯：P[4][7]=P[3][7] → ④沒拿；P[3][7]=9≠P[2][7]=5 → 拿③，w=3；P[2][3]=4≠P[1][3]=1 → 拿②，w=0。答案 {②,③}，9 元。</p>
+    <p>(b) 每公斤：①1、②1.33、③1.25、④1.4 → 先拿④(5kg)，剩 2kg → ②③放不下 → 拿①。共 <b>8 元</b>，比 9 少，貪婪失敗。</p>
+    <p>(c) Fractional：④全部(5kg,$7)，剩 2kg 拿②的 2/3 → 4×2/3 ≈ 2.67。共 <b>≈ 9.67 元</b>。</p>
+  </div></details>
+
+  <div class="box"><p class="q">第 5 題（觀念題）</p>
+  <p>(a) 舉一組貪婪找零失敗的例子。(b) 為什麼 Dijkstra 不能有負的權重？(c) 邊很多的圖該用 Prim 還是 Kruskal？為什麼？</p></div>
+  <details><summary>第 5 題答案</summary><div>
+    <p>(a) 硬幣 {1,7,10} 找 14：貪婪 10+1+1+1+1 = 5 枚；最佳 7+7 = 2 枚。</p>
+    <p>(b) Dijkstra 一確定某點就不再改。如果後面有負的邊，可能繞遠路反而更短，但那個點已經被「鎖死」了，答案就錯。</p>
+    <p>(c) Prim。邊數 m 接近 n²/2 時，Kruskal 是 Θ(n² lg n)，比 Prim 的 Θ(n²) 慢。</p>
+  </div></details>
+
+  <div class="box exam"><h4>考前 1 分鐘檢查清單</h4>
+  <ul>
+    <li>MST 邊數 = n − 1？Prim 和 Kruskal 算出的 cost 一樣嗎？</li>
+    <li>Prim 的候選邊都是「一端在樹內、一端在樹外」嗎？</li>
+    <li>Kruskal 每一步有寫分組嗎？</li>
+    <li>Dijkstra 有順著箭頭走嗎？已確定的點有沒有被我改到？</li>
+    <li>霍夫曼：每步都從「目前串列」挑最小兩個？總位元 = 新節點權重總和？</li>
+    <li>背包：題目是 0-1 還是 Fractional？DP 表第 0 列、第 0 行是 0？</li>
+  </ul></div>
+</section>
+
+<footer>依 2026 Fall「演算法 Chapter 4 Greedy Algorithms」投影片 p.1–p.55 整理。練習題的數字是另外出的，答案都用程式驗算過。</footer>
+</div>
+
+<script>
+/*ALGO-START*/
+const GRAPHS = {
+  mstSlide:{name:"投影片 p.9 的圖",directed:false,start:"a",
+    nodes:[["a",120,40],["e",260,40],["b",40,130],["d",190,130],["c",120,220],["f",260,220]],
+    edges:[["a","b",5],["a","e",5],["a","d",6],["d","e",7],["e","f",4],["b","c",4],["c","d",2],["c","f",3],["d","f",3]],
+    sortOrder:[["c","d"],["c","f"],["d","f"],["b","c"],["e","f"],["a","b"],["a","e"],["a","d"],["d","e"]]},
+  mstPrac:{name:"練習圖",directed:false,start:"A",
+    nodes:[["A",40,60],["B",180,40],["C",110,190],["D",300,110],["E",280,240]],
+    edges:[["A","B",2],["A","C",3],["B","C",1],["B","D",4],["C","D",5],["C","E",6],["D","E",3]]},
+  mst7:{name:"p.7",directed:false,
+    nodes:[["a",150,30],["b",50,110],["d",250,110],["c",150,200]],
+    edges:[["a","b",3],["a","d",1],["b","d",2],["a","c",6],["b","c",8],["c","d",5]]},
+  dijSlide:{name:"投影片 p.15 的圖",directed:true,start:"v1",
+    nodes:[["v1",200,30],["v5",70,110],["v2",330,110],["v4",120,240],["v3",280,240]],
+    edges:[["v1","v2",7],["v1","v3",4],["v1","v4",6],["v1","v5",1],["v3","v2",2],["v3","v4",5],["v4","v2",3],["v5","v4",1]]},
+  dijPrac:{name:"練習圖",directed:true,start:"A",
+    nodes:[["A",40,140],["B",180,40],["C",180,240],["D",330,40],["E",330,240]],
+    edges:[["A","B",4],["A","C",1],["C","B",2],["B","D",1],["C","D",5],["D","E",3],["C","E",8]]}
+};
+const ek = e => e[0]+"-"+e[1];
+const fmtE = e => `(${e[0]},${e[1]})`;
+
+function buildPrim(g){
+  const inT=new Set([g.start]); const chosen=[]; let cost=0;
+  const steps=[{inT:[g.start],chosen:[],cand:[],pick:null,cost:0,
+    msg:`任選起點 <b>${g.start}</b>。V(T) = {${g.start}}，E(T) = ∅。`}];
+  while(inT.size<g.nodes.length){
+    const cand=g.edges.filter(e=>inT.has(e[0])!==inT.has(e[1]));
+    let best=cand[0]; for(const e of cand) if(e[2]<best[2]) best=e;
+    const tie=cand.filter(e=>e[2]===best[2]).length>1;
+    const v=inT.has(best[0])?best[1]:best[0];
+    inT.add(v); chosen.push(best); cost+=best[2];
+    const inside=g.edges.filter(e=>!chosen.includes(e)&&inT.has(e[0])&&inT.has(e[1])&&!cand.includes(e));
+    steps.push({inT:[...inT],chosen:[...chosen],cand,pick:best,cost,
+      msg:`候選邊（一端在樹內、一端在樹外）：${cand.map(e=>fmtE(e)+"="+e[2]).join("、")}。<br>最小的是 <b>${fmtE(best)}=${best[2]}</b>${tie?"（平手，任選一條）":""}，把 <b>${v}</b> 加入。目前 cost = ${cost}。`+
+        (inT.size===g.nodes.length?`<br>已經有 ${chosen.length} 條邊 = 點數 − 1，<b>結束</b>。MST 總 cost = <b>${cost}</b>。`:"")});
+  }
+  return steps;
+}
+function buildKruskal(g){
+  let sorted;
+  if(g.sortOrder){ sorted=g.sortOrder.map(([u,v])=>g.edges.find(e=>e[0]===u&&e[1]===v)); }
+  else { sorted=g.edges.map((e,i)=>[e,i]).sort((a,b)=>a[0][2]-b[0][2]||a[1]-b[1]).map(x=>x[0]); }
+  const grp={}; g.nodes.forEach(n=>grp[n[0]]=n[0]);
+  const find=x=>{while(grp[x]!==x)x=grp[x];return x;};
+  const groups=()=>{const m={};g.nodes.forEach(n=>{const r=find(n[0]);(m[r]=m[r]||[]).push(n[0]);});return Object.values(m).map(a=>"{"+a.join(",")+"}").join(" ");};
+  const status=sorted.map(()=>""); const chosen=[]; let cost=0;
+  const steps=[{sorted,status:[...status],cur:-1,chosen:[],groups:groups(),cost:0,
+    msg:`先把所有邊<b>由小到大排序</b>（下面那排）。每個點自己一組：${groups()}`}];
+  for(let i=0;i<sorted.length&&chosen.length<g.nodes.length-1;i++){
+    const e=sorted[i]; const a=find(e[0]), b=find(e[1]); let msg;
+    if(a!==b){ grp[a]=b; status[i]="ok"; chosen.push(e); cost+=e[2];
+      msg=`看 <b>${fmtE(e)}=${e[2]}</b>：${e[0]} 和 ${e[1]} 在<b>不同組</b> → 加入，兩組合併。`;
+    } else { status[i]="bad";
+      msg=`看 <b>${fmtE(e)}=${e[2]}</b>：${e[0]} 和 ${e[1]} 已經在<b>同一組</b> → 加了會形成環 → <b>丟掉</b>。`;}
+    msg+=`<br>分組：${groups()}　cost = ${cost}`;
+    if(chosen.length===g.nodes.length-1){ msg+=`<br>已經 ${chosen.length} 條邊 = 點數 − 1，<b>結束</b>，後面的邊不用看。MST cost = <b>${cost}</b>。`;
+      for(let j=i+1;j<sorted.length;j++) status[j]="skip"; }
+    steps.push({sorted,status:[...status],cur:i,chosen:[...chosen],groups:groups(),cost,msg});
+  }
+  return steps;
+}
+function buildDijkstra(g){
+  const s=g.start; const others=g.nodes.map(n=>n[0]).filter(x=>x!==s);
+  const w=(u,v)=>{const e=g.edges.find(e=>e[0]===u&&e[1]===v);return e?e[2]:Infinity;};
+  const dist={}, prev={}; others.forEach(v=>{dist[v]=w(s,v);prev[v]=dist[v]<Infinity?s:null;});
+  const done=new Set([s]); const rows=[];
+  const snap=(pick,upd)=>({pick,dist:{...dist},prev:{...prev},done:[...done],upd:{...upd}});
+  rows.push(snap(s,{}));
+  const steps=[{rows:[...rows],done:[...done],relaxed:[],
+    msg:`起點 <b>${s}</b> 先確定（距離 0）。其他點先填「${s} 直接連過去」的距離，連不到寫 ∞。`}];
+  while(done.size<g.nodes.length){
+    let x=null; for(const v of others) if(!done.has(v)&&(x===null||dist[v]<dist[x])) x=v;
+    if(dist[x]===Infinity) break;
+    done.add(x); const upd={}; const notes=[]; const relaxed=[];
+    for(const y of others){ if(done.has(y)) continue; const ww=w(x,y); if(ww===Infinity) continue;
+      relaxed.push(x+"-"+y);
+      const nd=dist[x]+ww;
+      if(nd<dist[y]){ notes.push(`${y}：${fmtD(dist[y])} → <b>${nd}</b>（${dist[x]}+${ww}，經 ${x}）`); upd[y]=dist[y]; dist[y]=nd; prev[y]=x; }
+      else notes.push(`${y}：${dist[x]}+${ww}=${nd} 不比 ${fmtD(dist[y])} 小，不變`);
+    }
+    rows.push(snap(x,upd));
+    let msg=`還沒確定的點中，<b>${x}</b> 的距離 ${dist[x]} 最小 → 確定 ${x}。<br>用 ${x} 當跳板更新：`+(notes.length?notes.join("；"):"沒有從 "+x+" 出去、通往未確定點的邊");
+    if(done.size===g.nodes.length){ msg+=`<br><b>全部確定，結束。</b>路徑：`+others.map(v=>`${v}=${dist[v]}（${path(prev,s,v)}）`).join("、"); }
+    steps.push({rows:[...rows],done:[...done],relaxed,pick:x,msg});
+  }
+  return steps;
+}
+const fmtD = d => d===Infinity?"∞":String(d);
+function path(prev,s,v){const p=[v];while(v!==s){v=prev[v];p.unshift(v);}return p.join("→");}
+
+function buildDeadline(jobs){
+  const order=jobs.map((j,i)=>({...j,i})).sort((a,b)=>b.p-a.p||a.i-b.i);
+  let S=[]; const rows=[]; const steps=[{rows:[],S:[],msg:`依<b>利潤由高到低</b>排：${order.map(j=>`${j.id}(${j.p})`).join("、")}。一個一個試。`}];
+  for(const j of order){
+    const K=[...S,j]; const seq=[...K].sort((a,b)=>a.d-b.d||K.indexOf(a)-K.indexOf(b));
+    let bad=null; seq.forEach((x,k)=>{ if(bad===null&&x.d<k+1) bad={x,k:k+1}; });
+    const setTxt="["+K.map(x=>x.id).sort((a,b)=>a-b).join(", ")+"]";
+    const seqTxt="["+seq.map(x=>x.id).join(", ")+"]";
+    let msg;
+    if(!bad){ S=K; rows.push({set:setTxt,seq:seqTxt,ok:true});
+      msg=`試工作 <b>${j.id}</b>（期限 ${j.d}、利潤 ${j.p}）：按期限排成 ${seqTxt}，每個工作的位置都 ≤ 期限 → <b>可行，收下</b>。`;
+    } else { rows.push({set:setTxt,seq:"✗",ok:false});
+      msg=`試工作 <b>${j.id}</b>（期限 ${j.d}、利潤 ${j.p}）：按期限排成 ${seqTxt}，工作 ${bad.x.id} 排第 ${bad.k} 個，但期限只有 ${bad.x.d} → <b>不可行，丟掉</b>。`; }
+    const tot=S.reduce((a,x)=>a+x.p,0);
+    msg+=`　目前總利潤 = ${tot}`;
+    steps.push({rows:[...rows],S:[...S],msg});
+  }
+  const last=steps[steps.length-1]; const fin=[...last.S].sort((a,b)=>a.d-b.d||last.S.indexOf(a)-last.S.indexOf(b));
+  last.msg+=`<br><b>結束。</b>排程 [${fin.map(x=>x.id).join(", ")}]，總利潤 <b>${last.S.reduce((a,x)=>a+x.p,0)}</b>。`;
+  return steps;
+}
+
+function buildHuffman(items,newNames){
+  let uid=0; const mk=(name,w,l,r)=>({id:uid++,name,w,l,r});
+  let list=items.map(([n,w])=>mk(n,w,null,null)).map((x,i)=>[x,i]).sort((a,b)=>a[0].w-b[0].w||a[1]-b[1]).map(x=>x[0]);
+  const lt=l=>l.map(t=>t.l?(t.name?`${t.name}${t.w}`:`[${t.w}]`):`${t.name}${t.w}`).join("　");
+  const steps=[{forest:[...list],msg:`把樹葉依權重<b>由小到大</b>排：${lt(list)}`}];
+  let k=0; const merged=[];
+  while(list.length>1){
+    const a=list.shift(), b=list.shift(); const nm=newNames?newNames[k]:""; k++;
+    const t=mk(nm,a.w+b.w,a,b); merged.push(t.w);
+    let pos=list.findIndex(x=>x.w>t.w); if(pos<0) pos=list.length; list.splice(pos,0,t);
+    steps.push({forest:[...list],hi:t.id,msg:`取最小的兩個 <b>${a.name||""}${a.w}</b> 和 <b>${b.name||""}${b.w}</b> 合併成 <b>${nm}${t.w}</b>（小的放左邊）。插回串列並保持排序：${lt(list)}`});
+  }
+  const root=list[0]; const codes=[]; (function walk(t,c){ if(!t.l){codes.push([t.name,t.w,c||"0"]);return;} walk(t.l,c+"0"); walk(t.r,c+"1"); })(root,"");
+  const total=codes.reduce((s,c)=>s+c[1]*c[2].length,0);
+  steps.push({forest:[root],codes,total,merged,bits:true,msg:`只剩一棵樹，<b>結束</b>。左邊標 0、右邊標 1，從樹根走到樹葉就是字碼。<br>總位元 Σ(權重×字碼長度) = <b>${total}</b>；驗算：新節點權重和 ${merged.join("+")} = ${merged.reduce((a,b)=>a+b,0)} ✓`});
+  return steps;
+}
+
+function knapTable(items,W){
+  const n=items.length; const P=Array.from({length:n+1},()=>Array(W+1).fill(0));
+  for(let i=1;i<=n;i++){ const [w,p]=items[i-1]; for(let c=0;c<=W;c++) P[i][c]= w<=c?Math.max(P[i-1][c],p+P[i-1][c-w]):P[i-1][c]; }
+  const take=[]; let c=W; for(let i=n;i>=1;i--){ if(P[i][c]!==P[i-1][c]){take.unshift(i); c-=items[i-1][0];} }
+  return {P,take};
+}
+function coinGreedy(amt,coins){ const cs=[...coins].sort((a,b)=>b-a); const used=[]; let r=amt; for(const c of cs){ while(r>=c){used.push(c);r-=c;} } return {used,rest:r}; }
+function coinOpt(amt,coins){ const INF=1e9; const dp=Array(amt+1).fill(INF), from=Array(amt+1).fill(0); dp[0]=0;
+  for(let a=1;a<=amt;a++) for(const c of coins) if(c<=a&&dp[a-c]+1<dp[a]){dp[a]=dp[a-c]+1;from[a]=c;}
+  if(dp[amt]>=INF) return null; const used=[]; let a=amt; while(a>0){used.push(from[a]);a-=from[a];} return used.sort((x,y)=>y-x); }
+const HUFF_SLIDE=[["A",15],["B",8],["C",30],["D",27],["E",5],["F",15]];
+const HUFF_PRAC=[["a",5],["b",9],["c",12],["d",13],["e",16],["f",45]];
+const DL_SLIDE=[{id:1,d:3,p:40},{id:2,d:1,p:35},{id:3,d:1,p:30},{id:4,d:3,p:25},{id:5,d:1,p:20},{id:6,d:3,p:15},{id:7,d:2,p:10}];
+const DL_P21=[{id:1,d:2,p:30},{id:2,d:1,p:35},{id:3,d:2,p:25},{id:4,d:1,p:40}];
+const DL_PRAC=[{id:1,d:2,p:60},{id:2,d:1,p:100},{id:3,d:3,p:20},{id:4,d:2,p:40},{id:5,d:1,p:20}];
+/*ALGO-END*/
+
+/* ---------- drawing ---------- */
+const SVGNS="http://www.w3.org/2000/svg";
+function el(tag,attrs,parent){const e=document.createElementNS(SVGNS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e;}
+function drawGraph(box,g,st){
+  box.innerHTML=""; const xs=g.nodes.map(n=>n[1]), ys=g.nodes.map(n=>n[2]);
+  const W=Math.max(...xs)+40, H=Math.max(...ys)+40;
+  const svg=el("svg",{viewBox:`0 0 ${W} ${H}`,width:W,height:H,role:"img"},box);
+  const defs=el("defs",{},svg);
+  ["edge","ok","bad","cand"].forEach(c=>{const m=el("marker",{id:"ar-"+c+box.id,viewBox:"0 0 10 10",refX:"9",refY:"5",markerWidth:"7",markerHeight:"7",orient:"auto-start-reverse"},defs);el("path",{d:"M0,0 L10,5 L0,10 z",style:`fill:var(--${c})`},m);});
+  const pos={}; g.nodes.forEach(n=>pos[n[0]]=[n[1],n[2]]);
+  const R=17;
+  g.edges.forEach(e=>{
+    const k=ek(e); let c="edge", wdt=2, dash="";
+    if(st.cand&&st.cand.has(k)){c="cand";wdt=3;dash="6 4";}
+    if(st.bad&&st.bad.has(k)){c="bad";wdt=2.5;dash="3 4";}
+    if(st.ok&&st.ok.has(k)){c="ok";wdt=4.5;dash="";}
+    if(st.cur===k){wdt+=1.5;}
+    const [x1,y1]=pos[e[0]],[x2,y2]=pos[e[1]]; const dx=x2-x1, dy=y2-y1, L=Math.hypot(dx,dy);
+    const sx=x1+dx/L*R, sy=y1+dy/L*R, tx=x2-dx/L*(R+2), ty=y2-dy/L*(R+2);
+    const line=el("line",{x1:sx,y1:sy,x2:tx,y2:ty,style:`stroke:var(--${c});stroke-width:${wdt}`,"stroke-dasharray":dash,"stroke-linecap":"round"},svg);
+    if(g.directed) line.setAttribute("marker-end",`url(#ar-${c}${box.id})`);
+    const mx=(x1+x2)/2, my=(y1+y2)/2, nx=-dy/L, ny=dx/L, off=13;
+    const lx=mx+nx*off, ly=my+ny*off;
+    el("rect",{x:lx-11,y:ly-11,width:22,height:20,rx:4,style:"fill:var(--surface)"},svg);
+    const t=el("text",{x:lx,y:ly+4,"text-anchor":"middle","font-size":"15","font-family":"var(--f-mono)","font-weight":"600",style:`fill:var(--${c==="edge"?"muted":c})`},svg); t.textContent=e[2];
+  });
+  g.nodes.forEach(n=>{
+    const on=st.nodesOn&&st.nodesOn.has(n[0]); const cur=st.nodeCur===n[0];
+    el("circle",{cx:n[1],cy:n[2],r:R,style:`fill:${on?"var(--ok-soft)":"var(--node)"};stroke:${cur?"var(--cand)":on?"var(--ok)":"var(--ink)"};stroke-width:${cur?3.5:on?2.5:1.5}`},svg);
+    const t=el("text",{x:n[1],y:n[2]+5,"text-anchor":"middle","font-size":n[0].length>1?"13":"16","font-style":"italic","font-weight":"700",style:"fill:var(--ink);font-family:var(--f-body)"},svg); t.textContent=n[0];
+    if(st.nodeLabel&&st.nodeLabel[n[0]]!==undefined){ const bx=n[1]+R-2, by=n[2]-R-2;
+      el("rect",{x:bx-2,y:by-13,width:String(st.nodeLabel[n[0]]).length*9+8,height:18,rx:9,style:`fill:${on?"var(--ok)":"var(--accent)"}`},svg);
+      const l=el("text",{x:bx+2,y:by+1,"font-size":"12","font-family":"var(--f-mono)","font-weight":"600",style:"fill:var(--surface)"},svg); l.textContent=st.nodeLabel[n[0]]; }
+  });
+}
+function drawForest(box,forest,hi,showBits){
+  box.innerHTML=""; const LW=46, LH=62; let x0=0; const trees=[];
+  function leaves(t){return t.l?leaves(t.l)+leaves(t.r):1;}
+  function lay(t,x,d,out){ if(!t.l){out.push({t,x:x+LW/2,y:d*LH+28});return x+LW;} const s=x; const m=lay(t.l,x,d+1,out); const e=lay(t.r,m,d+1,out);
+    const L=out.find(o=>o.t===t.l), R=out.find(o=>o.t===t.r); out.push({t,x:(L.x+R.x)/2,y:d*LH+28}); return e; }
+  let maxD=0; function depth(t,d){maxD=Math.max(maxD,d); if(t.l){depth(t.l,d+1);depth(t.r,d+1);}}
+  forest.forEach(t=>{depth(t,0); const out=[]; lay(t,x0,0,out); trees.push(out); x0+=leaves(t)*LW+18;});
+  const W=Math.max(x0,120), H=(maxD+1)*LH+30;
+  const svg=el("svg",{viewBox:`0 0 ${W} ${H}`,width:W,height:H},box);
+  trees.forEach(out=>{
+    out.forEach(o=>{ if(o.t.l){ [["l","0"],["r","1"]].forEach(([s,b])=>{ const c=out.find(q=>q.t===o.t[s]);
+      el("line",{x1:o.x,y1:o.y,x2:c.x,y2:c.y,style:"stroke:var(--edge);stroke-width:2"},svg);
+      const t=el("text",{x:(o.x+c.x)/2+(s==="l"?-9:9),y:(o.y+c.y)/2+2,"text-anchor":"middle","font-size":"13","font-family":"var(--f-mono)","font-weight":"700",style:"fill:var(--bad)"},svg); t.textContent=b; }); }});
+    out.forEach(o=>{ const leaf=!o.t.l; const h=o.t.id===hi;
+      el("circle",{cx:o.x,cy:o.y,r:16,style:`fill:${h?"var(--cand-soft)":leaf?"var(--accent-soft)":"var(--node)"};stroke:${h?"var(--cand)":"var(--ink)"};stroke-width:${h?3:1.3}`},svg);
+      const t=el("text",{x:o.x,y:o.y+5,"text-anchor":"middle","font-size":"13","font-family":"var(--f-mono)","font-weight":"600",style:"fill:var(--ink)"},svg); t.textContent=o.t.w;
+      if(o.t.name){ const n=el("text",{x:o.x,y:o.y+(leaf?32:-21),"text-anchor":"middle","font-size":"13","font-weight":"700",style:"fill:var(--accent);font-family:var(--f-body)"},svg); n.textContent=o.t.name; }
+    });
+  });
+}
+
+/* ---------- generic stepper ---------- */
+function stepper(id,title,sets,build,render,legend){
+  const root=document.getElementById(id);
+  root.innerHTML=`<div class="sim-head"><span class="sim-title">${title}</span><div class="seg">${sets.map((s,i)=>`<button data-i="${i}" class="${i?"":"on"}">${s.label}</button>`).join("")}</div></div>
+  <div class="sim-body">${legend?`<div class="legend">${legend}</div>`:""}<div class="viz"></div><div class="extra"></div><div class="msg" aria-live="polite"></div>
+  <div class="ctrl"><button class="prev">← 上一步</button><button class="next primary">下一步 →</button><button class="reset">重來</button><button class="end">直接看答案</button><span class="count"></span></div><div class="table"></div></div>`;
+  let si=0, steps=build(sets[0].data), k=0;
+  const q=s=>root.querySelector(s);
+  const show=()=>{ render(steps[k],sets[si].data,{viz:q(".viz"),extra:q(".extra"),table:q(".table"),k,steps});
+    q(".msg").innerHTML=`<b>步驟 ${k}：</b>`+steps[k].msg; q(".count").textContent=`${k} / ${steps.length-1}`;
+    q(".prev").disabled=k===0; q(".next").disabled=k===steps.length-1; };
+  root.querySelectorAll(".sim-head button").forEach(b=>b.onclick=()=>{ si=+b.dataset.i; steps=build(sets[si].data); k=0;
+    root.querySelectorAll(".sim-head button").forEach(x=>x.classList.toggle("on",x===b)); show(); });
+  q(".prev").onclick=()=>{if(k>0){k--;show();}}; q(".next").onclick=()=>{if(k<steps.length-1){k++;show();}};
+  q(".reset").onclick=()=>{k=0;show();}; q(".end").onclick=()=>{k=steps.length-1;show();};
+  show();
+}
+const LEG_MST=`<span><i style="background:var(--ok)"></i>已選</span><span><i style="background:var(--cand)"></i>候選／正在看</span><span><i style="background:var(--bad)"></i>丟掉</span>`;
+
+/* Prim */
+stepper("sim-prim","Prim 一步一步跑",[{label:"投影片 p.9",data:GRAPHS.mstSlide},{label:"練習圖",data:GRAPHS.mstPrac}],buildPrim,(st,g,o)=>{
+  drawGraph(o.viz,g,{ok:new Set(st.chosen.map(ek)),cand:new Set(st.cand.map(ek)),cur:st.pick?ek(st.pick):null,nodesOn:new Set(st.inT)});
+  o.extra.innerHTML=`<div class="chips"><span class="chip">V(T) = {${st.inT.join(", ")}}</span><span class="chip">E(T) = {${st.chosen.map(fmtE).join(" ")}}</span><span class="chip">cost = ${st.cost}</span></div>`;
+  const rows=o.steps.slice(1,o.k+1).map((s,i)=>`<tr><td>${i+1}</td><td class="l">${s.cand.map(e=>fmtE(e)+e[2]).join(", ")}</td><td>${fmtE(s.pick)}</td><td class="l">{${s.inT.join(",")}}</td><td>${s.cost}</td></tr>`).join("");
+  o.table.innerHTML=o.k?`<div class="tbl"><table><tr><th>輪</th><th class="l">候選邊</th><th>選</th><th class="l">V(T)</th><th>cost</th></tr>${rows}</table></div>`:"";
+},LEG_MST);
+
+/* Kruskal */
+stepper("sim-kruskal","Kruskal 一步一步跑",[{label:"投影片 p.12",data:GRAPHS.mstSlide},{label:"練習圖",data:GRAPHS.mstPrac}],buildKruskal,(st,g,o)=>{
+  const bad=new Set(st.sorted.filter((e,i)=>st.status[i]==="bad").map(ek));
+  drawGraph(o.viz,g,{ok:new Set(st.chosen.map(ek)),bad,cand:st.cur>=0?new Set([ek(st.sorted[st.cur])]):new Set(),cur:st.cur>=0?ek(st.sorted[st.cur]):null,nodesOn:new Set(st.chosen.flatMap(e=>[e[0],e[1]]))});
+  o.extra.innerHTML=`<div class="chips">${st.sorted.map((e,i)=>`<span class="chip ${st.status[i]==="ok"?"ok":st.status[i]==="bad"?"bad":""} ${i===st.cur?"cur":""}" ${st.status[i]==="skip"?'style="opacity:.4"':""}>${fmtE(e)}${e[2]}${st.status[i]==="ok"?" ✓":st.status[i]==="bad"?" ✗":""}</span>`).join("")}</div>`;
+  o.table.innerHTML="";
+},LEG_MST);
+
+/* Dijkstra */
+stepper("sim-dij","Dijkstra 一步一步跑",[{label:"投影片 p.15",data:GRAPHS.dijSlide},{label:"練習圖",data:GRAPHS.dijPrac}],buildDijkstra,(st,g,o)=>{
+  const last=st.rows[st.rows.length-1]; const lab={}; lab[g.start]=0; Object.keys(last.dist).forEach(v=>lab[v]=fmtD(last.dist[v]));
+  const tree=new Set(Object.entries(last.prev).filter(([v,p])=>p&&st.done.includes(v)).map(([v,p])=>p+"-"+v));
+  drawGraph(o.viz,g,{ok:tree,cand:new Set(st.relaxed),nodesOn:new Set(st.done),nodeCur:st.pick,nodeLabel:lab});
+  o.extra.innerHTML="";
+  const others=g.nodes.map(n=>n[0]).filter(x=>x!==g.start).sort();
+  const rows=st.rows.map((r,i)=>`<tr><td>${i}</td><td><b>${r.pick}</b></td>${others.map(v=>{ const fin=r.done.includes(v); const was=r.upd[v];
+    const txt=was!==undefined?`${fmtD(was)}→${r.dist[v]}`:fmtD(r.dist[v]); const just=r.pick===v;
+    return `<td class="${just?"hit":fin?"dim":was!==undefined?"cur":""}">${just?"✔"+r.dist[v]:fin?"✔":txt}</td>`;}).join("")}</tr>`).join("");
+  o.table.innerHTML=`<div class="tbl"><table><tr><th>輪</th><th>確定</th>${others.map(v=>`<th>${v}</th>`).join("")}</tr>${rows}</table></div>`;
+},`<span><i style="background:var(--ok)"></i>確定的最短路徑</span><span><i style="background:var(--cand)"></i>這輪拿來更新的邊</span><span>點旁數字＝目前距離</span>`);
+
+/* Deadline */
+stepper("sim-dl","截止期限排程 一步一步跑",[{label:"投影片 p.22",data:DL_SLIDE},{label:"p.21 例題",data:DL_P21},{label:"練習",data:DL_PRAC}],buildDeadline,(st,jobs,o)=>{
+  o.viz.innerHTML=`<div class="tbl"><table><tr><th>工作</th>${jobs.map(j=>`<th>${j.id}</th>`).join("")}</tr><tr><td>期限</td>${jobs.map(j=>`<td>${j.d}</td>`).join("")}</tr><tr><td>利潤</td>${jobs.map(j=>`<td class="${st.S.some(x=>x.id===j.id)?"ok":""}">${j.p}</td>`).join("")}</tr></table></div>`;
+  o.extra.innerHTML="";
+  o.table.innerHTML=`<div class="tbl"><table><tr><th>試的集合 S</th><th>可行序列</th></tr><tr><td>∅</td><td>∅</td></tr>${st.rows.map((r,i)=>`<tr><td>${r.set}</td><td class="${r.ok?(i===st.rows.length-1?"cur":""):"bad"}">${r.seq}</td></tr>`).join("")}</table></div>`;
+});
+
+/* Huffman */
+stepper("sim-huff","霍夫曼樹 一步一步長",[{label:"投影片 p.32",data:{items:HUFF_SLIDE,names:["G","H","I","J","K"]}},{label:"練習",data:{items:HUFF_PRAC,names:null}}],d=>buildHuffman(d.items,d.names),(st,d,o)=>{
+  drawForest(o.viz,st.forest,st.hi);
+  o.extra.innerHTML="";
+  o.table.innerHTML=st.bits?`<div class="tbl"><table><tr><th>字元</th><th>權重</th><th>字碼</th><th>長度</th><th>權重×長度</th></tr>${st.codes.map(c=>`<tr><td><b>${c[0]}</b></td><td>${c[1]}</td><td class="mono">${c[2]}</td><td>${c[2].length}</td><td>${c[1]*c[2].length}</td></tr>`).join("")}<tr><td colspan="4">總和</td><td><b>${st.total}</b></td></tr></table></div>`:"";
+});
+
+/* DP knapsack */
+(function(){
+  const sets=[{label:"投影片 p.51",items:[[2,20],[5,30],[10,80]],W:15},{label:"練習",items:[[2,3],[3,4],[4,5],[5,6]],W:5},{label:"模擬考第 4 題",items:[[1,1],[3,4],[4,5],[5,7]],W:7}];
+  const root=document.getElementById("sim-dp");
+  root.innerHTML=`<div class="sim-head"><span class="sim-title">DP 表一列一列填</span><div class="seg">${sets.map((s,i)=>`<button data-i="${i}" class="${i?"":"on"}">${s.label}</button>`).join("")}</div></div>
+  <div class="sim-body"><div class="extra"></div><div class="legend"><span>點任何一格看它怎麼算</span><span><i style="background:var(--accent)"></i>被參考的兩格</span></div><div class="table"></div><div class="msg" aria-live="polite"></div>
+  <div class="ctrl"><button class="prev">← 上一列</button><button class="next primary">下一列 →</button><button class="end">填完＋回溯</button><span class="count"></span></div></div>`;
+  let s=sets[0], T=knapTable(s.items,s.W), row=0, sel=null; const q=x=>root.querySelector(x);
+  function explain(i,c){ if(i===0||c===0) return `P[${i}][${c}] = 0（${i===0?"沒有物品":"容量 0"}）。`;
+    const [w,p]=s.items[i-1]; const P=T.P;
+    if(w>c) return `P[${i}][${c}]：物品${i} 重 ${w}kg ＞ 容量 ${c} → 放不下，只能不拿 → P[${i-1}][${c}] = <b>${P[i][c]}</b>`;
+    return `P[${i}][${c}]：物品${i}（${w}kg, $${p}）放得下。<br>不拿 → P[${i-1}][${c}] = ${P[i-1][c]}；拿 → ${p} + P[${i-1}][${c}−${w}] = ${p} + P[${i-1}][${c-w}] = ${p+P[i-1][c-w]}。<br>取大的 → <b>${P[i][c]}</b>`; }
+  function render(){
+    const n=s.items.length, P=T.P; const done=row>n;
+    q(".extra").innerHTML=`<div class="chips">${s.items.map((it,i)=>`<span class="chip ${done&&T.take.includes(i+1)?"ok":""}">物品${i+1}：${it[0]}kg $${it[1]}</span>`).join("")}<span class="chip">W = ${s.W}</span></div>`;
+    let refs=new Set(); if(sel&&sel[0]>0&&sel[1]>0){ const [w]=s.items[sel[0]-1]; refs.add((sel[0]-1)+","+sel[1]); if(w<=sel[1]) refs.add((sel[0]-1)+","+(sel[1]-w)); }
+    const path=new Set(); if(done){ let c=s.W; for(let i=n;i>=1;i--){ path.add(i+","+c); if(P[i][c]!==P[i-1][c]) c-=s.items[i-1][0]; } path.add("0,"+c); }
+    let h=`<div class="tbl"><table class="dp"><tr><th>i \\ w</th>${P[0].map((_,c)=>`<th>${c}</th>`).join("")}</tr>`;
+    for(let i=0;i<=n;i++){ h+=`<tr><th>${i}</th>`; for(let c=0;c<=s.W;c++){ const show=i<=Math.min(row,n)||c===0;
+      const cls=[sel&&sel[0]===i&&sel[1]===c?"cur":"", refs.has(i+","+c)?"ref":"", path.has(i+","+c)?"hit":"", i===row&&!done?"":""].join(" ");
+      h+=`<td class="${cls}" data-r="${i}" data-c="${c}" tabindex="0">${show?P[i][c]:""}</td>`; } h+="</tr>"; }
+    q(".table").innerHTML=h+"</table></div>";
+    q(".table").querySelectorAll("td").forEach(td=>{ const go=()=>{ const i=+td.dataset.r,c=+td.dataset.c; if(i>row&&c>0) return; sel=[i,c]; q(".msg").innerHTML=explain(i,c); render(); };
+      td.onclick=go; td.onkeydown=e=>{if(e.key==="Enter")go();}; });
+    if(!sel){ if(row===0) q(".msg").innerHTML=`第 0 列、第 0 行全部填 0。按「下一列」開始考慮物品 1。`;
+      else if(!done){ const [w,p]=s.items[row-1]; q(".msg").innerHTML=`第 ${row} 列：考慮物品 ${row}（${w}kg, $${p}）。容量 &lt; ${w} 的格子放不下，直接抄上一列；容量 ≥ ${w} 的格子比較「不拿」和「拿」。點格子看細節。`; }
+    }
+    if(done&&!sel){ q(".msg").innerHTML=`<b>填完。</b>答案 P[${n}][${s.W}] = <b>${P[n][s.W]}</b>。黃色格子是回溯路徑：值跟正上方不同就代表有拿。拿了物品 {${T.take.join(", ")}}。`; }
+    q(".count").textContent=`第 ${Math.min(row,n)} / ${n} 列`; q(".prev").disabled=row===0; q(".next").disabled=done; }
+  root.querySelectorAll(".sim-head button").forEach(b=>b.onclick=()=>{ s=sets[+b.dataset.i]; T=knapTable(s.items,s.W); row=0; sel=null;
+    root.querySelectorAll(".sim-head button").forEach(x=>x.classList.toggle("on",x===b)); render(); });
+  q(".prev").onclick=()=>{row=Math.max(0,row-1);sel=null;render();};
+  q(".next").onclick=()=>{row++;sel=null;render();};
+  q(".end").onclick=()=>{row=s.items.length+1;sel=null;render();};
+  render();
+})();
+
+/* MST p.7 */
+(function(){
+  const g=GRAPHS.mst7; const T={T1:[["a","d",1],["b","c",8],["c","d",5]],T2:[["a","b",3],["b","d",2],["c","d",5]],T3:[["a","b",3],["a","d",1],["a","c",6]],MST:[["a","d",1],["b","d",2],["c","d",5]]};
+  const box=document.getElementById("mst7-viz"), msg=document.getElementById("mst7-msg");
+  const show=t=>{ const es=T[t]; drawGraph(box,g,{ok:new Set(es.map(ek)),nodesOn:new Set(["a","b","c","d"])});
+    const sum=es.reduce((a,e)=>a+e[2],0);
+    msg.innerHTML=`${t==="MST"?"<b>真正的最小生成樹</b>":"<b>"+t+"</b>"}：${es.map(e=>fmtE(e)+"="+e[2]).join(" + ")} = <b>${sum}</b>。4 個點、3 條邊、沒有環 ✓`; };
+  document.querySelectorAll("#sim-mst7 .seg button").forEach(b=>b.onclick=()=>{document.querySelectorAll("#sim-mst7 .seg button").forEach(x=>x.classList.toggle("on",x===b));show(b.dataset.t);});
+  show("T1");
+})();
+
+/* Coins */
+(function(){
+  const amt=document.getElementById("coin-amt"), set=document.getElementById("coin-set"), out=document.getElementById("coin-out");
+  function run(){ const a=Math.max(0,Math.min(999,parseInt(amt.value)||0)); const coins=[...new Set(set.value.split(/[,，\s]+/).map(Number).filter(x=>x>0&&Number.isInteger(x)))];
+    if(!a||!coins.length){out.innerHTML=`<p>請輸入金額和至少一種面額。</p>`;return;}
+    const g=coinGreedy(a,coins), o=coinOpt(a,coins);
+    let r=a; const lines=[]; for(const c of g.used){ lines.push(`剩 ${r} → 拿 ${c}`); r-=c; }
+    out.innerHTML=`<div class="tbl"><table><tr><th class="l">貪婪過程（每次拿最大能拿的）</th></tr><tr><td class="l mono">${lines.join("　|　")}${g.rest?`　|　剩 ${g.rest} 找不開！`:""}</td></tr></table></div>
+    <div class="chips"><span class="chip ${o&&!g.rest&&g.used.length===o.length?"ok":"bad"}" style="text-decoration:none">貪婪：${g.used.join("+")}${g.rest?"（失敗）":""} = ${g.used.length} 枚</span>
+    <span class="chip ok">最佳：${o?o.join("+")+" = "+o.length+" 枚":"找不開"}</span></div>
+    <p>${o&&!g.rest&&g.used.length===o.length?"這組測資貪婪剛好拿到最佳解。":"<b>貪婪失敗！</b>這組就是「貪婪不保證最佳解」的反例。"}</p>`; }
+  amt.oninput=run; set.oninput=run;
+  document.querySelectorAll("#sim-coin [data-c]").forEach(b=>b.onclick=()=>{const [x,y]=b.dataset.c.split("|");amt.value=x;set.value=y;run();});
+  run();
+})();
+
+/* SPT */
+(function(){
+  const inp=document.getElementById("spt-in"), out=document.getElementById("spt-out");
+  function perms(a){ if(a.length<=1) return [a]; const r=[]; a.forEach((x,i)=>perms([...a.slice(0,i),...a.slice(i+1)]).forEach(p=>r.push([x,...p]))); return r; }
+  function run(){ const t=inp.value.split(/[,，\s]+/).map(Number).filter(x=>x>0); if(!t.length){out.innerHTML="";return;}
+    const ids=t.map((_,i)=>i+1); const total=p=>{let f=0,s=0;p.forEach(i=>{f+=t[i-1];s+=f;});return s;};
+    const expr=p=>{let acc=[];return p.map(i=>{acc.push(t[i-1]);return "("+acc.join("+")+")";}).join(" + ");};
+    const best=[...ids].sort((a,b)=>t[a-1]-t[b-1]||a-b);
+    let h=`<p>短的先做 → 順序 <b>[${best.join(", ")}]</b>：${expr(best)} = <b>${total(best)}</b></p>`;
+    if(t.length<=5){ const ps=perms(ids).map(p=>[p,total(p)]); const mn=Math.min(...ps.map(x=>x[1]));
+      h+=`<div class="tbl"><table><tr><th>順序</th><th class="l">系統時間</th><th>總和</th></tr>${ps.map(([p,s])=>`<tr><td>[${p.join(", ")}]</td><td class="l mono">${expr(p)}</td><td class="${s===mn?"ok":""}">${s}</td></tr>`).join("")}</table></div><p>綠色是最小值，剛好就是「由小到大」的順序。</p>`; }
+    out.innerHTML=h; }
+  inp.oninput=run; document.querySelectorAll("#sim-spt [data-s]").forEach(b=>b.onclick=()=>{inp.value=b.dataset.s;run();}); run();
+})();
+
+/* Decode */
+(function(){
+  const codes={"101":"A","1001":"B","11":"C","01":"D","1000":"E","00":"F"};
+  const inp=document.getElementById("dec-in"), out=document.getElementById("dec-out");
+  function run(){ const s=inp.value.replace(/[^01]/g,""); let buf="", res=[], parts=[];
+    for(const ch of s){ buf+=ch; if(codes[buf]){ parts.push(`<span class="chip ok">${buf} → ${codes[buf]}</span>`); res.push(codes[buf]); buf=""; } }
+    out.innerHTML=`<p class="mono">字碼表：A=101　B=1001　C=11　D=01　E=1000　F=00</p><div class="chips">${parts.join("")}${buf?`<span class="chip bad" style="text-decoration:none">剩 ${buf} 還沒走到樹葉</span>`:""}</div><p>解碼結果：<b>${res.join(" ")||"—"}</b></p>
+    <p style="color:var(--muted);font-size:14px">做法：一位一位讀，從樹根往下走（0 左、1 右），碰到樹葉就輸出那個字，然後回到樹根。因為是前置碼，碰到樹葉時一定不會搞混。</p>`; }
+  inp.oninput=run; document.querySelectorAll("#sim-dec [data-d]").forEach(b=>b.onclick=()=>{inp.value=b.dataset.d;run();}); run();
+})();
+</script>
+
+</body></html>
