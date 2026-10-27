@@ -68,10 +68,16 @@ class CPTrackerApp:
         self.popup_timer = None
         self.ignore_next_click = False 
         
-        # 時間軸
+        # ===== 時間軸 =====
+        self.DAY_START_HOUR = 6      # 一天從早上 6 點開始
+        self.DAY_LAST_DEFAULT = 22   # 預設只顯示到 22 點
+        # 深夜時段：23, 0, 1, 2, 3, 4, 5（要從「＋時段」勾選才顯示）
+        self.NIGHT_HOURS = [h % 24 for h in range(self.DAY_LAST_DEFAULT + 1, self.DAY_START_HOUR + 24)]
         self.timeline_labels = {}
         self.last_rendered_hour = None
         self.editable_hours = set()
+        self.cur_idx = 0             # 現在是一天中的第幾個小時（6點=0）
+        self._extra_vars = {}        # 「＋時段」選單的勾選狀態
         
         # 赤榜拖曳管理變數
         self.drag_item = None
@@ -139,6 +145,12 @@ class CPTrackerApp:
                           slot INTEGER,
                           text TEXT,
                           PRIMARY KEY(day_type, slot))''')
+
+        # 手動加入「今日剩餘」的深夜時段，date 存的是「邏輯日」（6 點換日）
+        cursor.execute('''CREATE TABLE IF NOT EXISTS extra_hours (
+                          date TEXT,
+                          hour INTEGER,
+                          PRIMARY KEY(date, hour))''')
 
         try: cursor.execute("ALTER TABLE red_list ADD COLUMN sort_order INTEGER DEFAULT 0")
         except: pass
@@ -414,7 +426,79 @@ class CPTrackerApp:
         conn.commit()
         conn.close()
 
-    # --- 時間軸機制（今日剩餘，只能編輯當前兩小時） ---
+    # --- 時間軸機制（以早上 6 點為一天的開始） ---
+    def logical_today(self):
+        """6 點前都算前一天：把現在往回推 6 小時再取日期"""
+        return (datetime.now() - timedelta(hours=self.DAY_START_HOUR)).strftime('%Y-%m-%d')
+
+    def _day_idx(self, h):
+        """小時在『一天』裡的順序：6點=0、22點=16、23點=17、0點=18 … 5點=23"""
+        return (h - self.DAY_START_HOUR) % 24
+
+    def shift_timeline_if_needed(self):
+        """到了早上 6 點：明日時程/計畫 → 今日，舊的今日清掉"""
+        day = self.logical_today()
+        conn = sqlite3.connect(DB_FILE)
+        cursor = conn.cursor()
+        cursor.execute("SELECT value FROM app_config WHERE key='timeline_shift_date'")
+        row = cursor.fetchone()
+        last_shift = row[0] if row else '2000-01-01'
+        shifted = False
+        if last_shift != day:
+            cursor.execute("DELETE FROM hourly_schedule WHERE day_type='today'")
+            cursor.execute("UPDATE hourly_schedule SET day_type='today' WHERE day_type='tomorrow'")
+            cursor.execute("DELETE FROM plan_slots WHERE day_type='today'")
+            cursor.execute("UPDATE plan_slots SET day_type='today' WHERE day_type='tomorrow'")
+            cursor.execute("INSERT OR REPLACE INTO app_config (key, value) VALUES ('timeline_shift_date', ?)", (day,))
+            conn.commit()
+            shifted = True
+        conn.close()
+        if shifted and self.plan_entries:
+            self.load_plan_entries()
+        return shifted
+
+    def get_extra_hours(self):
+        """撈出這個邏輯日手動加入、而且還沒過去的深夜時段"""
+        day = self.logical_today()
+        cur_idx = self._day_idx(datetime.now().hour)
+        conn = sqlite3.connect(DB_FILE)
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM extra_hours WHERE date<>?", (day,))   # 順手清掉舊日期
+        cursor.execute("SELECT hour FROM extra_hours WHERE date=?", (day,))
+        hours = {r[0] for r in cursor.fetchall() if self._day_idx(r[0]) >= cur_idx}
+        conn.commit()
+        conn.close()
+        return hours
+
+    def toggle_extra_hour(self, hour, var):
+        day = self.logical_today()
+        conn = sqlite3.connect(DB_FILE)
+        cursor = conn.cursor()
+        if var.get():
+            cursor.execute("INSERT OR IGNORE INTO extra_hours (date, hour) VALUES (?, ?)", (day, hour))
+        else:
+            cursor.execute("DELETE FROM extra_hours WHERE date=? AND hour=?", (day, hour))
+        conn.commit()
+        conn.close()
+        self.render_hourly_timeline()
+
+    def show_extra_hours_menu(self, btn):
+        cur_idx = self._day_idx(datetime.now().hour)
+        # 候選 = 深夜時段中還沒過去的
+        candidates = [h for h in self.NIGHT_HOURS if self._day_idx(h) >= cur_idx]
+        shown = self.get_extra_hours()
+
+        menu = tk.Menu(self.root, tearoff=0)
+        self._extra_vars = {}   # 存起來，避免 BooleanVar 被回收導致勾勾消失
+        if not candidates:
+            menu.add_command(label="今晚沒有可加入的時段", state="disabled")
+        for h in candidates:
+            var = tk.BooleanVar(value=(h in shown))
+            self._extra_vars[h] = var
+            menu.add_checkbutton(label=f"{h:02d}:00", variable=var,
+                                 command=lambda h=h, v=var: self.toggle_extra_hour(h, v))
+        menu.tk_popup(btn.winfo_rootx(), btn.winfo_rooty() + btn.winfo_height())
+
     def poll_timeline_update(self):
         now_h = datetime.now().hour
         if self.last_rendered_hour != now_h:
@@ -422,27 +506,41 @@ class CPTrackerApp:
         self.root.after(30000, self.poll_timeline_update)
 
     def render_hourly_timeline(self):
+        self.shift_timeline_if_needed()   # 畫之前先確認要不要換日
+
         for widget in self.hours_area.winfo_children():
             widget.destroy()
-
         self.timeline_labels.clear()
-        
-        now = datetime.now()
-        cur_h = now.hour
-        self.last_rendered_hour = cur_h
-        self.editable_hours = {cur_h, cur_h + 1}
 
-        today_hours = [h for h in range(cur_h, 23)] if cur_h < 23 else []
+        cur_h = datetime.now().hour
+        self.last_rendered_hour = cur_h
+        self.cur_idx = self._day_idx(cur_h)
+        self.editable_hours = {cur_h, (cur_h + 1) % 24}
+
+        # 今日：預設 6~22 加上勾選的深夜時段，只留還沒過去的，再依「一天中的順序」排序
+        pool = set(range(self.DAY_START_HOUR, self.DAY_LAST_DEFAULT + 1)) | self.get_extra_hours()
+        today_hours = sorted((h for h in pool if self._day_idx(h) >= self.cur_idx), key=self._day_idx)
+        # 明日：6~22（預覽用）
+        tomorrow_hours = list(range(self.DAY_START_HOUR, self.DAY_LAST_DEFAULT + 1))
 
         conn = sqlite3.connect(DB_FILE)
         cursor = conn.cursor()
-        cursor.execute("SELECT hour, merge_id, text FROM hourly_schedule WHERE day_type='today'")
-        sched_data = {}
-        for h, mid, txt in cursor.fetchall():
-            sched_data[h] = (mid if mid is not None else h, txt or "")
+        cursor.execute("SELECT day_type, hour, merge_id, text FROM hourly_schedule")
+        sched = {'today': {}, 'tomorrow': {}}
+        for dt, h, mid, txt in cursor.fetchall():
+            if dt in sched:
+                sched[dt][h] = (mid if mid is not None else h, txt or "")
         conn.close()
 
-        canvas = tk.Canvas(self.hours_area, highlightthickness=0, height=210)
+        # 左下角小按鈕：一定要比 canvas 先 pack，才會固定在底部
+        bar = tk.Frame(self.hours_area)
+        bar.pack(side=tk.BOTTOM, fill="x")
+        btn_more = tk.Button(bar, text="＋時段", font=("Arial", 7), relief="flat",
+                             fg="gray", cursor="hand2", padx=1, pady=0)
+        btn_more.config(command=lambda: self.show_extra_hours_menu(btn_more))
+        btn_more.pack(side=tk.LEFT)
+
+        canvas = tk.Canvas(self.hours_area, highlightthickness=0, height=190)
         scrollbar = ttk.Scrollbar(self.hours_area, orient="vertical", command=canvas.yview)
         scrollable_frame = tk.Frame(canvas)
 
@@ -483,39 +581,32 @@ class CPTrackerApp:
         scrollbar.pack(side=tk.RIGHT, fill="y")
 
         scrollable_frame.columnconfigure(1, weight=1)
-        self._build_today_col(scrollable_frame, today_hours, sched_data)
+        self._build_today_col(scrollable_frame, today_hours, sched['today'],
+                              tomorrow_hours, sched['tomorrow'])
 
-    def _build_today_col(self, parent, hours, sched_data):
-        tk.Label(parent, text="今日剩餘", font=("Arial", 9, "bold"), fg="#2c3e50").grid(row=0, column=0, columnspan=2, pady=(0, 4))
-        if not hours:
-            tk.Label(parent, text="今日時段已過完", font=("Arial", 8), fg="gray").grid(row=1, column=0, columnspan=2)
-            return
-
+    def _group_hours(self, hours, sched_data):
+        """把 merge_id 相同、而且時間連續的小時合成一組（23→0 也算連續）"""
         groups = []
-        cur_mid = None
-        cur_group = []
+        prev_h = None
         for h in hours:
             mid, txt = sched_data.get(h, (h, ""))
-            if cur_mid is None:
-                cur_mid = mid
-                cur_group = [(h, txt)]
-            elif mid == cur_mid:
-                cur_group.append((h, txt))
+            if groups and groups[-1][0] == mid and prev_h is not None and h == (prev_h + 1) % 24:
+                groups[-1][1].append((h, txt))
             else:
-                groups.append((cur_mid, cur_group))
-                cur_mid = mid
-                cur_group = [(h, txt)]
-        if cur_group:
-            groups.append((cur_mid, cur_group))
+                groups.append((mid, [(h, txt)]))
+            prev_h = h
+        return groups
 
-        row_idx = 1
+    def _render_groups(self, parent, day_type, groups, row_idx, offset):
+        """offset：今日 = 0，明日 = 24（明日 6 點 = 第 24 個小時）"""
         for mid, grp in groups:
             grp_hours = [h for h, _ in grp]
             h_start, h_end = grp_hours[0], grp_hours[-1]
             txt = grp[0][1]
-            editable = any(h in self.editable_hours for h in grp_hours)
+            # 只有「當前兩小時」可以編輯（凌晨 5 點時，明日 6 點也算）
+            editable = any((offset + self._day_idx(h)) in (self.cur_idx, self.cur_idx + 1) for h in grp_hours)
 
-            label_str = f"{h_start:02d}:00" if h_start == h_end else f"{h_start:02d}~{h_end+1:02d}"
+            label_str = f"{h_start:02d}:00" if h_start == h_end else f"{h_start:02d}~{(h_end + 1) % 24:02d}"
 
             time_lbl = tk.Label(parent, text=label_str, font=("Arial", 8), width=6, anchor="e", padx=2,
                                 fg="#2c3e50" if editable else "#bdc3c7")
@@ -528,12 +619,27 @@ class CPTrackerApp:
                                    cursor="hand2" if editable else "")
             content_lbl.grid(row=row_idx, column=1, sticky="w", pady=1, padx=(0, 4))
 
-            if editable:   # 只有當前兩小時可以點擊編輯
-                content_lbl.bind("<Button-1>", lambda e, m=mid, l=content_lbl, p=parent, r=row_idx:
-                                 self.start_edit_cell(e, 'today', m, l, p, r, 1))
+            if editable:
+                content_lbl.bind("<Button-1>", lambda e, d=day_type, m=mid, l=content_lbl, p=parent, r=row_idx:
+                                 self.start_edit_cell(e, d, m, l, p, r, 1))
 
-            self.timeline_labels[('today', mid)] = content_lbl
+            self.timeline_labels[(day_type, mid)] = content_lbl
             row_idx += 1
+        return row_idx
+
+    def _build_today_col(self, parent, today_hours, today_sched, tomorrow_hours, tomorrow_sched):
+        tk.Label(parent, text="今日剩餘", font=("Arial", 9, "bold"), fg="#2c3e50").grid(row=0, column=0, columnspan=2, pady=(0, 4))
+        row_idx = 1
+
+        if today_hours:
+            row_idx = self._render_groups(parent, 'today', self._group_hours(today_hours, today_sched), row_idx, 0)
+        else:
+            tk.Label(parent, text="今日時段已過完", font=("Arial", 8), fg="gray").grid(row=row_idx, column=0, columnspan=2)
+            row_idx += 1
+
+        tk.Label(parent, text="── 明日 ──", font=("Arial", 8, "bold"), fg="#2980b9").grid(row=row_idx, column=0, columnspan=2, pady=(6, 2))
+        row_idx += 1
+        self._render_groups(parent, 'tomorrow', self._group_hours(tomorrow_hours, tomorrow_sched), row_idx, 24)
 
     def start_edit_cell(self, event, day_type, merge_id, label_widget, parent, row, col):
         current_text = label_widget.cget("text")
@@ -2042,8 +2148,10 @@ class CPTrackerApp:
             "• 暖身完自動變碼表，每 25 分鐘休息 5 分鐘，循環到按「結束」。\n"
             "• 中途切換項目不會中斷，時間接續記到新項目。\n\n"
             "🕐 時程與計畫\n"
-            "• 今日剩餘只能編輯當前兩小時。\n"
-            "• 右邊上半今日計畫、下半明日計畫，過午夜明日會變今日。\n\n"
+            "• 一天從早上 6 點開始，預設顯示到 22 點。\n"
+            "• 深夜 23~05 點從左下「＋時段」勾選才顯示，過了自動消失。\n"
+            "• 不論今明，都只能編輯當前兩小時。\n"
+            "• 早上 6 點時，明日時程與計畫會變成今日。\n\n"
             "📅 賽事與自動化\n"
             "• Other 類別可以自訂賽事/任務分類，並單獨篩選！\n"
             "• 雙擊戰力補題頁面比賽，可深入勾選各題進度！\n\n"
@@ -2066,6 +2174,7 @@ class CPTrackerApp:
             self.on_target_changed()
 
     def check_cross_day(self):
+        # 打卡：午夜 0 點換日
         today = datetime.now().strftime('%Y-%m-%d')
         conn = sqlite3.connect(DB_FILE)
         cursor = conn.cursor()
@@ -2075,30 +2184,20 @@ class CPTrackerApp:
         if last_startup != today:
             for plat in self.plat_map:
                 self.done_var(plat).set(False)
-            
-            cursor.execute("SELECT value FROM app_config WHERE key='timeline_shift_date'")
-            row = cursor.fetchone()
-            last_shift = row[0] if row else '2000-01-01'
-            if last_shift != today:
-                cursor.execute("DELETE FROM hourly_schedule WHERE day_type='today'")
-                cursor.execute("UPDATE hourly_schedule SET day_type='today' WHERE day_type='tomorrow'")
-                cursor.execute("INSERT OR REPLACE INTO app_config (key, value) VALUES ('timeline_shift_date', ?)", (today,))
-
-            # 計畫換日：明日計畫 → 今日計畫，明日清空
-            cursor.execute("DELETE FROM plan_slots WHERE day_type='today'")
-            cursor.execute("UPDATE plan_slots SET day_type='today' WHERE day_type='tomorrow'")
-
             cursor.execute("UPDATE app_config SET value=? WHERE key='last_startup'", (today,))
             conn.commit()
             
             self.render_checkin_panel()
             self.update_target_default()
             self.refresh_stats()
-            self.render_hourly_timeline()
-            self.load_plan_entries()
             self.update_today_accum_label()
             
         conn.close()
+
+        # 時間軸與計畫：早上 6 點換日
+        if self.shift_timeline_if_needed():
+            self.render_hourly_timeline()
+
         self.root.after(60000, self.check_cross_day)
 
     def show_last_checkin(self, event, platform):
