@@ -115,8 +115,11 @@ JUST [C](./Code/)ODE
 | | LC | [M_1340](./Code/LeetCode/M_1340.cpp) Jump Game V - DP與DFS跳樓求最長路徑 | 1 | ![DP](https://img.shields.io/badge/-DP-blue) ![DFS](https://img.shields.io/badge/-DFS-blue) |
 
 
+<br><br><br><br><br><br>
+#### ALGO_web<br>
+- [CH4](https://123456dr.github.io/RANDOM_CODE/Code/UT/ALGO/%E7%AD%86%E8%A9%A6/ch4.html)
 
-<br><br><br><hr>
+<br><hr>
 #### VScode快捷們
 - `ctrl + k and v` 開啟 .md 預覽 (自訂快捷
 - `ctrl + B` 側邊攔

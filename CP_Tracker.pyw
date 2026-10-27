@@ -1,10 +1,251 @@
 from datetime import datetime, timedelta
 import os
+import json                      # ★ 新增：懸浮畫筆用來把線條轉成文字存檔
 import sqlite3
 import tkinter as tk
 from tkinter import messagebox, ttk
 
 DB_FILE = 'cp_tracker.db'
+
+
+# ============================================================
+# ★ 新增：懸浮畫筆（共用主程式的 root，資料存在同一個資料庫）
+# ============================================================
+DRAW_KEY = "#010203"   # 這個顏色會被當成「透明」
+DRAW_COLORS = ["#ff3b30", "#007aff", "#ffcc00", "#34c759", "#ffffff"]
+DRAW_FONT = ("Microsoft JhengHei", 11)
+
+
+class FloatDraw:
+    def __init__(self, root, db_file, show=True):
+        self.root = root
+        self.db_file = db_file
+        self.strokes = []          # 每一筆畫的資料
+        self.items = []            # 畫布上對應的線條編號
+        self.current = None
+        self.color_i = 0
+        self.width = 4
+        self.drawing_mode = False
+        self.panel_visible = False
+        self.btn_pos = (100, 100)
+        self.cleared_backup = [] 
+
+        self.init_table()
+        self.load()
+
+        # 第 1 層：墨水層（顯示畫的線，背景透明）
+        self.ink = tk.Toplevel(root)
+        self.ink.overrideredirect(True)
+        self.ink.attributes("-topmost", True)
+        self.ink.attributes("-transparentcolor", DRAW_KEY)
+        self.canvas = tk.Canvas(self.ink, bg=DRAW_KEY, highlightthickness=0)
+        self.canvas.pack(fill="both", expand=True)
+        self.ink.withdraw()
+
+        # 第 2 層：接滑鼠層（幾乎看不見，但能收到滑鼠動作）
+        self.cap = tk.Toplevel(root)
+        self.cap.overrideredirect(True)
+        self.cap.attributes("-topmost", True)
+        self.cap.attributes("-alpha", 0.01)
+        self.cap.configure(bg="black", cursor="pencil")
+        self.cap.bind("<ButtonPress-1>", self.start)
+        self.cap.bind("<B1-Motion>", self.move)
+        self.cap.bind("<ButtonRelease-1>", self.end)
+        self.cap.bind("<Escape>", lambda e: self.toggle_draw())
+        self.cap.bind("<Control-z>", lambda e: self.undo())
+        self.cap.withdraw()
+
+        self.fit_to_work_area()    # ★v2：兩層都只蓋住工作區，不蓋工作列
+
+        self.build_panel()
+        self.redraw()
+        if show:
+            self.show_panel()
+
+    # ---------- ★v2：取得工作區（螢幕扣掉工作列） ----------
+    def get_work_area(self):
+        try:
+            import ctypes
+            from ctypes import wintypes
+            rect = wintypes.RECT()
+            SPI_GETWORKAREA = 0x0030
+            ctypes.windll.user32.SystemParametersInfoW(SPI_GETWORKAREA, 0, ctypes.byref(rect), 0)
+            w = rect.right - rect.left
+            h = rect.bottom - rect.top
+            if w > 0 and h > 0:
+                return rect.left, rect.top, w, h
+        except Exception:
+            pass
+        # 拿不到的話就退回整個螢幕
+        return 0, 0, self.root.winfo_screenwidth(), self.root.winfo_screenheight()
+
+    def fit_to_work_area(self):
+        x, y, w, h = self.get_work_area()
+        geo = f"{w}x{h}+{x}+{y}"
+        self.ink.geometry(geo)
+        self.cap.geometry(geo)
+
+    # ---------- 資料庫 ----------
+    def init_table(self):
+        conn = sqlite3.connect(self.db_file)
+        conn.execute("CREATE TABLE IF NOT EXISTS float_draw (key TEXT PRIMARY KEY, value TEXT)")
+        conn.commit()
+        conn.close()
+
+    def save(self):
+        data = json.dumps({"strokes": self.strokes,
+                           "pos": self.btn_pos,
+                           "color": self.color_i})
+        conn = sqlite3.connect(self.db_file)
+        conn.execute("INSERT OR REPLACE INTO float_draw (key, value) VALUES ('state', ?)", (data,))
+        conn.commit()
+        conn.close()
+
+    def load(self):
+        conn = sqlite3.connect(self.db_file)
+        row = conn.execute("SELECT value FROM float_draw WHERE key='state'").fetchone()
+        conn.close()
+        if not row:
+            return
+        try:
+            d = json.loads(row[0])
+            self.strokes = d.get("strokes", [])
+            self.btn_pos = tuple(d.get("pos", (100, 100)))
+            self.color_i = d.get("color", 0) % len(DRAW_COLORS)
+        except (json.JSONDecodeError, TypeError):
+            pass
+
+    # ---------- 浮動按鈕列 ----------
+    def build_panel(self):
+        p = self.panel = tk.Toplevel(self.root)
+        p.overrideredirect(True)
+        p.attributes("-topmost", True)
+        p.geometry(f"+{self.btn_pos[0]}+{self.btn_pos[1]}")
+        p.configure(bg="#333")
+        style = dict(bg="#333", fg="white", font=DRAW_FONT, bd=0, padx=8, pady=4,
+                     activebackground="#555", activeforeground="white")
+
+        grip = tk.Label(p, text="≡", bg="#333", fg="#aaa", font=DRAW_FONT,
+                        cursor="fleur", padx=6)
+        grip.pack(side="left")
+        grip.bind("<ButtonPress-1>", self.drag_start)
+        grip.bind("<B1-Motion>", self.drag_move)
+
+        self.pen_btn = tk.Button(p, text="✎ 畫", command=self.toggle_draw, **style)
+        self.pen_btn.pack(side="left")
+        self.color_btn = tk.Button(p, text="●", command=self.next_color,
+                                   **{**style, "fg": DRAW_COLORS[self.color_i]})
+        self.color_btn.pack(side="left")
+        tk.Button(p, text="↶", command=self.undo, **style).pack(side="left")
+        tk.Button(p, text="清除", command=self.clear, **style).pack(side="left")
+        tk.Button(p, text="✕", command=self.hide_panel, **style).pack(side="left")
+        p.withdraw()
+
+    def show_panel(self):
+        self.panel.deiconify()
+        self.panel.lift()
+        self.panel_visible = True
+
+    def hide_panel(self):
+        if self.drawing_mode:
+            self.toggle_draw()
+        self.panel.withdraw()
+        self.panel_visible = False
+        self.save()
+
+    def toggle_panel(self):
+        """給主程式的 ✎ 按鈕用：顯示 / 收起懸浮列"""
+        if self.panel_visible:
+            self.hide_panel()
+        else:
+            self.show_panel()
+
+    def drag_start(self, e):
+        self.dx = e.x_root - self.panel.winfo_x()
+        self.dy = e.y_root - self.panel.winfo_y()
+
+    def drag_move(self, e):
+        x, y = e.x_root - self.dx, e.y_root - self.dy
+        self.panel.geometry(f"+{x}+{y}")
+        self.btn_pos = (x, y)
+
+    def raise_panel(self):
+        self.panel.attributes("-topmost", False)
+        self.panel.attributes("-topmost", True)
+        self.panel.lift()
+
+    def toggle_draw(self):
+        self.drawing_mode = not self.drawing_mode
+        if self.drawing_mode:
+            self.fit_to_work_area()
+            self.ink.deiconify()
+            self.cap.deiconify()
+            self.ink.lift()
+            self.cap.lift()
+            self.cap.focus_force()
+            self.root.after_idle(self.raise_panel)   # ★v3：焦點給完之後，再把懸浮列拉到最上面
+            self.pen_btn.config(text="✎ 停", bg="#c0392b")
+        else:
+            self.cap.withdraw()
+            self.ink.withdraw()
+            self.pen_btn.config(text="✎ 畫", bg="#333")
+
+    def next_color(self):
+        self.color_i = (self.color_i + 1) % len(DRAW_COLORS)
+        self.color_btn.config(fg=DRAW_COLORS[self.color_i])
+
+    def start(self, e):
+        self.cap.focus_force()
+        self.root.after_idle(self.raise_panel)   # ★v3：搶完焦點後，懸浮列立刻回到最上面
+        c = DRAW_COLORS[self.color_i]
+        self.current = {"color": c, "width": self.width,
+                        "points": [e.x, e.y, e.x, e.y]}
+        self.cur_item = self.canvas.create_line(
+            *self.current["points"], fill=c, width=self.width,
+            capstyle="round", joinstyle="round", smooth=True)
+
+    def move(self, e):
+        if self.current:
+            self.current["points"] += [e.x, e.y]
+            self.canvas.coords(self.cur_item, *self.current["points"])
+
+    def end(self, e):
+        if self.current:
+            self.strokes.append(self.current)
+            self.items.append(self.cur_item)
+            self.current = None
+            self.save()            # 每畫完一筆就自動存進資料庫
+
+    def redraw(self):
+        self.canvas.delete("all")
+        self.items = []
+        for s in self.strokes:
+            self.items.append(self.canvas.create_line(
+                *s["points"], fill=s["color"], width=s["width"],
+                capstyle="round", joinstyle="round", smooth=True))
+
+    def undo(self):
+        if self.strokes:
+            self.strokes.pop()
+            self.canvas.delete(self.items.pop())
+            self.save()
+        elif self.cleared_backup:            # ★v4：畫布是空的 → 把剛清掉的整批救回來
+            self.strokes = self.cleared_backup
+            self.cleared_backup = []
+            self.redraw()
+            self.save()
+
+    def clear(self):
+        if not self.strokes:
+            return
+        self.cleared_backup = self.strokes   # ★v4：先把整批畫收進備份
+        self.strokes = []
+        self.redraw()
+        self.save()
+# ============================================================
+# ★ 懸浮畫筆結束
+# ============================================================
+
 
 class CPTrackerApp:
     def __init__(self, root):
@@ -99,6 +340,9 @@ class CPTrackerApp:
         
         self.root.bind_all("<Button-1>", self.close_popup_on_click, add="+")
         self.root.protocol("WM_DELETE_WINDOW", self.on_close)
+
+        # ★ 新增：建立懸浮畫筆（show=False 可改成開啟時不自動跳出）
+        self.float_draw = FloatDraw(self.root, DB_FILE, show=True)
 
     def init_db(self):
         conn = sqlite3.connect(DB_FILE)
@@ -311,6 +555,10 @@ class CPTrackerApp:
         
         btn_info = tk.Button(bottom_frame, text=" ℹ ", font=("Arial", 10, "bold"), relief="flat", fg="gray", cursor="hand2", command=self.show_guide)
         btn_info.pack(side=tk.RIGHT)
+
+        # ★ 新增：叫出 / 收起懸浮畫筆（用 lambda 是因為這時 float_draw 還沒建立）
+        tk.Button(bottom_frame, text=" ✎ ", font=("Arial", 10, "bold"), relief="flat", fg="gray",
+                  cursor="hand2", command=lambda: self.float_draw.toggle_panel()).pack(side=tk.RIGHT)
 
         self.build_plan_area()
         self.render_hourly_timeline()
@@ -2066,6 +2314,8 @@ class CPTrackerApp:
     def on_close(self):
         try: self.flush_record()
         except Exception: pass
+        try: self.float_draw.save()        # ★ 新增：關閉前把畫的內容存起來
+        except Exception: pass
         self.root.destroy()
 
     # --- 打卡邏輯 ---
@@ -2157,6 +2407,11 @@ class CPTrackerApp:
             "• 雙擊戰力補題頁面比賽，可深入勾選各題進度！\n\n"
             "🚩 猛的赤榜\n"
             "• 記錄一直想做但尚未實現的願望，長按項目可拖移排序！\n\n"
+            # ★ 新增：懸浮畫筆說明
+            "✎ 懸浮畫筆\n"
+            "• 右下 ✎ 可叫出 / 收起懸浮列，按住 ≡ 可拖動。\n"
+            "• 「畫」開始在螢幕上畫，Esc 或「停」結束，Ctrl+Z 復原。\n"
+            "• 畫的內容會自動保存，下次開啟還在。\n\n"
             "(本地 db 好耶!\n"
             "SINCE 115/07/16 RC"
         )
