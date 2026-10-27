@@ -4,6 +4,9 @@ import json                      # ★ 新增：懸浮畫筆用來把線條轉�
 import sqlite3
 import tkinter as tk
 from tkinter import messagebox, ttk
+import copy
+import threading                 # ★v7：另外開一條執行緒等快捷鍵
+import queue                     # ★v7：執行緒跟主程式之間傳訊息的信箱
 
 DB_FILE = 'cp_tracker.db'
 
@@ -14,21 +17,42 @@ DB_FILE = 'cp_tracker.db'
 DRAW_KEY = "#010203"   # 這個顏色會被當成「透明」
 DRAW_COLORS = ["#ff3b30", "#007aff", "#ffcc00", "#34c759", "#ffffff"]
 DRAW_FONT = ("Microsoft JhengHei", 11)
+MOD_ALT, MOD_CONTROL, MOD_SHIFT, MOD_NOREPEAT = 0x0001, 0x0002, 0x0004, 0x4000
+HOTKEY_MODS = MOD_CONTROL | MOD_ALT | MOD_NOREPEAT   # Ctrl + Alt，按住不放不會一直觸發
+HOTKEY_VK = ord('Z')                                  # 字母鍵直接用 ord('大寫字母')
+HOTKEY_TEXT = "Ctrl+Alt+Z"                            # 顯示在說明裡的文字
 
 
 class FloatDraw:
+    # ★v5：三種工具 → (按鈕文字, 滑鼠游標樣式)
+    TOOLS = {"pen": ("筆", "pencil"),
+             "select": ("框", "crosshair"),
+             "erase": ("擦", "circle")}
+    ERASE_R = 8          # 橡皮擦的半徑（像素）
+    HISTORY_MAX = 50     # 最多記住幾步可以復原
+
     def __init__(self, root, db_file, show=True):
         self.root = root
         self.db_file = db_file
         self.strokes = []          # 每一筆畫的資料
-        self.items = []            # 畫布上對應的線條編號
+        self.items = []            # 畫布上對應的線條編號（跟 strokes 一一對應）
         self.current = None
         self.color_i = 0
         self.width = 4
         self.drawing_mode = False
         self.panel_visible = False
         self.btn_pos = (100, 100)
-        self.cleared_backup = [] 
+
+        # ★v5：新工具需要的狀態
+        self.tool = "pen"          # 目前工具：pen / select / erase
+        self.history = []          # 存檔點（復原用）
+        self.future = [] 
+        self.selected = []         # 被框選的筆畫「索引」
+        self.sel_mode = None       # None / "box"（正在拉框）/ "move"（正在拖移）
+        self.box_start = (0, 0)
+        self.last_xy = (0, 0)
+        self.move_total = [0, 0]
+        self.erased_any = False
 
         self.init_table()
         self.load()
@@ -48,21 +72,22 @@ class FloatDraw:
         self.cap.attributes("-topmost", True)
         self.cap.attributes("-alpha", 0.01)
         self.cap.configure(bg="black", cursor="pencil")
-        self.cap.bind("<ButtonPress-1>", self.start)
-        self.cap.bind("<B1-Motion>", self.move)
-        self.cap.bind("<ButtonRelease-1>", self.end)
-        self.cap.bind("<Escape>", lambda e: self.toggle_draw())
-        self.cap.bind("<Control-z>", lambda e: self.undo())
+        # ★v5：滑鼠事件先進「總機」，再依工具分給不同函式
+        self.cap.bind("<ButtonPress-1>", self.on_press)
+        self.cap.bind("<B1-Motion>", self.on_drag)
+        self.cap.bind("<ButtonRelease-1>", self.on_release)
+        self.bind_shortcuts(self.cap)
         self.cap.withdraw()
 
-        self.fit_to_work_area()    # ★v2：兩層都只蓋住工作區，不蓋工作列
+        self.fit_to_work_area()
 
         self.build_panel()
         self.redraw()
         if show:
             self.show_panel()
+        self.start_global_hotkey()  
 
-    # ---------- ★v2：取得工作區（螢幕扣掉工作列） ----------
+    # ---------- 取得工作區（螢幕扣掉工作列） ----------
     def get_work_area(self):
         try:
             import ctypes
@@ -76,7 +101,6 @@ class FloatDraw:
                 return rect.left, rect.top, w, h
         except Exception:
             pass
-        # 拿不到的話就退回整個螢幕
         return 0, 0, self.root.winfo_screenwidth(), self.root.winfo_screenheight()
 
     def fit_to_work_area(self):
@@ -115,6 +139,63 @@ class FloatDraw:
         except (json.JSONDecodeError, TypeError):
             pass
 
+    def start_global_hotkey(self):
+        if os.name != 'nt':            # 只有 Windows 能用這招
+            return
+        self.hotkey_q = queue.Queue()
+        threading.Thread(target=self._hotkey_thread, daemon=True).start()
+        self.root.after(100, self._poll_hotkey)
+
+    def _hotkey_thread(self):
+        import ctypes
+        from ctypes import wintypes
+        user32 = ctypes.windll.user32
+        if not user32.RegisterHotKey(None, 1, HOTKEY_MODS, HOTKEY_VK):
+            self.hotkey_q.put("fail")      # 被別的程式搶先用掉了
+            return
+        msg = wintypes.MSG()
+        WM_HOTKEY = 0x0312
+        # GetMessageW 會「卡住」直到有訊息進來，所以才要放在另一條執行緒
+        while user32.GetMessageW(ctypes.byref(msg), None, 0, 0) > 0:
+            if msg.message == WM_HOTKEY:
+                self.hotkey_q.put("toggle")   # 只丟紙條進信箱，不直接動畫面
+        user32.UnregisterHotKey(None, 1)
+
+    def _poll_hotkey(self):
+        """在主執行緒裡：每 0.1 秒看一次信箱"""
+        try:
+            while True:
+                cmd = self.hotkey_q.get_nowait()
+                if cmd == "toggle":
+                    self.hotkey_toggle()
+                elif cmd == "fail":
+                    messagebox.showwarning("快捷鍵",
+                        f"{HOTKEY_TEXT} 已經被其他程式使用，\n請到程式碼最上面換一組按鍵。")
+        except queue.Empty:
+            pass
+        self.root.after(100, self._poll_hotkey)
+
+    def hotkey_toggle(self):
+        if not self.panel_visible:     # 懸浮列收起來了 → 先叫出來
+            self.show_panel()
+        self.toggle_draw()             # 開始畫 / 停止畫
+
+    def bind_shortcuts(self, w):
+        # 小寫 z = 一般情況；大寫 Z = 開了 Caps Lock
+        w.bind("<Control-z>", lambda e: self.undo())
+        w.bind("<Control-Z>", lambda e: self.undo())
+        # 下一步：Ctrl+Y，也支援很多軟體用的 Ctrl+Shift+Z
+        w.bind("<Control-y>", lambda e: self.redo())
+        w.bind("<Control-Y>", lambda e: self.redo())
+        w.bind("<Control-Shift-Z>", lambda e: self.redo())
+        # 刪除框選的東西
+        w.bind("<Delete>", lambda e: self.delete_selected())
+        w.bind("<BackSpace>", lambda e: self.delete_selected())
+        w.bind("<Escape>", self.on_escape)
+        w.bind("<Tab>", lambda e: self.cycle_tool(1))
+        w.bind("<Shift-Tab>", lambda e: self.cycle_tool(-1))
+        w.bind("<ISO_Left_Tab>", lambda e: self.cycle_tool(-1))   # Linux 的 Shift+Tab 叫這個名字
+
     # ---------- 浮動按鈕列 ----------
     def build_panel(self):
         p = self.panel = tk.Toplevel(self.root)
@@ -133,13 +214,46 @@ class FloatDraw:
 
         self.pen_btn = tk.Button(p, text="✎ 畫", command=self.toggle_draw, **style)
         self.pen_btn.pack(side="left")
+
+        # ★v5：三個工具按鈕
+        self.tool_btns = {}
+        for name, (label, _) in self.TOOLS.items():
+            b = tk.Button(p, text=label, command=lambda n=name: self.set_tool(n), **style)
+            b.pack(side="left")
+            self.tool_btns[name] = b
+
         self.color_btn = tk.Button(p, text="●", command=self.next_color,
                                    **{**style, "fg": DRAW_COLORS[self.color_i]})
         self.color_btn.pack(side="left")
         tk.Button(p, text="↶", command=self.undo, **style).pack(side="left")
+        tk.Button(p, text="↷", command=self.redo, **style).pack(side="left")
         tk.Button(p, text="清除", command=self.clear, **style).pack(side="left")
         tk.Button(p, text="✕", command=self.hide_panel, **style).pack(side="left")
+        self.update_tool_buttons()
+        self.bind_shortcuts(p)
         p.withdraw()
+
+    def update_tool_buttons(self):
+        for name, b in self.tool_btns.items():
+            b.config(bg="#2980b9" if name == self.tool else "#333")
+
+    def set_tool(self, name):
+        if name != "select":
+            self.clear_selection()
+        self.tool = name
+        self.cap.config(cursor=self.TOOLS[name][1])
+        self.update_tool_buttons()
+        if not self.drawing_mode:
+            self.toggle_draw()          # 選了工具就自動進入畫畫模式
+        else:
+            self.cap.focus_force()      # 讓 Delete / Ctrl+Z 鍵盤能收到
+            self.root.after_idle(self.raise_panel)
+
+    def cycle_tool(self, step=1):
+        names = list(self.TOOLS)                 # ['pen', 'select', 'erase']
+        i = names.index(self.tool)               # 現在是第幾個
+        self.set_tool(names[(i + step) % len(names)])
+        return "break"                           # 告訴 Tkinter：這個 Tab 我處理完了，別再傳下去
 
     def show_panel(self):
         self.panel.deiconify()
@@ -154,7 +268,6 @@ class FloatDraw:
         self.save()
 
     def toggle_panel(self):
-        """給主程式的 ✎ 按鈕用：顯示 / 收起懸浮列"""
         if self.panel_visible:
             self.hide_panel()
         else:
@@ -183,9 +296,10 @@ class FloatDraw:
             self.ink.lift()
             self.cap.lift()
             self.cap.focus_force()
-            self.root.after_idle(self.raise_panel)   # ★v3：焦點給完之後，再把懸浮列拉到最上面
+            self.root.after_idle(self.raise_panel)
             self.pen_btn.config(text="✎ 停", bg="#c0392b")
         else:
+            self.clear_selection()
             self.cap.withdraw()
             self.ink.withdraw()
             self.pen_btn.config(text="✎ 畫", bg="#333")
@@ -194,9 +308,26 @@ class FloatDraw:
         self.color_i = (self.color_i + 1) % len(DRAW_COLORS)
         self.color_btn.config(fg=DRAW_COLORS[self.color_i])
 
-    def start(self, e):
+    def on_escape(self, e=None):
+        if self.selected:           # 有選東西 → 先取消選取
+            self.clear_selection()
+        else:                       # 沒選東西 → 離開畫畫模式
+            self.toggle_draw()
+
+    # ---------- ★v5：滑鼠總機（依工具分派） ----------
+    def on_press(self, e):
         self.cap.focus_force()
-        self.root.after_idle(self.raise_panel)   # ★v3：搶完焦點後，懸浮列立刻回到最上面
+        self.root.after_idle(self.raise_panel)
+        getattr(self, f"{self.tool}_start")(e)   # 例：tool="erase" → 呼叫 self.erase_start(e)
+
+    def on_drag(self, e):
+        getattr(self, f"{self.tool}_move")(e)
+
+    def on_release(self, e):
+        getattr(self, f"{self.tool}_end")(e)
+
+    # ---------- 工具 1：筆 ----------
+    def pen_start(self, e):
         c = DRAW_COLORS[self.color_i]
         self.current = {"color": c, "width": self.width,
                         "points": [e.x, e.y, e.x, e.y]}
@@ -204,47 +335,181 @@ class FloatDraw:
             *self.current["points"], fill=c, width=self.width,
             capstyle="round", joinstyle="round", smooth=True)
 
-    def move(self, e):
+    def pen_move(self, e):
         if self.current:
             self.current["points"] += [e.x, e.y]
             self.canvas.coords(self.cur_item, *self.current["points"])
 
-    def end(self, e):
+    def pen_end(self, e):
         if self.current:
+            self.push_history()            # 加線之前先存檔
             self.strokes.append(self.current)
             self.items.append(self.cur_item)
             self.current = None
-            self.save()            # 每畫完一筆就自動存進資料庫
+            self.save()
 
+    # ---------- 共用：碰撞偵測 & 刪除 ----------
+    def hit_strokes(self, x1, y1, x2, y2):
+        """回傳『碰到這個方框』的筆畫索引"""
+        x1, x2 = min(x1, x2), max(x1, x2)
+        y1, y2 = min(y1, y2), max(y1, y2)
+        hits = set(self.canvas.find_overlapping(x1, y1, x2, y2))
+        # 畫布上還有選取框之類的東西，只留下真正是筆畫的
+        return [i for i, item in enumerate(self.items) if item in hits]
+
+    def remove_strokes(self, idxs):
+        # 一定要從後面刪回來，不然前面刪掉後，後面的索引會往前跑
+        for i in sorted(idxs, reverse=True):
+            self.canvas.delete(self.items.pop(i))
+            self.strokes.pop(i)
+
+    # ---------- 工具 2：框選 ----------
+    def select_start(self, e):
+        if self.selected and self.point_in_selection(e.x, e.y):
+            # 點在選取框裡面 → 準備拖移
+            self.sel_mode = "move"
+            self.last_xy = (e.x, e.y)
+            self.move_total = [0, 0]
+        else:
+            # 點在外面 → 重新拉一個框
+            self.clear_selection()
+            self.sel_mode = "box"
+            self.box_start = (e.x, e.y)
+            self.canvas.create_rectangle(e.x, e.y, e.x, e.y, outline="#00bfff",
+                                         dash=(4, 2), tags="rubber")
+
+    def select_move(self, e):
+        if self.sel_mode == "box":
+            x0, y0 = self.box_start
+            self.canvas.coords("rubber", x0, y0, e.x, e.y)
+        elif self.sel_mode == "move":
+            dx, dy = e.x - self.last_xy[0], e.y - self.last_xy[1]
+            for i in self.selected:
+                self.canvas.move(self.items[i], dx, dy)   # 先只動畫面
+            self.canvas.move("selbox", dx, dy)
+            self.last_xy = (e.x, e.y)
+            self.move_total[0] += dx
+            self.move_total[1] += dy
+
+    def select_end(self, e):
+        if self.sel_mode == "box":
+            x0, y0 = self.box_start
+            self.canvas.delete("rubber")
+            self.selected = self.hit_strokes(x0, y0, e.x, e.y)
+            self.draw_selbox()
+        elif self.sel_mode == "move":
+            dx, dy = self.move_total
+            if dx or dy:
+                self.push_history()        # 這時資料還是「移動前」→ 剛好存成存檔點
+                for i in self.selected:    # 放開滑鼠才一次更新資料
+                    pts = self.strokes[i]["points"]
+                    for k in range(0, len(pts), 2):
+                        pts[k] += dx       # 偶數位置是 x
+                        pts[k + 1] += dy   # 奇數位置是 y
+                self.save()
+        self.sel_mode = None
+
+    def draw_selbox(self):
+        self.canvas.delete("selbox")
+        if not self.selected:
+            return
+        ids = [self.items[i] for i in self.selected]
+        x1, y1, x2, y2 = self.canvas.bbox(*ids)    # 算出把這些線全部包住的最小方框
+        self.canvas.create_rectangle(x1 - 4, y1 - 4, x2 + 4, y2 + 4,
+                                     outline="#00bfff", dash=(4, 2), tags="selbox")
+
+    def point_in_selection(self, x, y):
+        box = self.canvas.coords("selbox")
+        if not box:
+            return False
+        x1, y1, x2, y2 = box
+        return x1 <= x <= x2 and y1 <= y <= y2
+
+    def clear_selection(self):
+        self.selected = []
+        self.sel_mode = None
+        self.canvas.delete("selbox")
+        self.canvas.delete("rubber")
+
+    def delete_selected(self):
+        if not self.selected:
+            return
+        self.push_history()
+        self.remove_strokes(self.selected)
+        self.clear_selection()
+        self.save()
+
+    # ---------- 工具 3：物件橡皮擦 ----------
+    def erase_start(self, e):
+        self.erased_any = False
+        self.erase_at(e.x, e.y)
+
+    def erase_move(self, e):
+        self.erase_at(e.x, e.y)
+
+    def erase_end(self, e):
+        if self.erased_any:
+            self.save()
+
+    def erase_at(self, x, y):
+        r = self.ERASE_R
+        hits = self.hit_strokes(x - r, y - r, x + r, y + r)
+        if not hits:
+            return
+        if not self.erased_any:         # 一整次擦拭只存一個存檔點
+            self.push_history()
+            self.erased_any = True
+        self.remove_strokes(hits)
+
+    # ---------- 畫面重建 / 復原 / 清除 ----------
     def redraw(self):
         self.canvas.delete("all")
         self.items = []
+        self.selected = []
         for s in self.strokes:
             self.items.append(self.canvas.create_line(
                 *s["points"], fill=s["color"], width=s["width"],
                 capstyle="round", joinstyle="round", smooth=True))
 
+    def push_history(self):
+        self.history.append(copy.deepcopy(self.strokes))
+        if len(self.history) > self.HISTORY_MAX:
+            self.history.pop(0)
+        self.future.clear()          # ★v6：做了新動作，「下一步」就作廢
+
     def undo(self):
-        if self.strokes:
+        self.clear_selection()
+        if self.history:
+            self.future.append(copy.deepcopy(self.strokes))   # 現在的樣子先存到「下一步」
+            self.strokes = self.history.pop()
+        elif self.strokes:
+            # 重開程式後沒有存檔點 → 退回舊做法，但一樣記進「下一步」
+            self.future.append(copy.deepcopy(self.strokes))
             self.strokes.pop()
-            self.canvas.delete(self.items.pop())
-            self.save()
-        elif self.cleared_backup:            # ★v4：畫布是空的 → 把剛清掉的整批救回來
-            self.strokes = self.cleared_backup
-            self.cleared_backup = []
-            self.redraw()
-            self.save()
+        else:
+            return
+        self.redraw()
+        self.save()
+
+    def redo(self):
+        if not self.future:
+            return
+        self.clear_selection()
+        self.history.append(copy.deepcopy(self.strokes))      # 現在的樣子存回「上一步」
+        self.strokes = self.future.pop()
+        self.redraw()
+        self.save()
 
     def clear(self):
+        if self.selected:          # 有選取 → 只刪選取的
+            self.delete_selected()
+            return
         if not self.strokes:
             return
-        self.cleared_backup = self.strokes   # ★v4：先把整批畫收進備份
+        self.push_history()        # 全清也能 Ctrl+Z 救回來
         self.strokes = []
         self.redraw()
         self.save()
-# ============================================================
-# ★ 懸浮畫筆結束
-# ============================================================
 
 
 class CPTrackerApp:
@@ -2410,7 +2675,9 @@ class CPTrackerApp:
             # ★ 新增：懸浮畫筆說明
             "✎ 懸浮畫筆\n"
             "• 右下 ✎ 可叫出 / 收起懸浮列，按住 ≡ 可拖動。\n"
-            "• 「畫」開始在螢幕上畫，Esc 或「停」結束，Ctrl+Z 復原。\n"
+            "• Esc 取消選取 / 結束｜Ctrl+Z 上一步｜Ctrl+Y 下一步｜Delete 刪除框選\n\n"
+            f"• 在任何地方按 {HOTKEY_TEXT} 可以直接開始 / 停止畫。\n"
+            "• Tab 切換 筆 → 框 → 擦，Shift+Tab 反方向。\n"
             "• 畫的內容會自動保存，下次開啟還在。\n\n"
             "(本地 db 好耶!\n"
             "SINCE 115/07/16 RC"
