@@ -1,0 +1,535 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>演算法期中考古題詳解</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@400;700&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: single reading column like an answer sheet; one section per exam question; collapsible "think first" answers. */
+:root{
+  --bg:#F3F5F9; --surface:#FFFFFF; --ink:#17202C; --muted:#5A6576; --line:#D7DDE7;
+  --accent:#2445C2; --accent-soft:#E6EBFB; --mark:#FFE27A; --mark-ink:#17202C;
+  --ok:#1C8448; --ok-soft:#E2F4E9; --bad:#C3362B; --bad-soft:#FBE7E5; --cand:#C97D00; --cand-soft:#FFF2D9; --node:#FFFFFF; --edge:#A3AEBD;
+  --f-display:"LXGW WenKai TC","Noto Sans TC","PingFang TC","Microsoft JhengHei",serif;
+  --f-body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0F141B; --surface:#171E28; --ink:#E5EAF1; --muted:#9AA5B5; --line:#2A3443;
+  --accent:#93A9FF; --accent-soft:#1E2846; --mark:#5B4A0E; --mark-ink:#FFF0B5;
+  --ok:#4CC27F; --ok-soft:#14301F; --bad:#FF7A6E; --bad-soft:#3A1916; --cand:#F2B33D; --cand-soft:#3A2A0C; --node:#1C2531; --edge:#566376; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#0F141B; --surface:#171E28; --ink:#E5EAF1; --muted:#9AA5B5; --line:#2A3443;
+  --accent:#93A9FF; --accent-soft:#1E2846; --mark:#5B4A0E; --mark-ink:#FFF0B5;
+  --ok:#4CC27F; --ok-soft:#14301F; --bad:#FF7A6E; --bad-soft:#3A1916; --cand:#F2B33D; --cand-soft:#3A2A0C; --node:#1C2531; --edge:#566376; color-scheme:dark;}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.75}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+.wrap{max-width:880px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:8px 80px}
+header.hero{padding-block:36px 12px}
+.eyebrow{font-size:13px;letter-spacing:.12em;color:var(--muted)}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;line-height:1.3}
+h1{font-size:clamp(30px,6vw,42px);margin:6px 0 10px}
+h2{font-size:clamp(23px,4.5vw,30px);margin:0 0 6px}
+h3{font-size:20px;margin:26px 0 6px}
+p{margin:10px 0}
+.lede{font-size:17px;color:var(--muted);max-width:62ch}
+nav.chap{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line)}
+nav.chap .in{max-width:880px;margin:0 auto;display:flex;gap:6px;overflow-x:auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:8px}
+nav.chap a{flex:none;font-size:14px;color:var(--ink);text-decoration:none;padding:4px 10px;border-radius:999px;border:1px solid var(--line);white-space:nowrap}
+nav.chap a:hover,nav.chap a:focus-visible{border-color:var(--accent);color:var(--accent);outline:none}
+section.q{padding-top:40px;scroll-margin-top:56px}
+.tag{font-family:var(--f-mono);font-size:13px;color:var(--accent);background:var(--accent-soft);padding:2px 8px;border-radius:6px;display:inline-block;margin:0 6px 6px 0}
+.tag.pts{color:var(--bad);background:var(--bad-soft)}
+.prompt{border:1.5px solid var(--ink);border-radius:10px;background:var(--surface);padding:12px 16px;margin:12px 0;font-size:15px}
+.prompt .zh{color:var(--muted);font-size:14px;margin-top:6px;border-top:1px dashed var(--line);padding-top:6px}
+mark{background:var(--mark);color:var(--mark-ink);padding:0 3px;border-radius:3px}
+code,.mono{font-family:var(--f-mono);font-size:.92em}
+.box{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:14px 16px;margin:16px 0}
+.box.key{border-left:4px solid var(--accent)}
+.box.warn{border-left:4px solid var(--bad)}
+.box.exam{border-left:4px solid var(--ok)}
+.box h4{margin:0 0 6px;font-family:var(--f-display);font-size:18px}
+pre.code,.formula{font-family:var(--f-mono);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;overflow-x:auto;white-space:pre;font-size:14px;line-height:1.6;margin:10px 0}
+.tbl{overflow-x:auto;margin:12px 0}
+table{border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums;min-width:100%}
+th,td{border:1px solid var(--line);padding:5px 9px;text-align:center;white-space:nowrap}
+th{background:var(--bg);font-weight:600}
+td.l,th.l{text-align:left;white-space:normal}
+td.ok{background:var(--ok-soft);color:var(--ok);font-weight:700}
+td.hit{background:var(--mark);color:var(--mark-ink);font-weight:700}
+td.dim{color:var(--muted)}
+details{border:1px solid var(--line);border-radius:10px;background:var(--surface);margin:10px 0}
+details>summary{cursor:pointer;padding:10px 14px;font-weight:600;list-style:none}
+details>summary::-webkit-details-marker{display:none}
+details>summary::before{content:"▸ ";color:var(--accent)}
+details[open]>summary::before{content:"▾ "}
+details>div{padding:0 14px 12px;border-top:1px dashed var(--line)}
+.viz{overflow-x:auto;display:flex;justify-content:center;margin:12px 0}
+.viz svg{max-width:100%;height:auto}
+.steps{counter-reset:s;list-style:none;padding:0;display:grid;gap:8px}
+.steps li{counter-increment:s;display:grid;grid-template-columns:30px 1fr;gap:8px}
+.steps li::before{content:counter(s);font-family:var(--f-mono);font-weight:600;color:var(--surface);background:var(--ink);border-radius:50%;width:24px;height:24px;display:grid;place-items:center;font-size:13px;margin-top:3px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px}
+.grid2>*{min-width:0}
+footer{margin-top:60px;color:var(--muted);font-size:13px}
+</style>
+
+<nav class="chap" aria-label="題目"><div class="in">
+<a href="#map">總覽</a><a href="#q1">1 複雜度排序</a><a href="#q2">2 迴圈分析</a><a href="#q3">3 二元搜尋</a><a href="#q4">4 假幣</a><a href="#q5">5 最大最小</a><a href="#q6">6 派對名單</a><a href="#q7">7 矩陣鏈</a><a href="#q8">8 Prim／Kruskal</a>
+</div></nav>
+
+<div class="wrap">
+<header class="hero" id="map">
+  <div class="eyebrow">臺北市立大學 · 演算法 · 114-1 第一次期中考</div>
+  <h1>演算法期中考古題詳解</h1>
+  <p class="lede">8 題逐題拆解。每題先告訴你「考的是什麼觀念」，接著是可以照抄格式的完整答案，最後是「換個數字你會不會」的變化題。答案都用程式驗算過。</p>
+
+  <h3>這份考卷在考什麼</h3>
+  <div class="tbl"><table>
+    <tr><th>題</th><th>配分</th><th class="l">考的觀念</th><th>章節</th><th class="l">題型</th></tr>
+    <tr><td>1</td><td>5</td><td class="l">複雜度大小排序</td><td>Ch1</td><td class="l">背結論</td></tr>
+    <tr><td>2</td><td>10</td><td class="l">追迴圈輸出、算 T(n)</td><td>Ch1</td><td class="l">手動模擬</td></tr>
+    <tr><td>3</td><td>15</td><td class="l">二元搜尋最好／最差情況</td><td>Ch1/2</td><td class="l"><mark>自己舉例＋模擬</mark></td></tr>
+    <tr><td>4</td><td>15</td><td class="l">三分法找假幣</td><td>Ch2 分治</td><td class="l">設計演算法＋複雜度</td></tr>
+    <tr><td>5</td><td>15</td><td class="l">分治法找最大最小值</td><td>Ch2 分治</td><td class="l">寫演算法＋遞迴式</td></tr>
+    <tr><td>6</td><td>20</td><td class="l">樹上的動態規劃</td><td>Ch3 DP</td><td class="l">設計演算法＋算答案</td></tr>
+    <tr><td>7</td><td>20</td><td class="l">矩陣鏈乘法</td><td>Ch3 DP</td><td class="l"><mark>填表模擬</mark></td></tr>
+    <tr><td>8</td><td>20</td><td class="l">Prim 與 Kruskal</td><td>Ch4 貪婪</td><td class="l"><mark>自己舉例＋模擬</mark></td></tr>
+  </table></div>
+  <div class="box key"><h4>看完考卷的三個結論</h4>
+  <ol>
+    <li><b>一半以上的分數是「模擬」</b>：給你一個演算法，在紙上一步一步跑。表格寫清楚就拿分。</li>
+    <li><b>「Please give a graph／Using an array」= 要你自己出測資</b>。題目沒給數字，你要自己編一組小的，然後模擬。</li>
+    <li><b>幾乎每題都問時間複雜度</b>。每個演算法背一句「怎麼算出來的」，比只背答案有用。</li>
+  </ol></div>
+</header>
+
+<!-- Q1 -->
+<section class="q" id="q1">
+  <span class="tag">第 1 題</span><span class="tag pts">5%</span>
+  <h2>複雜度由大到小排序</h2>
+  <div class="prompt">Sort Θ(lg n)、Θ(n)、Θ(n lg n)、Θ(n²)、Θ(2ⁿ) in descending order.
+    <div class="zh">把這五個複雜度由大排到小（越大＝n 變大時越慢）。</div></div>
+  <p>數學不好就<b>代一個數字進去比</b>。用 n = 16：</p>
+  <div class="tbl"><table>
+    <tr><th>複雜度</th><th>n = 16 時</th><th class="l">怎麼算</th></tr>
+    <tr><td>lg n</td><td>4</td><td class="l">2 的幾次方是 16？2⁴ = 16，所以是 4</td></tr>
+    <tr><td>n</td><td>16</td><td class="l">就是 16</td></tr>
+    <tr><td>n lg n</td><td>64</td><td class="l">16 × 4</td></tr>
+    <tr><td>n²</td><td>256</td><td class="l">16 × 16</td></tr>
+    <tr><td>2ⁿ</td><td>65536</td><td class="l">2 自己乘 16 次</td></tr>
+  </table></div>
+  <div class="box exam"><h4>答案</h4>
+  <p class="mono">Θ(2ⁿ) &gt; Θ(n²) &gt; Θ(n lg n) &gt; Θ(n) &gt; Θ(lg n)</p>
+  <p>小陷阱：題目寫 descending（由大到小），但後面那句「f 在左邊，f 最後會落在 g 的<b>下面</b>」其實是「左小右大」，兩句互相矛盾。考場上寫上面這行，再補一句「若依題目定義（左邊較小），順序為 Θ(lg n), Θ(n), Θ(n lg n), Θ(n²), Θ(2ⁿ)」，兩種解讀都拿得到分。</p></div>
+  <details><summary>延伸：如果加上 Θ(1)、Θ(n³)、Θ(n!)，要放哪？</summary><div>
+    <p>完整順序（小到大）：1 &lt; lg n &lt; n &lt; n lg n &lt; n² &lt; n³ &lt; 2ⁿ &lt; n!</p>
+    <p>口訣：<b>常數 → 對數 → 線性 → n lg n → 多項式 → 指數 → 階乘</b>。</p>
+  </div></details>
+</section>
+
+<!-- Q2 -->
+<section class="q" id="q2">
+  <span class="tag">第 2 題</span><span class="tag pts">10%</span>
+  <h2>追迴圈的輸出和 T(n)</h2>
+  <pre class="code">for (i = 2; i &lt;= n; i++) {
+    for (j = 0; j &lt;= n; ) {
+        cout &lt;&lt; i &lt;&lt; j;
+        j = j + ⌊n/4⌋;
+    }
+}</pre>
+  <div class="box key"><h4>關鍵觀察</h4>
+  <p>內圈的 j 每次跳 <b>n/4</b>，從 0 跳到 n：</p>
+  <p class="mono">j = 0, n/4, 2n/4, 3n/4, 4n/4(=n)</p>
+  <p><mark>不管 n 多大，內圈永遠只跑 5 次</mark>。這是這題的陷阱：很多人看到兩層迴圈就寫 n²。</p></div>
+
+  <h3>(1) 輸出</h3>
+  <div class="tbl"><table>
+    <tr><th>n</th><th>⌊n/4⌋</th><th>j 的值</th><th>i 的值</th><th>總共印幾組</th></tr>
+    <tr><td>4</td><td>1</td><td>0,1,2,3,4</td><td>2～4（3 個）</td><td>3×5 = 15</td></tr>
+    <tr><td>16</td><td>4</td><td>0,4,8,12,16</td><td>2～16（15 個）</td><td>15×5 = 75</td></tr>
+    <tr><td>32</td><td>8</td><td>0,8,16,24,32</td><td>2～32（31 個）</td><td>31×5 = 155</td></tr>
+  </table></div>
+  <p><b>n = 4</b>（每組是「i 接著 j」）：</p>
+  <pre class="code">20 21 22 23 24
+30 31 32 33 34
+40 41 42 43 44</pre>
+  <p>程式其實沒有印空白，所以真正的輸出是連在一起的 <code>202122232430313233344041424344</code>。考卷上兩種都寫，再註明「cout 沒有分隔符號」。</p>
+  <p><b>n = 16</b>：</p>
+  <pre class="code">20 24 28 212 216
+30 34 38 312 316
+…（i 一直到 16）
+160 164 168 1612 1616</pre>
+  <p><b>n = 32</b>：</p>
+  <pre class="code">20 28 216 224 232
+30 38 316 324 332
+…（i 一直到 32）
+320 328 3216 3224 3232</pre>
+  <p>n = 16 和 32 不用全部寫完，寫頭兩列、「…」、最後一列，再寫總共幾組，就是完整的答案。</p>
+
+  <h3>(2) 時間複雜度</h3>
+  <div class="formula">外圈：i = 2 ～ n，共 n − 1 次
+內圈：每次固定 5 次
+T(n) = 5(n − 1) ∈ Θ(n)</div>
+  <details><summary>變化題：如果把 j = j + ⌊n/4⌋ 改成 j = j + 1？改成 j = j * 2？</summary><div>
+    <p><b>j = j + 1</b>：內圈 j = 0～n，跑 n+1 次 → T(n) = (n−1)(n+1) ∈ Θ(n²)。</p>
+    <p><b>j = j * 2</b>：j 從 0 開始乘 2 永遠是 0，會變成無窮迴圈（陷阱！）。如果 j 從 1 開始，j = 1,2,4,…,n，跑 lg n + 1 次 → Θ(n lg n)。</p>
+  </div></details>
+</section>
+
+<!-- Q3 -->
+<section class="q" id="q3">
+  <span class="tag">第 3 題</span><span class="tag pts">15%</span>
+  <h2>用 8 個元素的陣列示範二元搜尋</h2>
+  <div class="prompt">Using an array with eight elements to illustrate binary search: (1) BEST-case for finding the target; (2) WORST-case for finding; (3) WORST-case for NOT finding.
+  <div class="zh">自己編一個 8 個元素的陣列，示範：找到的最好情況、找到的最差情況、找不到的最差情況。</div></div>
+
+  <div class="box key"><h4>二元搜尋一句話</h4>
+  <p>陣列要<b>先排好序</b>。每次看中間那格：等於就找到；目標比較小就丟掉右半邊；比較大就丟掉左半邊。每比一次，範圍砍一半。</p></div>
+  <pre class="code">BinarySearch(S[1..n], x):
+    low = 1;  high = n
+    while (low &lt;= high):
+        mid = ⌊(low + high) / 2⌋
+        if x == S[mid]:  return mid          // 找到
+        else if x &lt; S[mid]:  high = mid − 1  // 去左半
+        else:  low = mid + 1                 // 去右半
+    return 0                                 // 找不到</pre>
+
+  <p>自己出的陣列（考試直接用這組）：</p>
+  <div class="tbl"><table>
+    <tr><th>index</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th></tr>
+    <tr><th>S</th><td>3</td><td>8</td><td>12</td><td>17</td><td>25</td><td>31</td><td>40</td><td>56</td></tr>
+  </table></div>
+
+  <h3>(1) 找到的最好情況：找 17</h3>
+  <div class="tbl"><table><tr><th>次</th><th>low</th><th>high</th><th>mid</th><th>S[mid]</th><th class="l">結果</th></tr>
+  <tr><td>1</td><td>1</td><td>8</td><td>4</td><td>17</td><td class="l ok">x == 17，找到</td></tr></table></div>
+  <p>目標剛好在第一次看的中間位置，<b>1 次比較</b> → <mark>B(n) = 1 ∈ Θ(1)</mark>。</p>
+
+  <h3>(2) 找到的最差情況：找 56</h3>
+  <div class="tbl"><table><tr><th>次</th><th>low</th><th>high</th><th>mid</th><th>S[mid]</th><th class="l">結果</th></tr>
+  <tr><td>1</td><td>1</td><td>8</td><td>4</td><td>17</td><td class="l">56 &gt; 17 → low = 5</td></tr>
+  <tr><td>2</td><td>5</td><td>8</td><td>6</td><td>31</td><td class="l">56 &gt; 31 → low = 7</td></tr>
+  <tr><td>3</td><td>7</td><td>8</td><td>7</td><td>40</td><td class="l">56 &gt; 40 → low = 8</td></tr>
+  <tr><td>4</td><td>8</td><td>8</td><td>8</td><td>56</td><td class="l ok">找到</td></tr></table></div>
+  <p>範圍 8 → 4 → 2 → 1，<b>4 次比較</b>。8 = 2³，所以是 lg 8 + 1 = 4 → <mark>W(n) = lg n + 1 ∈ Θ(lg n)</mark>。</p>
+
+  <h3>(3) 找不到的最差情況：找 60</h3>
+  <div class="tbl"><table><tr><th>次</th><th>low</th><th>high</th><th>mid</th><th>S[mid]</th><th class="l">結果</th></tr>
+  <tr><td>1</td><td>1</td><td>8</td><td>4</td><td>17</td><td class="l">60 &gt; 17 → low = 5</td></tr>
+  <tr><td>2</td><td>5</td><td>8</td><td>6</td><td>31</td><td class="l">60 &gt; 31 → low = 7</td></tr>
+  <tr><td>3</td><td>7</td><td>8</td><td>7</td><td>40</td><td class="l">60 &gt; 40 → low = 8</td></tr>
+  <tr><td>4</td><td>8</td><td>8</td><td>8</td><td>56</td><td class="l">60 &gt; 56 → low = 9</td></tr>
+  <tr><td>—</td><td>9</td><td>8</td><td colspan="3" class="l">low &gt; high，迴圈結束，找不到</td></tr></table></div>
+  <p>一樣 <b>4 次比較</b>才確定沒有 → <mark>W(n) = lg n + 1 ∈ Θ(lg n)</mark>。</p>
+
+  <div class="box warn"><h4>為什麼最差情況會選最右邊？</h4>
+  <p>mid 是往下取整數，所以右半邊比左半邊多一個元素（1～3 有 3 個、5～8 有 4 個）。往右走的路比較長，最差情況就出在最右邊。改找 2（比 3 還小）會發現只要 3 次就結束，這就是為什麼不能隨便挑。</p></div>
+  <details><summary>變化題：16 個元素的最差情況要比幾次？</summary><div><p>lg 16 + 1 = 5 次。每多一倍的元素，只多比 1 次，這就是 Θ(lg n) 很快的原因。</p></div></details>
+</section>
+
+<!-- Q4 -->
+<section class="q" id="q4">
+  <span class="tag">第 4 題</span><span class="tag pts">15%</span>
+  <h2>用天平找比較重的假幣</h2>
+  <div class="prompt">(1) 9 coins a～i, one is heavier, a balance scale, only two weighings. (2) n coins (n is a power of 3), log₃ n weighings. Write the algorithm and its time complexity.
+  <div class="zh">(1) 9 枚硬幣有 1 枚比較重，天平只能秤 2 次，怎麼找？(2) 推廣到 n 枚，秤 log₃ n 次。</div></div>
+
+  <div class="box key"><h4>關鍵想法：一次秤可以分成「三種結果」</h4>
+  <p>天平有三種結果：左重、右重、平衡。所以每秤一次可以把硬幣<b>分成 3 堆</b>，只秤其中 2 堆：</p>
+  <ul><li>左邊重 → 假幣在左堆</li><li>右邊重 → 假幣在右堆</li><li>平衡 → 假幣在<b>沒上天平</b>的那堆</li></ul>
+  <p>每秤一次，範圍變成 1/3。這就是 <b>分治法（divide-and-conquer）</b>，而且是「切三份」的版本。</p></div>
+
+  <h3>(1) 9 枚硬幣，秤 2 次</h3>
+  <ol class="steps">
+    <li><span>分三堆：{a,b,c}、{d,e,f}、{g,h,i}。</span></li>
+    <li><span><b>第 1 次</b>：{a,b,c} 放左、{d,e,f} 放右。左重 → 假幣在 abc；右重 → 在 def；平衡 → 在 ghi。</span></li>
+    <li><span>假設是 {a,b,c}。<b>第 2 次</b>：a 放左、b 放右。左重 → a；右重 → b；平衡 → c。</span></li>
+  </ol>
+  <p>任何情況都剛好 2 次。可以畫成一棵「決策樹」，每個節點有三個分支，2 層剛好 3² = 9 個葉子，對應 9 枚硬幣。</p>
+
+  <h3>(2) n 枚硬幣（n = 3ᵏ）</h3>
+  <pre class="code">FindHeavy(C, n):                 // C 是 n 枚硬幣
+    if n == 1:  return C 裡唯一那枚
+    把 C 平均分成 G1, G2, G3，每堆 n/3 枚
+    把 G1 和 G2 放上天平
+    if G1 比較重:  return FindHeavy(G1, n/3)
+    else if G2 比較重:  return FindHeavy(G2, n/3)
+    else:  return FindHeavy(G3, n/3)</pre>
+  <div class="formula">遞迴式：T(n) = T(n/3) + 1 ,  T(1) = 0
+展開：  T(n) = T(n/9) + 2 = T(n/27) + 3 = … = T(n/3ᵏ) + k
+當 n/3ᵏ = 1，也就是 k = log₃ n 時停下
+T(n) = log₃ n ∈ Θ(lg n)</div>
+  <p>白話：每秤一次剩 1/3，問「要除以 3 幾次才會剩 1 枚」，答案就是 log₃ n。例：27 → 9 → 3 → 1，3 次 = log₃ 27。</p>
+  <details><summary>為什麼 Θ(log₃ n) 可以寫成 Θ(lg n)？</summary><div>
+    <p>log₃ n = lg n ÷ lg 3，而 lg 3 只是一個常數（約 1.58）。Θ 會忽略常數，所以不管 log 的底數是多少，都算同一級。</p>
+  </div></details>
+</section>
+
+<!-- Q5 -->
+<section class="q" id="q5">
+  <span class="tag">第 5 題</span><span class="tag pts">15%</span>
+  <h2>分治法找最大值和最小值</h2>
+  <div class="prompt">Write a divide-and-conquer algorithm to find the maximum and minimum in list S (10%). Determine the time complexity (5%).</div>
+  <div class="box key"><h4>分治三步驟（每一題分治都這樣講）</h4>
+  <ol><li><b>Divide 切</b>：把陣列切成左右兩半。</li><li><b>Conquer 解</b>：遞迴找出左半的 (max, min) 和右半的 (max, min)。</li><li><b>Combine 合</b>：max = 兩個 max 比一次；min = 兩個 min 比一次。<b>合併只要 2 次比較</b>。</li></ol>
+  <p>最小的情況：剩 1 個 → 它自己就是 max 也是 min（0 次比較）；剩 2 個 → 比 1 次。</p></div>
+  <pre class="code">MaxMin(S, low, high):              // 回傳 (max, min)
+    if low == high:                  // 只有 1 個
+        return (S[low], S[low])
+    if high == low + 1:              // 只有 2 個，比 1 次
+        if S[low] &gt; S[high]:  return (S[low], S[high])
+        else:                 return (S[high], S[low])
+    mid = ⌊(low + high) / 2⌋
+    (max1, min1) = MaxMin(S, low, mid)
+    (max2, min2) = MaxMin(S, mid + 1, high)
+    return ( max(max1, max2), min(min1, min2) )   // 2 次比較</pre>
+
+  <h3>舉例模擬：S = [8, 3, 6, 1, 9, 4, 7, 2]</h3>
+  <div class="formula">                  [8 3 6 1 9 4 7 2] → (9,1)
+                 /                    \
+       [8 3 6 1] → (8,1)        [9 4 7 2] → (9,2)
+        /        \               /        \
+   [8 3]→(8,3) [6 1]→(6,1)  [9 4]→(9,4) [7 2]→(7,2)</div>
+  <p>比較次數：最下面 4 組各 1 次 = 4；中間 2 次合併各 2 次 = 4；最上面合併 2 次。共 <b>10 次</b>。</p>
+
+  <h3>時間複雜度</h3>
+  <div class="formula">T(n) = 2T(n/2) + 2 ,  T(2) = 1
+T(4) = 2·1 + 2 = 4
+T(8) = 2·4 + 2 = 10
+T(16) = 2·10 + 2 = 22
+規律：T(n) = 3n/2 − 2 ∈ Θ(n)</div>
+  <p>不會解遞迴式也沒關係，用「數比較次數」的方式想：</p>
+  <ul>
+    <li>最底下有 n/2 組兩兩比較，每組 1 次 → <b>n/2</b> 次</li>
+    <li>合併的次數 = n/2 − 1 次（從 n/2 塊合成 1 塊），每次 2 次比較 → <b>n − 2</b> 次</li>
+    <li>總共 n/2 + n − 2 = <b>3n/2 − 2</b>。驗算 n = 8：4 + 6 = 10 ✓</li>
+  </ul>
+  <div class="box exam"><h4>加分句</h4>
+  <p>一般「先找 max 再找 min」要 (n−1)+(n−1) = 2n − 2 次比較。分治法只要 3n/2 − 2 次，比較少。兩者都是 Θ(n)，但分治法的常數比較小。</p></div>
+</section>
+
+<!-- Q6 -->
+<section class="q" id="q6">
+  <span class="tag">第 6 題</span><span class="tag pts">20%</span>
+  <h2>公司派對：上司和直屬部下不能同時來</h2>
+  <div class="prompt">The supervisor relation forms a tree. Each employee has a conviviality rating. An employee and his immediate supervisor cannot both attend. Describe an algorithm to make a guest list that maximizes the sum of ratings (15%). Analyze the running time (5%).
+  <div class="zh">公司組織是一棵樹，每個人有一個「歡樂分數」。<b>有直接上下屬關係的兩個人不能同時出席</b>。要邀請誰，分數總和最大？</div></div>
+
+  <div class="box key"><h4>關鍵想法：每個人只有「來」和「不來」兩種</h4>
+  <p>對每個人 v 記兩個數字：</p>
+  <ul>
+    <li><b>in(v)</b>：v <b>有來</b>時，v 和他底下整個部門最多能拿幾分。v 來了，他的直屬部下都<b>不能</b>來。</li>
+    <li><b>out(v)</b>：v <b>沒來</b>時，最多能拿幾分。v 沒來，每個部下可以來也可以不來，<b>挑比較大的</b>。</li>
+  </ul>
+  <div class="formula">in(v)  = v 的分數 + Σ out(c)               （c 是 v 的每個直屬部下）
+out(v) = Σ max( in(c), out(c) )
+樹葉：in = 自己的分數，out = 0
+答案：max( in(樹根), out(樹根) )</div>
+  <p>這就是 <b>動態規劃（DP）</b>：大問題（整間公司）的答案由小問題（每個部門）的答案組成。計算順序必須是<mark>先算部下、再算上司</mark>（由下往上，後序走訪 post-order）。</p>
+  <p>這跟 0-1 背包的「拿或不拿」是同一種想法。</p></div>
+
+  <div class="viz" id="tree6"></div>
+  <p style="text-align:center;color:var(--muted);font-size:14px">每格下方的 in / out 是算出來的值；綠色＝最後邀請的人</p>
+
+  <h3>由下往上算（考卷就這樣寫）</h3>
+  <div class="tbl"><table>
+    <tr><th>人</th><th>分數</th><th class="l">in = 自己 + Σout(部下)</th><th class="l">out = Σmax(in, out)</th></tr>
+    <tr><td>I, J, K, L, G, M, N, O</td><td>2,11,2,6,8,9,6,7</td><td class="l">樹葉：in = 自己</td><td class="l">樹葉：out = 0</td></tr>
+    <tr><td>E</td><td>14</td><td class="l">14 + 0 + 0 = <b>14</b></td><td class="l">max(2,0)+max(11,0) = <b>13</b></td></tr>
+    <tr><td>F</td><td>4</td><td class="l">4 + 0 + 0 = <b>4</b></td><td class="l">2 + 6 = <b>8</b></td></tr>
+    <tr><td>H</td><td>3</td><td class="l">3 + 0 + 0 + 0 = <b>3</b></td><td class="l">9 + 6 + 7 = <b>22</b></td></tr>
+    <tr><td>C</td><td>3</td><td class="l">3 + out(G)=0 → <b>3</b></td><td class="l">max(8,0) = <b>8</b></td></tr>
+    <tr><td>B</td><td>5</td><td class="l">5 + out(E) + out(F) = 5+13+8 = <b>26</b></td><td class="l">max(14,13)+max(4,8) = 14+8 = <b>22</b></td></tr>
+    <tr><td>D</td><td>10</td><td class="l">10 + out(H) = 10+22 = <b>32</b></td><td class="l">max(3,22) = <b>22</b></td></tr>
+    <tr><td>A</td><td>1</td><td class="l">1 + 22 + 8 + 22 = <b>53</b></td><td class="l">max(26,22)+max(3,8)+max(32,22) = 26+8+32 = <b>66</b></td></tr>
+  </table></div>
+  <p>答案 = max(in(A), out(A)) = max(53, 66) = <mark>66</mark>，A（總裁）不來。</p>
+
+  <h3>找出名單：由上往下回推</h3>
+  <p>規則：上司<b>有來</b> → 部下一定不來。上司<b>沒來</b> → 部下看 in 和 out 哪個大，in 大就來。</p>
+  <ul>
+    <li>A：out 66 &gt; in 53 → <b>A 不來</b></li>
+    <li>B：A 沒來，in 26 &gt; out 22 → <b>B 來</b> → E、F 不來 → E、F 沒來，所以 I、J、K、L 都看自己：in &gt; 0 → <b>I、J、K、L 來</b></li>
+    <li>C：in 3 &lt; out 8 → C 不來 → <b>G 來</b></li>
+    <li>D：in 32 &gt; out 22 → <b>D 來</b> → H 不來 → <b>M、N、O 來</b></li>
+  </ul>
+  <div class="box exam"><h4>答案</h4>
+  <p>名單 {B, D, G, I, J, K, L, M, N, O}，總分 5+10+8+2+11+2+6+9+6+7 = <b>66</b>。<br>
+  驗算：檢查沒有任何一對是直屬關係 ✓（B 的部下 E、F 沒來；D 的部下 H 沒來；G 的上司 C 沒來）。</p></div>
+
+  <h3>時間複雜度</h3>
+  <p>每個人只算一次 in 和 out；算的時候每個直屬部下只被看一次（樹有 n − 1 條上下屬關係）。總工作量跟人數成正比 → <mark>Θ(n)</mark>。回推名單也是每人看一次，Θ(n)。</p>
+  <div class="box warn"><h4>常見錯誤：「隔一層選一層」</h4>
+  <p>只選第 1、3 層（A、E、F、G、H）或只選第 2、4 層，都不一定最好。例如 E(14) 和 B(5)：B 來的話 E 不能來，但 B 底下的 I、J、K、L 都能來，反而賺更多。所以一定要用 in/out 去比，不能用猜的。</p></div>
+</section>
+
+<!-- Q7 -->
+<section class="q" id="q7">
+  <span class="tag">第 7 題</span><span class="tag pts">20%</span>
+  <h2>矩陣鏈乘法：最佳乘法順序</h2>
+  <div class="prompt">A₁(10×4), A₂(4×5), A₃(5×20), A₄(20×2), A₅(2×50). Show the optimal order and the number of multiplications.</div>
+
+  <div class="box key"><h4>先懂一件事：兩個矩陣相乘要幾次乘法？</h4>
+  <p><b>(a×b) 乘 (b×c) 要 a × b × c 次</b>，結果是 a×c 的矩陣。例：A₁(10×4) × A₂(4×5) = 10×4×5 = 200 次，結果是 10×5。</p>
+  <p>乘法有結合律，先乘哪兩個都可以，但<b>次數差很多</b>。題目要找最省的括號方式。</p></div>
+
+  <p>把維度寫成一排 <b>d₀～d₅</b>（每個矩陣的列數，加最後一個的行數）：</p>
+  <div class="tbl"><table><tr><th>d₀</th><th>d₁</th><th>d₂</th><th>d₃</th><th>d₄</th><th>d₅</th></tr><tr><td>10</td><td>4</td><td>5</td><td>20</td><td>2</td><td>50</td></tr></table></div>
+  <p>A<sub>i</sub> 的大小是 d<sub>i−1</sub> × d<sub>i</sub>。</p>
+  <div class="formula">M[i][j] = 從 Aᵢ 乘到 Aⱼ 最少要幾次
+M[i][i] = 0
+M[i][j] = min over k ( M[i][k] + M[k+1][j] + d(i−1) · d(k) · d(j) )      i ≤ k &lt; j</div>
+  <p>白話：最後一刀切在 k，左邊 Aᵢ…A<sub>k</sub> 先算好、右邊 A<sub>k+1</sub>…Aⱼ 先算好，最後兩個大矩陣再乘一次（d<sub>i−1</sub>·d<sub>k</sub>·d<sub>j</sub>）。每個 k 都試，取最小。</p>
+
+  <h3>一條對角線一條對角線算</h3>
+  <p><b>長度 2</b>（相鄰兩個）：</p>
+  <div class="formula">M[1][2] = 10·4·5   = 200
+M[2][3] = 4·5·20   = 400
+M[3][4] = 5·20·2   = 200
+M[4][5] = 20·2·50  = 2000</div>
+  <p><b>長度 3</b>：</p>
+  <div class="formula">M[1][3]: k=1: 0 + 400 + 10·4·20 = 1200
+         k=2: 200 + 0 + 10·5·20 = 1200      → 1200（平手，k 取 1）
+M[2][4]: k=2: 0 + 200 + 4·5·2 = 240         → 240  (k=2)
+         k=3: 400 + 0 + 4·20·2 = 560
+M[3][5]: k=3: 0 + 2000 + 5·20·50 = 7000
+         k=4: 200 + 0 + 5·2·50 = 700        → 700  (k=4)</div>
+  <p><b>長度 4</b>：</p>
+  <div class="formula">M[1][4]: k=1: 0 + 240 + 10·4·2 = 320          → 320  (k=1)
+         k=2: 200 + 200 + 10·5·2 = 500
+         k=3: 1200 + 0 + 10·20·2 = 1600
+M[2][5]: k=2: 0 + 700 + 4·5·50 = 1700
+         k=3: 400 + 2000 + 4·20·50 = 6400
+         k=4: 240 + 0 + 4·2·50 = 640         → 640  (k=4)</div>
+  <p><b>長度 5</b>（答案）：</p>
+  <div class="formula">M[1][5]: k=1: 0 + 640 + 10·4·50 = 2640
+         k=2: 200 + 700 + 10·5·50 = 3400
+         k=3: 1200 + 2000 + 10·20·50 = 13200
+         k=4: 320 + 0 + 10·2·50 = 1320       → 1320 (k=4)</div>
+
+  <div class="grid2">
+    <div><p class="b"><b>M 表</b>（最少次數）</p><div class="tbl"><table>
+      <tr><th></th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th></tr>
+      <tr><th>1</th><td>0</td><td>200</td><td>1200</td><td>320</td><td class="hit">1320</td></tr>
+      <tr><th>2</th><td class="dim"></td><td>0</td><td>400</td><td>240</td><td>640</td></tr>
+      <tr><th>3</th><td class="dim"></td><td class="dim"></td><td>0</td><td>200</td><td>700</td></tr>
+      <tr><th>4</th><td class="dim"></td><td class="dim"></td><td class="dim"></td><td>0</td><td>2000</td></tr>
+      <tr><th>5</th><td class="dim"></td><td class="dim"></td><td class="dim"></td><td class="dim"></td><td>0</td></tr></table></div></div>
+    <div><p><b>P 表</b>（最好的切點 k）</p><div class="tbl"><table>
+      <tr><th></th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th></tr>
+      <tr><th>1</th><td></td><td>1</td><td>1</td><td>1</td><td class="hit">4</td></tr>
+      <tr><th>2</th><td></td><td></td><td>2</td><td>2</td><td>4</td></tr>
+      <tr><th>3</th><td></td><td></td><td></td><td>3</td><td>4</td></tr>
+      <tr><th>4</th><td></td><td></td><td></td><td></td><td>4</td></tr>
+      <tr><th>5</th><td></td><td></td><td></td><td></td><td></td></tr></table></div></div>
+  </div>
+
+  <h3>用 P 表還原括號</h3>
+  <div class="formula">P[1][5] = 4 → (A1 A2 A3 A4)(A5)
+P[1][4] = 1 → (A1)(A2 A3 A4)
+P[2][4] = 2 → (A2)(A3 A4)
+結果：((A1 (A2 (A3 A4))) A5)</div>
+  <div class="box exam"><h4>答案＋驗算</h4>
+  <p>最佳順序 <b>((A₁(A₂(A₃A₄)))A₅)</b>，共 <b>1320</b> 次乘法。</p>
+  <p>照順序實際算一遍：A₃A₄ = 5·20·2 = 200（得 5×2）→ A₂·(那個) = 4·5·2 = 40（得 4×2）→ A₁·(那個) = 10·4·2 = 80（得 10×2）→ (那個)·A₅ = 10·2·50 = 1000。200+40+80+1000 = 1320 ✓</p>
+  <p>直覺：A₄ 把寬度縮成 2，所以讓 A₄ 先把東西「變瘦」，最後才乘很寬的 A₅（50）。</p></div>
+  <details><summary>為什麼 M 表只填右上半？時間複雜度是多少？</summary><div>
+    <p>M[i][j] 只在 i ≤ j 才有意義（從 Aᵢ 乘到 Aⱼ）。格子有大約 n²/2 個，每格要試最多 n 個 k → <b>Θ(n³)</b>。</p>
+  </div></details>
+</section>
+
+<!-- Q8 -->
+<section class="q" id="q8">
+  <span class="tag">第 8 題</span><span class="tag pts">20%</span>
+  <h2>Prim 與 Kruskal</h2>
+  <div class="prompt">(1) Please give a graph and show how these two algorithms work (12%). (2) Which is better when the graph is (a) very sparse; (b) highly connected (8%)?
+  <div class="zh">(1) 自己出一張圖，示範兩個演算法怎麼跑。(2) 邊很少時誰比較好？邊很多時呢？</div></div>
+  <p>這題就是上一份講義第 4 章的內容。考場上直接用這張背熟的圖（6 點 9 邊，有平手、有被丟掉的邊，能展示細節）：</p>
+  <div class="viz" id="g8"></div>
+  <p class="mono" style="text-align:center">a-b 5, a-e 5, a-d 6, d-e 7, e-f 4, b-c 4, c-d 2, c-f 3, d-f 3</p>
+
+  <h3>(1-a) Prim，從 a 開始</h3>
+  <p>規則：每次在「一端在樹內、一端在樹外」的邊中挑最小的。</p>
+  <div class="tbl"><table>
+    <tr><th>輪</th><th class="l">候選邊</th><th>選</th><th class="l">V(T)</th><th>cost</th></tr>
+    <tr><td>1</td><td class="l">(a,b)5 (a,e)5 (a,d)6</td><td>(a,b)</td><td class="l">{a,b}</td><td>5</td></tr>
+    <tr><td>2</td><td class="l">(a,e)5 (a,d)6 (b,c)4</td><td>(b,c)</td><td class="l">{a,b,c}</td><td>9</td></tr>
+    <tr><td>3</td><td class="l">(a,e)5 (a,d)6 (c,d)2 (c,f)3</td><td>(c,d)</td><td class="l">{a,b,c,d}</td><td>11</td></tr>
+    <tr><td>4</td><td class="l">(a,e)5 (d,e)7 (c,f)3 (d,f)3</td><td>(c,f)</td><td class="l">{a,b,c,d,f}</td><td>14</td></tr>
+    <tr><td>5</td><td class="l">(a,e)5 (d,e)7 (e,f)4</td><td>(e,f)</td><td class="l">{a,b,c,d,f,e}</td><td>18</td></tr>
+  </table></div>
+  <p>第 1 輪 (a,b)、(a,e) 平手，任選 (a,b)。第 4 輪 (c,f)、(d,f) 平手，任選 (c,f)。第 3 輪後 (a,d) 兩端都在樹內，不再是候選。</p>
+
+  <h3>(1-b) Kruskal</h3>
+  <p>規則：邊由小到大排序，不形成環就加入（用分組判斷）。</p>
+  <div class="tbl"><table>
+    <tr><th>邊</th><th>權重</th><th>結果</th><th class="l">分組</th></tr>
+    <tr><td>(c,d)</td><td>2</td><td class="ok">✓</td><td class="l">{c,d}</td></tr>
+    <tr><td>(c,f)</td><td>3</td><td class="ok">✓</td><td class="l">{c,d,f}</td></tr>
+    <tr><td>(d,f)</td><td>3</td><td>✗ 同組→環</td><td class="l">{c,d,f}</td></tr>
+    <tr><td>(b,c)</td><td>4</td><td class="ok">✓</td><td class="l">{b,c,d,f}</td></tr>
+    <tr><td>(e,f)</td><td>4</td><td class="ok">✓</td><td class="l">{b,c,d,e,f}</td></tr>
+    <tr><td>(a,b)</td><td>5</td><td class="ok">✓</td><td class="l">{a,b,c,d,e,f}，5 條 = 6−1，停</td></tr>
+  </table></div>
+  <p>兩個演算法都得到 cost = <b>18</b> ✓（邊選得不完全一樣沒關係，平手時 MST 可以不只一棵，但 cost 一定相同）。</p>
+
+  <h3>(2) 稀疏 vs 稠密</h3>
+  <div class="tbl"><table>
+    <tr><th></th><th>Prim</th><th>Kruskal Θ(m lg m)</th><th>誰好</th></tr>
+    <tr><td class="l">(a) 很稀疏：m ≈ n − 1</td><td>Θ(n²)</td><td>Θ(n lg n)</td><td class="ok">Kruskal</td></tr>
+    <tr><td class="l">(b) 很稠密：m ≈ n(n−1)/2</td><td>Θ(n²)</td><td>Θ(n² lg n)</td><td class="ok">Prim</td></tr>
+  </table></div>
+  <div class="box exam"><h4>答題句子</h4>
+  <p>Prim 的時間只跟點數有關，固定 Θ(n²)。Kruskal 的時間主要花在排序 m 條邊，Θ(m lg m)，跟邊數有關。連通圖的邊數 n − 1 ≤ m ≤ n(n−1)/2。<br>
+  (a) 稀疏圖 m ≈ n，Kruskal 為 Θ(n lg n) &lt; Θ(n²)，選 <b>Kruskal</b>。<br>
+  (b) 稠密圖 m ≈ n²，Kruskal 為 Θ(n² lg n) &gt; Θ(n²)，選 <b>Prim</b>。</p></div>
+</section>
+
+<section class="q" id="end">
+  <h2>考前怎麼用這份考古題</h2>
+  <ol class="steps">
+    <li><span>每題先蓋住答案，<b>在白紙上限時寫</b>（20% 的題目給自己 20 分鐘）。</span></li>
+    <li><span>對答案時看的不是「數字對不對」，而是<b>格式</b>：有沒有寫表格、有沒有寫理由、有沒有寫複雜度怎麼算出來。</span></li>
+    <li><span>第 3、8 題這種「自己舉例」的題，把這裡的陣列和圖<b>背起來</b>，考場上不用花時間想測資。</span></li>
+    <li><span>第 6、7 題換數字再做一次：例如把 A₅ 改成 2×5，重算 M 表。</span></li>
+  </ol>
+</section>
+
+<footer>依 114-1 演算法第一次期中考卷整理。第 6、7 題的數值和第 3、5、8 題的模擬過程都用程式驗算過。</footer>
+</div>
+
+<script>
+const NS="http://www.w3.org/2000/svg";
+function el(t,a,p){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;}
+/* Q6 tree */
+(function(){
+  const N={A:[1,53,66],B:[5,26,22],C:[3,3,8],D:[10,32,22],E:[14,14,13],F:[4,4,8],G:[8,8,0],H:[3,3,22],I:[2,2,0],J:[11,11,0],K:[2,2,0],L:[6,6,0],M:[9,9,0],N:[6,6,0],O:[7,7,0]};
+  const P={A:[380,30],B:[170,120],C:[380,120],D:[560,120],E:[80,215],F:[260,215],G:[380,215],H:[560,215],I:[40,310],J:[120,310],K:[220,310],L:[300,310],M:[480,310],N:[560,310],O:[640,310]};
+  const E=[["A","B"],["A","C"],["A","D"],["B","E"],["B","F"],["C","G"],["D","H"],["E","I"],["E","J"],["F","K"],["F","L"],["H","M"],["H","N"],["H","O"]];
+  const pick=new Set(["B","D","G","I","J","K","L","M","N","O"]);
+  const svg=el("svg",{viewBox:"0 0 690 360",width:690,height:360},document.getElementById("tree6"));
+  E.forEach(([a,b])=>el("line",{x1:P[a][0],y1:P[a][1]+12,x2:P[b][0],y2:P[b][1]-14,style:"stroke:var(--edge);stroke-width:1.5"},svg));
+  Object.keys(N).forEach(k=>{const [x,y]=P[k],on=pick.has(k);
+    el("rect",{x:x-30,y:y-14,width:60,height:26,rx:5,style:`fill:${on?"var(--ok-soft)":"var(--node)"};stroke:${on?"var(--ok)":"var(--ink)"};stroke-width:${on?2.2:1.2}`},svg);
+    const t=el("text",{x:x,y:y+5,"text-anchor":"middle","font-size":"14","font-weight":"700",style:"fill:var(--ink);font-family:var(--f-mono)"},svg);t.textContent=`${k} ${N[k][0]}`;
+    const s=el("text",{x:x,y:y+28,"text-anchor":"middle","font-size":"11",style:"fill:var(--muted);font-family:var(--f-mono)"},svg);s.textContent=`${N[k][1]} / ${N[k][2]}`;});
+})();
+/* Q8 graph */
+(function(){
+  const nodes={a:[120,40],e:[260,40],b:[40,130],d:[190,130],c:[120,220],f:[260,220]};
+  const edges=[["a","b",5],["a","e",5],["a","d",6],["d","e",7],["e","f",4],["b","c",4],["c","d",2],["c","f",3],["d","f",3]];
+  const mst=new Set(["a-b","b-c","c-d","c-f","e-f"]);
+  const svg=el("svg",{viewBox:"0 0 300 260",width:300,height:260},document.getElementById("g8"));
+  edges.forEach(([u,v,w])=>{const [x1,y1]=nodes[u],[x2,y2]=nodes[v],on=mst.has(u+"-"+v);
+    el("line",{x1,y1,x2,y2,style:`stroke:var(--${on?"ok":"edge"});stroke-width:${on?4:2}`},svg);
+    const dx=x2-x1,dy=y2-y1,L=Math.hypot(dx,dy),mx=(x1+x2)/2-dy/L*13,my=(y1+y2)/2+dx/L*13;
+    el("rect",{x:mx-10,y:my-11,width:20,height:19,rx:4,style:"fill:var(--surface)"},svg);
+    const t=el("text",{x:mx,y:my+4,"text-anchor":"middle","font-size":"14","font-weight":"600",style:`fill:var(--${on?"ok":"muted"});font-family:var(--f-mono)`},svg);t.textContent=w;});
+  Object.entries(nodes).forEach(([k,[x,y]])=>{el("circle",{cx:x,cy:y,r:16,style:"fill:var(--node);stroke:var(--ink);stroke-width:1.5"},svg);
+    const t=el("text",{x,y:y+5,"text-anchor":"middle","font-size":"16","font-style":"italic","font-weight":"700",style:"fill:var(--ink)"},svg);t.textContent=k;});
+})();
+</script>
+
+</body></html>
