@@ -17,10 +17,16 @@ DB_FILE = 'cp_tracker.db'
 DRAW_KEY = "#010203"   # 這個顏色會被當成「透明」
 DRAW_COLORS = ["#ff3b30", "#007aff", "#ffcc00", "#34c759", "#ffffff"]
 DRAW_FONT = ("Microsoft JhengHei", 11)
-MOD_ALT, MOD_CONTROL, MOD_SHIFT, MOD_NOREPEAT = 0x0001, 0x0002, 0x0004, 0x4000
-HOTKEY_MODS = MOD_CONTROL | MOD_ALT | MOD_NOREPEAT   # Ctrl + Alt，按住不放不會一直觸發
+MOD_ALT, MOD_CONTROL, MOD_SHIFT, MOD_NOREPEAT = 0x0001, 0x0002, 0x0004, 0x4000   # ★v8：第一個原本打成 MOD_SHIFT，改正名字
+HOTKEY_MODS = MOD_CONTROL | MOD_SHIFT | MOD_NOREPEAT   # Ctrl + Shift，按住不放不會一直觸發
 HOTKEY_VK = ord('Z')                                  # 字母鍵直接用 ord('大寫字母')
-HOTKEY_TEXT = "Ctrl+Alt+Z"                            # 顯示在說明裡的文字
+HOTKEY_TEXT = "Ctrl+Shift+Z"                            # 顯示在說明裡的文字
+
+VK_ESCAPE = 0x1B
+PANEL_HOTKEYS = [
+    (MOD_SHIFT | MOD_NOREPEAT, VK_ESCAPE, "Shift+Esc"),
+    (MOD_CONTROL | MOD_SHIFT | MOD_NOREPEAT, ord('X'), "Ctrl+Shift+X"),   # 備案
+]
 
 
 class FloatDraw:
@@ -30,6 +36,14 @@ class FloatDraw:
              "erase": ("擦", "circle")}
     ERASE_R = 8          # 橡皮擦的半徑（像素）
     HISTORY_MAX = 50     # 最多記住幾步可以復原
+
+    # ★v9：縮放把手
+    HANDLE_R = 5         # 把手小方塊的半徑
+    MIN_BOX = 10         # 選取框最小只能壓到 10 像素
+    HANDLE_CURSORS = {"nw": "size_nw_se", "se": "size_nw_se",
+                      "ne": "size_ne_sw", "sw": "size_ne_sw",
+                      "n": "sb_v_double_arrow", "s": "sb_v_double_arrow",
+                      "e": "sb_h_double_arrow", "w": "sb_h_double_arrow"}
 
     def __init__(self, root, db_file, show=True):
         self.root = root
@@ -48,11 +62,19 @@ class FloatDraw:
         self.history = []          # 存檔點（復原用）
         self.future = [] 
         self.selected = []         # 被框選的筆畫「索引」
-        self.sel_mode = None       # None / "box"（正在拉框）/ "move"（正在拖移）
+        self.sel_mode = None       # None / "box"（拉框）/ "move"（拖移）/ "resize"（拉伸）
         self.box_start = (0, 0)
         self.last_xy = (0, 0)
         self.move_total = [0, 0]
         self.erased_any = False
+
+        # ★v9：拉伸 & 右鍵換色需要的狀態
+        self.resize_handle = None  # 正在拖哪個把手（"nw"、"e"…）
+        self.resize_box = None     # 開始拉伸時的框 (x1, y1, x2, y2)
+        self.resize_orig = {}      # 開始拉伸時每一筆的原始座標
+        self.resize_new = None     # 拉伸中算出來的新座標（放開才寫回資料）
+        self._hint_job = None      # 換色小圓點的計時器
+        self.panel_hotkey_text = PANEL_HOTKEYS[0][2]   # 實際生效的工具列快捷鍵
 
         self.init_table()
         self.load()
@@ -76,6 +98,8 @@ class FloatDraw:
         self.cap.bind("<ButtonPress-1>", self.on_press)
         self.cap.bind("<B1-Motion>", self.on_drag)
         self.cap.bind("<ButtonRelease-1>", self.on_release)
+        self.cap.bind("<ButtonPress-3>", self.on_right_click)   # ★v9：右鍵換色
+        self.cap.bind("<Motion>", self.on_hover)                # ★v9：滑到把手上換游標
         self.bind_shortcuts(self.cap)
         self.cap.withdraw()
 
@@ -150,16 +174,34 @@ class FloatDraw:
         import ctypes
         from ctypes import wintypes
         user32 = ctypes.windll.user32
-        if not user32.RegisterHotKey(None, 1, HOTKEY_MODS, HOTKEY_VK):
+
+        # 編號 1：開始 / 停止畫
+        ok_draw = user32.RegisterHotKey(None, 1, HOTKEY_MODS, HOTKEY_VK)
+        if not ok_draw:
             self.hotkey_q.put("fail")      # 被別的程式搶先用掉了
-            return
+
+        # ★v9：編號 2：顯示 / 隱藏工具列（一個一個試，成功就停）
+        self.panel_hotkey_text = None
+        for mods, vk, text in PANEL_HOTKEYS:
+            if user32.RegisterHotKey(None, 2, mods, vk):
+                self.panel_hotkey_text = text
+                break
+
+        if not ok_draw and self.panel_hotkey_text is None:
+            return                         # 兩組都沒搶到，這條執行緒沒事做了
+
         msg = wintypes.MSG()
         WM_HOTKEY = 0x0312
         # GetMessageW 會「卡住」直到有訊息進來，所以才要放在另一條執行緒
         while user32.GetMessageW(ctypes.byref(msg), None, 0, 0) > 0:
             if msg.message == WM_HOTKEY:
-                self.hotkey_q.put("toggle")   # 只丟紙條進信箱，不直接動畫面
+                # ★v9：wParam 就是註冊時給的編號，用它分辨是哪組快捷鍵
+                if msg.wParam == 1:
+                    self.hotkey_q.put("toggle")   # 只丟紙條進信箱，不直接動畫面
+                elif msg.wParam == 2:
+                    self.hotkey_q.put("panel")
         user32.UnregisterHotKey(None, 1)
+        user32.UnregisterHotKey(None, 2)
 
     def _poll_hotkey(self):
         """在主執行緒裡：每 0.1 秒看一次信箱"""
@@ -168,9 +210,11 @@ class FloatDraw:
                 cmd = self.hotkey_q.get_nowait()
                 if cmd == "toggle":
                     self.hotkey_toggle()
-                elif cmd == "fail":
-                    messagebox.showwarning("快捷鍵",
-                        f"{HOTKEY_TEXT} 已經被其他程式使用，\n請到程式碼最上面換一組按鍵。")
+                elif cmd == "panel":               # ★v9
+                    self.toggle_panel_only()
+                #elif cmd == "fail":
+                    #messagebox.showwarning("快捷鍵",
+                        #f"{HOTKEY_TEXT} 已經被其他程式使用，\n請到程式碼最上面換一組按鍵。")
         except queue.Empty:
             pass
         self.root.after(100, self._poll_hotkey)
@@ -188,10 +232,14 @@ class FloatDraw:
         w.bind("<Control-y>", lambda e: self.redo())
         w.bind("<Control-Y>", lambda e: self.redo())
         w.bind("<Control-Shift-Z>", lambda e: self.redo())
+        # ★v9：Ctrl+A 全選
+        w.bind("<Control-a>", lambda e: self.select_all())
+        w.bind("<Control-A>", lambda e: self.select_all())
         # 刪除框選的東西
         w.bind("<Delete>", lambda e: self.delete_selected())
         w.bind("<BackSpace>", lambda e: self.delete_selected())
         w.bind("<Escape>", self.on_escape)
+        w.bind("<Shift-Escape>", lambda e: "break")
         w.bind("<Tab>", lambda e: self.cycle_tool(1))
         w.bind("<Shift-Tab>", lambda e: self.cycle_tool(-1))
         w.bind("<ISO_Left_Tab>", lambda e: self.cycle_tool(-1))   # Linux 的 Shift+Tab 叫這個名字
@@ -231,6 +279,8 @@ class FloatDraw:
         tk.Button(p, text="✕", command=self.hide_panel, **style).pack(side="left")
         self.update_tool_buttons()
         self.bind_shortcuts(p)
+        # ★v9：在工具列上按右鍵也能換色（綁在視窗上，裡面的按鈕都會收到）
+        p.bind("<ButtonPress-3>", lambda e: self.next_color())
         p.withdraw()
 
     def update_tool_buttons(self):
@@ -273,6 +323,17 @@ class FloatDraw:
         else:
             self.show_panel()
 
+    # ★v9：只藏 / 顯示工具列，畫畫模式維持原樣
+    def toggle_panel_only(self):
+        if self.panel_visible:
+            self.panel.withdraw()
+            self.panel_visible = False
+            self.save()                 # 順便存一下工具列位置
+        else:
+            self.show_panel()
+            if self.drawing_mode:
+                self.root.after_idle(self.raise_panel)
+
     def drag_start(self, e):
         self.dx = e.x_root - self.panel.winfo_x()
         self.dy = e.y_root - self.panel.winfo_y()
@@ -283,6 +344,8 @@ class FloatDraw:
         self.btn_pos = (x, y)
 
     def raise_panel(self):
+        if not self.panel_visible:      # ★v9：工具列藏起來時就別動它
+            return
         self.panel.attributes("-topmost", False)
         self.panel.attributes("-topmost", True)
         self.panel.lift()
@@ -308,6 +371,18 @@ class FloatDraw:
         self.color_i = (self.color_i + 1) % len(DRAW_COLORS)
         self.color_btn.config(fg=DRAW_COLORS[self.color_i])
 
+    # ★v9：右鍵換色，並在滑鼠位置閃一下新顏色（工具列藏起來時也看得到現在是什麼色）
+    def on_right_click(self, e):
+        self.next_color()
+        c = DRAW_COLORS[self.color_i]
+        r = 10
+        self.canvas.delete("colorhint")
+        self.canvas.create_oval(e.x - r, e.y - r, e.x + r, e.y + r,
+                                fill=c, outline="white", width=2, tags="colorhint")
+        if self._hint_job:
+            self.root.after_cancel(self._hint_job)
+        self._hint_job = self.root.after(500, lambda: self.canvas.delete("colorhint"))
+
     def on_escape(self, e=None):
         if self.selected:           # 有選東西 → 先取消選取
             self.clear_selection()
@@ -325,6 +400,23 @@ class FloatDraw:
 
     def on_release(self, e):
         getattr(self, f"{self.tool}_end")(e)
+
+    # ★v9：滑鼠沒按住、只是移動時 → 依位置換游標，提示「這裡可以拉 / 可以拖」
+    def on_hover(self, e):
+        if self.tool != "select" or self.sel_mode:
+            return
+        h = self.handle_at(e.x, e.y) if self.selected else None
+        if h:
+            cur = self.HANDLE_CURSORS[h]
+        elif self.selected and self.point_in_selection(e.x, e.y):
+            cur = "fleur"                       # 十字箭頭 = 可以拖移
+        else:
+            cur = self.TOOLS["select"][1]
+        if str(self.cap.cget("cursor")) != cur:
+            try:
+                self.cap.config(cursor=cur)
+            except tk.TclError:                 # 某些系統沒有這種游標
+                self.cap.config(cursor="crosshair")
 
     # ---------- 工具 1：筆 ----------
     def pen_start(self, e):
@@ -364,8 +456,35 @@ class FloatDraw:
             self.strokes.pop(i)
 
     # ---------- 工具 2：框選 ----------
+    def select_all(self):
+        """★v9：Ctrl+A 全選"""
+        if not self.strokes:
+            return "break"
+        if self.tool != "select":
+            self.set_tool("select")
+        self.selected = list(range(len(self.items)))
+        self.draw_selbox()
+        return "break"
+
+    def handle_at(self, x, y):
+        """★v9：(x, y) 底下是哪個把手？回傳 'nw'、'e'… 或 None"""
+        for item in self.canvas.find_overlapping(x - 2, y - 2, x + 2, y + 2):
+            for t in self.canvas.gettags(item):
+                if t.startswith("h_"):
+                    return t[2:]            # "h_ne" → "ne"
+        return None
+
     def select_start(self, e):
-        if self.selected and self.point_in_selection(e.x, e.y):
+        h = self.handle_at(e.x, e.y) if self.selected else None
+        if h:
+            # ★v9：點在把手上 → 準備拉伸
+            self.sel_mode = "resize"
+            self.resize_handle = h
+            self.resize_box = tuple(self.canvas.coords("selbox"))
+            # 記下「開始拉之前」每一筆的座標，之後都從這份原始資料重新算，誤差不會累積
+            self.resize_orig = {i: list(self.strokes[i]["points"]) for i in self.selected}
+            self.resize_new = None
+        elif self.selected and self.point_in_selection(e.x, e.y):
             # 點在選取框裡面 → 準備拖移
             self.sel_mode = "move"
             self.last_xy = (e.x, e.y)
@@ -386,10 +505,32 @@ class FloatDraw:
             dx, dy = e.x - self.last_xy[0], e.y - self.last_xy[1]
             for i in self.selected:
                 self.canvas.move(self.items[i], dx, dy)   # 先只動畫面
-            self.canvas.move("selbox", dx, dy)
+            self.canvas.move("selui", dx, dy)             # ★v9：框和把手一起移
             self.last_xy = (e.x, e.y)
             self.move_total[0] += dx
             self.move_total[1] += dy
+        elif self.sel_mode == "resize":
+            # ★v9：依拖的把手決定要動哪幾條邊
+            ox1, oy1, ox2, oy2 = self.resize_box
+            nx1, ny1, nx2, ny2 = ox1, oy1, ox2, oy2
+            h, m = self.resize_handle, self.MIN_BOX
+            if "w" in h: nx1 = min(e.x, nx2 - m)   # 不能拉過右邊
+            if "e" in h: nx2 = max(e.x, nx1 + m)   # 不能拉過左邊
+            if "n" in h: ny1 = min(e.y, ny2 - m)
+            if "s" in h: ny2 = max(e.y, ny1 + m)
+
+            sx = (nx2 - nx1) / (ox2 - ox1)          # x 方向倍率
+            sy = (ny2 - ny1) / (oy2 - oy1)          # y 方向倍率（兩個分開 → 不按比例）
+
+            self.resize_new = {}
+            for i, pts in self.resize_orig.items():
+                new = []
+                for k in range(0, len(pts), 2):
+                    new.append(nx1 + (pts[k] - ox1) * sx)        # 新 x
+                    new.append(ny1 + (pts[k + 1] - oy1) * sy)    # 新 y
+                self.resize_new[i] = new
+                self.canvas.coords(self.items[i], *new)          # 先只改畫面
+            self.draw_selbox((nx1, ny1, nx2, ny2))
 
     def select_end(self, e):
         if self.sel_mode == "box":
@@ -407,16 +548,38 @@ class FloatDraw:
                         pts[k] += dx       # 偶數位置是 x
                         pts[k + 1] += dy   # 奇數位置是 y
                 self.save()
+        elif self.sel_mode == "resize":
+            # ★v9：跟拖移一樣，放開才寫回資料，所以存檔點剛好是「拉伸前」
+            if self.resize_new:
+                self.push_history()
+                for i, pts in self.resize_new.items():
+                    self.strokes[i]["points"] = [round(v, 1) for v in pts]   # 留一位小數，存檔比較小
+                self.save()
+            self.resize_orig = {}
+            self.resize_new = None
+            self.draw_selbox()             # 依線條實際位置重新畫框
         self.sel_mode = None
 
-    def draw_selbox(self):
-        self.canvas.delete("selbox")
+    def draw_selbox(self, box=None):
+        """★v9：畫選取框 + 8 個把手。box 沒給就自動算出包住所有選取線條的框"""
+        self.canvas.delete("selui")
         if not self.selected:
             return
-        ids = [self.items[i] for i in self.selected]
-        x1, y1, x2, y2 = self.canvas.bbox(*ids)    # 算出把這些線全部包住的最小方框
-        self.canvas.create_rectangle(x1 - 4, y1 - 4, x2 + 4, y2 + 4,
-                                     outline="#00bfff", dash=(4, 2), tags="selbox")
+        if box is None:
+            ids = [self.items[i] for i in self.selected]
+            x1, y1, x2, y2 = self.canvas.bbox(*ids)    # 算出把這些線全部包住的最小方框
+            box = (x1 - 4, y1 - 4, x2 + 4, y2 + 4)
+        x1, y1, x2, y2 = box
+        self.canvas.create_rectangle(x1, y1, x2, y2, outline="#00bfff",
+                                     dash=(4, 2), tags=("selbox", "selui"))
+        mx, my = (x1 + x2) / 2, (y1 + y2) / 2
+        spots = {"nw": (x1, y1), "n": (mx, y1), "ne": (x2, y1), "e": (x2, my),
+                 "se": (x2, y2), "s": (mx, y2), "sw": (x1, y2), "w": (x1, my)}
+        r = self.HANDLE_R
+        for name, (hx, hy) in spots.items():
+            self.canvas.create_rectangle(hx - r, hy - r, hx + r, hy + r,
+                                         fill="#00bfff", outline="white",
+                                         tags=("selui", f"h_{name}"))
 
     def point_in_selection(self, x, y):
         box = self.canvas.coords("selbox")
@@ -428,7 +591,7 @@ class FloatDraw:
     def clear_selection(self):
         self.selected = []
         self.sel_mode = None
-        self.canvas.delete("selbox")
+        self.canvas.delete("selui")        # ★v9：框和把手一起清掉
         self.canvas.delete("rubber")
 
     def delete_selected(self):
@@ -552,6 +715,7 @@ class CPTrackerApp:
         self.pomodoro_count = 0
         self.session_work_sec = 0    # 這次總共專注幾秒（不含休息）
         self.unrecorded = 0          # 還沒寫進資料庫的秒數
+        self.session_log = {}        # ★v8：帳本 {(項目, 日期): 這次寫進去的秒數}，放棄時照著扣回來
         self.current_timer_target = None
         self._timer_job = None
         self.timer_popup = None
@@ -2466,6 +2630,7 @@ class CPTrackerApp:
             self.pomodoro_count = 0
             self.session_work_sec = 0
             self.unrecorded = 0
+            self.session_log = {}        # ★v8：新的一次計時 → 帳本從空白開始
 
         self.timer_running = True
         self._show_time()
@@ -2480,12 +2645,96 @@ class CPTrackerApp:
         self.flush_record()
         self._show_time()
 
+    # ★v8：跳出「存檔 / 放棄 / 取消」視窗，等使用者選完才回傳答案
+    def ask_end_choice(self):
+        choice = None                    # 預設是「取消」
+
+        win = tk.Toplevel(self.root)
+        win.title("結束計時")
+        win.attributes("-topmost", True)
+        win.resizable(False, False)
+        w, h = 300, 170
+        cx = int((win.winfo_screenwidth() - w) / 2)
+        cy = int((win.winfo_screenheight() - h) / 2)
+        win.geometry(f"{w}x{h}+{cx}+{cy}")
+
+        m, s = divmod(self.session_work_sec, 60)
+        frame = tk.Frame(win, padx=15, pady=10)
+        frame.pack(expand=True, fill="both")
+        tk.Label(frame, text="要結束這次計時嗎？", font=("Arial", 12, "bold"), fg="#2c3e50").pack(pady=(4, 4))
+        tk.Label(frame, text=f"這次專注了 {m} 分 {s} 秒、{self.pomodoro_count} 顆番茄 🍅\n要把時間存進紀錄嗎？",
+                 font=("Arial", 10), justify="center").pack(pady=(0, 10))
+
+        def pick(value):
+            nonlocal choice              # 改的是外面那個 choice，不是新建一個
+            choice = value
+            win.destroy()
+
+        btns = tk.Frame(frame)
+        btns.pack()
+        tk.Button(btns, text="存檔", width=6, bg="#2ecc71", fg="white",
+                  command=lambda: pick('save')).pack(side=tk.LEFT, padx=4)
+        tk.Button(btns, text="放棄", width=6, bg="#e74c3c", fg="white",
+                  command=lambda: pick('discard')).pack(side=tk.LEFT, padx=4)
+        tk.Button(btns, text="取消", width=6,
+                  command=lambda: pick(None)).pack(side=tk.LEFT, padx=4)
+
+        win.protocol("WM_DELETE_WINDOW", lambda: pick(None))   # 按右上角 X = 取消
+        win.bind("<Escape>", lambda e: pick(None))
+        win.transient(self.root)
+        win.grab_set()                   # 鎖住主視窗，只能先回答這題
+        win.focus_force()
+        self.root.wait_window(win)       # 程式停在這裡，等視窗關掉才往下
+        return choice
+
+    # ★v8：照帳本把這次寫進資料庫的秒數扣回去
+    def rollback_session(self):
+        if not self.session_log:
+            return
+        conn = sqlite3.connect(DB_FILE)
+        cursor = conn.cursor()
+        for (target, day), sec in self.session_log.items():
+            cursor.execute("SELECT daily_time, total_time, last_date FROM time_stats WHERE platform=?", (target,))
+            row = cursor.fetchone()
+            if not row:
+                continue
+            daily, total, last_date = row
+            total = max(0, total - sec)              # max(0, …)：保險，不讓它變負數
+            if last_date == day:                     # 「今日時間」還是同一天的才扣
+                daily = max(0, daily - sec)
+            cursor.execute("UPDATE time_stats SET daily_time=?, total_time=? WHERE platform=?",
+                           (daily, total, target))
+        conn.commit()
+        conn.close()
+        self.session_log = {}
+        self.refresh_stats()
+        self.update_today_accum_label()
+
+    # ★v8：結束時先暫停 → 問存不存 → 依答案處理
     def end_timer(self):
+        if self.timer_phase == 'idle':       # 根本沒在計時，不用問
+            return
+
+        was_running = self.timer_running
         self._cancel_timer_job()
-        was_active = self.timer_phase != 'idle'
-        self.flush_record()
-        work_min = self.session_work_sec // 60
+        self.timer_running = False
+        self.flush_record()                  # 把零頭秒數也寫進去（也會記進帳本）
+        self._show_time()
+
+        choice = self.ask_end_choice()
+
+        if choice is None:                   # 取消 → 回到原本狀態
+            if was_running:
+                self.timer_running = True
+                self._timer_job = self.root.after(1000, self._tick)
+            self._show_time()
+            return
+
+        work_sec = self.session_work_sec
         tomatoes = self.pomodoro_count
+        if choice == 'discard':
+            self.rollback_session()
+        self.session_log = {}
 
         self.timer_running = False
         self.timer_phase = 'idle'
@@ -2497,8 +2746,12 @@ class CPTrackerApp:
         self.unrecorded = 0
         self._show_time()
 
-        if was_active and work_min > 0:
-            self.show_timer_popup("本次結束", f"這次一共專注了 {work_min} 分鐘\n完成 {tomatoes} 顆番茄 🍅\n辛苦了！")
+        if choice == 'save':
+            if work_sec >= 60:
+                self.show_timer_popup("本次結束", f"這次一共專注了 {work_sec // 60} 分鐘\n完成 {tomatoes} 顆番茄 🍅\n辛苦了！")
+        else:
+            m, s = divmod(work_sec, 60)
+            self.show_timer_popup("已放棄這次紀錄", f"這次的 {m} 分 {s} 秒不會算進統計。")
 
     def _tick(self):
         if not self.timer_running:
@@ -2572,6 +2825,10 @@ class CPTrackerApp:
                        (daily_time + seconds, total_time + seconds, today, target))
         conn.commit()
         conn.close()
+
+        # ★v8：寫進資料庫的同時記一筆帳，之後「放棄」才知道要扣多少
+        key = (target, today)
+        self.session_log[key] = self.session_log.get(key, 0) + seconds
 
         self.refresh_stats()
         self.update_today_accum_label()
@@ -2652,34 +2909,61 @@ class CPTrackerApp:
         self.update_target_default()
 
     def show_guide(self):
+        # ★v10：顯示「實際搶到」的快捷鍵（沒搶到就提示）
+        panel_key = self.float_draw.panel_hotkey_text or "（目前沒有可用的快捷鍵）"
+
         guide_text = (
-            "🏆 【每日指南】\n\n"
+            "🏆 【每日指南】\n"
+            "\n"
             "✅ 今日任務\n"
-            "• 一次只顯示一項，打勾後才出現下一項。\n"
+            "• 一次只顯示一項，打勾後才會出現下一項。\n"
             "• 順序：英文 → C++ → 專案 → 課業 → 資安\n"
-            "• 點「▼ 其他項目」可以手動勾選任何一項。\n\n"
+            "• 點「▼ 其他項目」可以手動勾選任何一項。\n"
+            "• 雙擊項目名稱，可以看上次打卡日期。\n"
+            "\n"
             "⏱️ 計時器\n"
-            "• 開始：先倒數 5 分鐘暖身。\n"
-            "• 暖身完自動變碼表，每 25 分鐘休息 5 分鐘，循環到按「結束」。\n"
-            "• 中途切換項目不會中斷，時間接續記到新項目。\n\n"
+            "• 按「開始」：先倒數 5 分鐘暖身，同時自動幫該項目打勾。\n"
+            "• 暖身結束 → 改成碼表往上數，每 25 分鐘提醒休息 5 分鐘。\n"
+            "• 中途切換項目不會中斷，之後的時間會記到新項目。\n"
+            "• 按「結束」會詢問：\n"
+            "    存檔 → 保留這次的時間\n"
+            "    放棄 → 這次的時間不算進統計\n"
+            "    取消 → 回去繼續計時\n"
+            "\n"
             "🕐 時程與計畫\n"
             "• 一天從早上 6 點開始，預設顯示到 22 點。\n"
-            "• 深夜 23~05 點從左下「＋時段」勾選才顯示，過了自動消失。\n"
-            "• 不論今明，都只能編輯當前兩小時。\n"
-            "• 早上 6 點時，明日時程與計畫會變成今日。\n\n"
-            "📅 賽事與自動化\n"
-            "• Other 類別可以自訂賽事/任務分類，並單獨篩選！\n"
-            "• 雙擊戰力補題頁面比賽，可深入勾選各題進度！\n\n"
+            "• 深夜 23~05 點要從左下「＋時段」勾選才會顯示，過了自動消失。\n"
+            "• 不論今日或明日，都只能編輯「現在這兩小時」。\n"
+            "• 每天早上 6 點，明日的時程與計畫會自動變成今日。\n"
+            "\n"
+            "📅 賽事與補題\n"
+            "• Other 類別可以自訂分類名稱，並單獨篩選。\n"
+            "• 在「戰力與補題」雙擊比賽，可以勾選每一題的補題進度。\n"
+            "\n"
             "🚩 猛的赤榜\n"
-            "• 記錄一直想做但尚未實現的願望，長按項目可拖移排序！\n\n"
-            # ★ 新增：懸浮畫筆說明
+            "• 記錄一直想做、但還沒實現的願望。\n"
+            "• 按住項目上下拖移可以排序，點狀態欄可切換完成。\n"
+            "\n"
             "✎ 懸浮畫筆\n"
-            "• 右下 ✎ 可叫出 / 收起懸浮列，按住 ≡ 可拖動。\n"
-            "• Esc 取消選取 / 結束｜Ctrl+Z 上一步｜Ctrl+Y 下一步｜Delete 刪除框選\n\n"
-            f"• 在任何地方按 {HOTKEY_TEXT} 可以直接開始 / 停止畫。\n"
-            "• Tab 切換 筆 → 框 → 擦，Shift+Tab 反方向。\n"
-            "• 畫的內容會自動保存，下次開啟還在。\n\n"
-            "(本地 db 好耶!\n"
+            "【開關】\n"
+            f"• {HOTKEY_TEXT}（任何地方）：開始 / 停止畫\n"
+            f"• {panel_key}（任何地方）：顯示 / 隱藏工具列，不影響畫畫\n"
+            "• 右下角 ✎ 按鈕：叫出 / 收起工具列\n"
+            "• 按住工具列左邊的 ≡ 可以拖動位置\n"
+            "【工具】\n"
+            "• 筆：畫線\n"
+            "• 框：拉框選取 → 拖框內移動、拖四角或四邊的小方塊自由拉伸\n"
+            "• 擦：碰到的整條線直接擦掉\n"
+            "• Tab 切換 筆 → 框 → 擦，Shift+Tab 反方向\n"
+            "• 滑鼠右鍵：切換顏色\n"
+            "【編輯】\n"
+            "• Ctrl+A：全選\n"
+            "• Delete：刪除框選的線\n"
+            "• Ctrl+Z：上一步　Ctrl+Y：下一步\n"
+            "• Esc：有選取 → 取消選取；沒選取 → 結束畫畫\n"
+            "• 畫的內容會自動保存，下次開啟還在。\n"
+            "\n"
+            "（本地 db 好耶！）\n"
             "SINCE 115/07/16 RC"
         )
         messagebox.showinfo("每日生存證明", guide_text)
