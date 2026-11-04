@@ -1,0 +1,740 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>動態規劃 填表特訓</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@400;700&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: one reading column like an exam notebook; sticky chapter strip; every DP gets a "worksheet" table panel you can step through and click. */
+:root{
+  --bg:#F3F5F9; --surface:#FFFFFF; --ink:#17202C; --muted:#5A6576; --line:#D7DDE7;
+  --accent:#2445C2; --accent-soft:#E6EBFB; --mark:#FFE27A; --mark-ink:#17202C;
+  --ok:#1C8448; --ok-soft:#E2F4E9; --bad:#C3362B; --bad-soft:#FBE7E5; --cand:#C97D00; --cand-soft:#FFF2D9;
+  --edge:#A3AEBD; --node:#FFFFFF;
+  --f-display:"LXGW WenKai TC","Noto Sans TC","PingFang TC","Microsoft JhengHei",serif;
+  --f-body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0F141B; --surface:#171E28; --ink:#E5EAF1; --muted:#9AA5B5; --line:#2A3443;
+  --accent:#93A9FF; --accent-soft:#1E2846; --mark:#5B4A0E; --mark-ink:#FFF0B5;
+  --ok:#4CC27F; --ok-soft:#14301F; --bad:#FF7A6E; --bad-soft:#3A1916; --cand:#F2B33D; --cand-soft:#3A2A0C;
+  --edge:#566376; --node:#1C2531; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#0F141B; --surface:#171E28; --ink:#E5EAF1; --muted:#9AA5B5; --line:#2A3443;
+  --accent:#93A9FF; --accent-soft:#1E2846; --mark:#5B4A0E; --mark-ink:#FFF0B5;
+  --ok:#4CC27F; --ok-soft:#14301F; --bad:#FF7A6E; --bad-soft:#3A1916; --cand:#F2B33D; --cand-soft:#3A2A0C;
+  --edge:#566376; --node:#1C2531; color-scheme:dark;}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.75}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+.wrap{max-width:900px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:8px 80px}
+header.hero{padding-block:36px 16px}
+.eyebrow{font-size:13px;letter-spacing:.12em;color:var(--muted)}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;line-height:1.3}
+h1{font-size:clamp(30px,6vw,44px);margin:6px 0 10px}
+h2{font-size:clamp(24px,4.5vw,32px);margin:0 0 4px}
+h3{font-size:21px;margin:28px 0 8px}
+p{margin:10px 0}
+.lede{font-size:18px;color:var(--muted);max-width:62ch}
+nav.chap{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line)}
+nav.chap .in{max-width:900px;margin:0 auto;display:flex;gap:6px;overflow-x:auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:8px}
+nav.chap a{flex:none;font-size:14px;color:var(--ink);text-decoration:none;padding:4px 10px;border-radius:999px;border:1px solid var(--line);white-space:nowrap}
+nav.chap a:hover,nav.chap a:focus-visible{border-color:var(--accent);color:var(--accent);outline:none}
+section.ch{padding-top:40px;scroll-margin-top:56px}
+.pages{font-family:var(--f-mono);font-size:13px;color:var(--accent);background:var(--accent-soft);padding:2px 8px;border-radius:6px;display:inline-block;margin-bottom:6px}
+mark{background:var(--mark);color:var(--mark-ink);padding:0 3px;border-radius:3px}
+code,.mono{font-family:var(--f-mono);font-size:.92em}
+.walk{list-style:none;padding:0;margin:14px 0;display:grid;gap:6px}
+.walk li{display:grid;grid-template-columns:64px 1fr;gap:10px;align-items:baseline;padding:6px 0;border-bottom:1px dashed var(--line)}
+.walk li>span:first-child{font-family:var(--f-mono);font-size:13px;color:var(--muted)}
+.walk li>span{min-width:0}
+.box{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:14px 16px;margin:16px 0}
+.box.key{border-left:4px solid var(--accent)}
+.box.warn{border-left:4px solid var(--bad)}
+.box.exam{border-left:4px solid var(--ok)}
+.box h4{margin:0 0 6px;font-family:var(--f-display);font-size:18px}
+.formula,pre.code{font-family:var(--f-mono);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;overflow-x:auto;white-space:pre;font-size:14px;line-height:1.6;margin:10px 0}
+.tbl{overflow-x:auto;margin:12px 0}
+table{border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
+.tbl>table{min-width:100%}
+th,td{border:1px solid var(--line);padding:5px 9px;text-align:center;white-space:nowrap}
+th{background:var(--bg);font-weight:600}
+td.l,th.l{text-align:left;white-space:normal}
+td.ok{background:var(--ok-soft);color:var(--ok);font-weight:700}
+td.hit{background:var(--mark);color:var(--mark-ink);font-weight:700}
+td.cur{outline:2px solid var(--cand);outline-offset:-2px;background:var(--cand-soft)}
+td.new{background:var(--cand-soft)}
+td.ref{background:var(--accent-soft);outline:2px solid var(--accent);outline-offset:-2px}
+td.sel{outline:3px solid var(--ink);outline-offset:-3px}
+td.na{background:var(--bg)}
+td.dim{color:var(--muted)}
+.dp td{cursor:pointer;font-family:var(--f-mono);font-size:13px;min-width:38px}
+.dp td.na{cursor:default}
+details{border:1px solid var(--line);border-radius:10px;background:var(--surface);margin:10px 0}
+details>summary{cursor:pointer;padding:10px 14px;font-weight:600;list-style:none}
+details>summary::-webkit-details-marker{display:none}
+details>summary::before{content:"▸ ";color:var(--accent)}
+details[open]>summary::before{content:"▾ "}
+details>div{padding:0 14px 12px;border-top:1px dashed var(--line)}
+.sim{border:1.5px solid var(--ink);border-radius:12px;background:var(--surface);margin:20px 0;overflow:hidden}
+.sim-head{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--line);background:var(--bg)}
+.sim-title{font-family:var(--f-display);font-size:18px;font-weight:700}
+.seg{display:flex;gap:4px;flex-wrap:wrap}
+button{font:inherit;font-size:14px;cursor:pointer;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;padding:5px 12px}
+button:hover{border-color:var(--accent)}
+button:focus-visible,td:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button.on{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+button.primary{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+button:disabled{opacity:.4;cursor:default}
+.sim-body{padding:14px;display:grid;gap:12px}
+.sim-body>*{min-width:0}
+.ctrl{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.ctrl .count{font-family:var(--f-mono);font-size:13px;color:var(--muted);margin-left:auto}
+.viz{overflow-x:auto;display:flex;justify-content:center}
+.viz:empty{display:none}
+.viz svg{max-width:100%;height:auto}
+.msg{background:var(--cand-soft);border-radius:8px;padding:10px 12px}
+.why{background:var(--accent-soft);border-radius:8px;padding:10px 12px;font-size:14px;font-family:var(--f-mono);line-height:1.7;overflow-x:auto}
+.why:empty{display:none}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.legend i{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:-2px;margin-right:4px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-family:var(--f-mono);font-size:13px;border:1px solid var(--line);border-radius:6px;padding:2px 8px;background:var(--bg)}
+.align{font-family:var(--f-mono);font-size:16px;letter-spacing:.35em;line-height:1.5;white-space:pre;overflow-x:auto}
+footer{margin-top:60px;color:var(--muted);font-size:13px}
+</style>
+
+<nav class="chap" aria-label="章節"><div class="in">
+<a href="#start">怎麼讀</a><a href="#dp">DP 是什麼</a><a href="#binom">二項式係數</a><a href="#graph">圖形</a><a href="#dij">Dijkstra</a><a href="#floyd">Floyd</a><a href="#opt">最佳化原則</a><a href="#chain">矩陣相乘</a><a href="#tree">樹</a><a href="#obst">最佳二元搜尋樹</a><a href="#tsp">售貨員旅行</a><a href="#align">序列對齊</a><a href="#big">複雜度</a><a href="#mock">模擬考</a>
+</div></nav>
+
+<div class="wrap">
+<header class="hero" id="start">
+  <div class="eyebrow">演算法 · Chapter 3 · Dynamic Programming</div>
+  <h1>動態規劃 填表特訓</h1>
+  <p class="lede">照投影片 98 頁的順序走。這章每個演算法都是「填一張表」：學會看懂每一格的意思、會用遞迴式填格子、會從表格回推答案，就能拿下手寫模擬題。</p>
+  <div class="box key"><h4>整章只要記住一句話</h4>
+  <p><mark>DP = 把小問題的答案記在表格裡，由小到大填，大問題直接查表組出來，不重算。</mark></p></div>
+
+  <h3>每一題 DP 都照這 5 步寫（拿分公式）</h3>
+  <ol>
+    <li><b>格子的意思</b>：一句話寫出 M[i][j]（或 A、D、opt）代表什麼。這一步最多人跳過，卻最重要。</li>
+    <li><b>遞迴式</b>：大格子怎麼用小格子算。</li>
+    <li><b>邊界</b>：最小的格子直接填（通常是 0 或 1）。</li>
+    <li><b>填表順序</b>：一列一列、一條對角線一條對角線，或由右下往左上。</li>
+    <li><b>答案＋回推</b>：答案在哪一格，以及怎麼用另一張表（P、R）還原出路徑／括號／樹。</li>
+  </ol>
+  <div class="tbl"><table>
+    <tr><th>問題</th><th class="l">格子的意思</th><th class="l">填表順序</th><th>答案在</th><th>複雜度</th></tr>
+    <tr><td>二項式係數</td><td class="l">B[i][j] = i 取 j</td><td class="l">一列一列往下</td><td>B[n][k]</td><td>Θ(nk)</td></tr>
+    <tr><td>Floyd</td><td class="l">D[i][j] = i 到 j 的最短距離（目前允許經過的點）</td><td class="l">k = 0,1,…，每次整張表更新</td><td>整張表</td><td>Θ(n³)</td></tr>
+    <tr><td>矩陣相乘</td><td class="l">M[i][j] = Aᵢ 乘到 Aⱼ 最少幾次乘法</td><td class="l">一條對角線一條對角線</td><td>M[1][n]</td><td>Θ(n³)</td></tr>
+    <tr><td>最佳二元搜尋樹</td><td class="l">A[i][j] = keyᵢ～keyⱼ 最佳樹的平均搜尋時間</td><td class="l">一條對角線一條對角線</td><td>A[1][n]</td><td>Θ(n³)</td></tr>
+    <tr><td>售貨員旅行</td><td class="l">D[vᵢ][A] = 從 vᵢ 經過 A 全部回 v1 的最短長度</td><td class="l">集合 A 由小到大</td><td>D[v1][V−{v1}]</td><td>Θ(n²2ⁿ)</td></tr>
+    <tr><td>序列對齊</td><td class="l">opt(i,j) = x[i..] 和 y[j..] 對齊的最小成本</td><td class="l">由右下往左上</td><td>opt(0,0)</td><td>Θ(mn)</td></tr>
+  </table></div>
+  <p>（Dijkstra 是貪婪演算法，放在這章是為了跟 Floyd 比較；它的詳細模擬在第 4 章講義也有。）</p>
+</header>
+
+<!-- DP intro -->
+<section class="ch" id="dp">
+  <span class="pages">p.2 – p.4、p.13</span>
+  <h2>DP 是什麼？跟分治法比</h2>
+  <ul class="walk">
+    <li><span>p.2</span><span>分治法（divide-and-conquer）是<b>由上而下 top-down</b>：把問題切小，各自解。像合併排序，切出來的小問題互不相關，所以很有效率。但像費氏數列這種切完會<b>重複出現同樣的小問題</b>，分治法會一直重算，時間指數成長。</span></li>
+    <li><span>p.3</span><span>DP 一樣把問題切小，但會<b>先算小問題、把答案存在陣列裡</b>，是<b>由下而上 bottom-up</b>。</span></li>
+    <li><span>p.4</span><span>做 DP 的兩步：① 寫出遞迴式（大問題怎麼用小問題表示）② 由小到大算上去。</span></li>
+    <li><span>p.13</span><span>總結：分治法是「盲目遞迴」，DP 是「從最小的開始填表」。<mark>分治法沒效率時（小問題重複），改用 DP</mark>。</span></li>
+  </ul>
+  <div class="box key"><h4>用費氏數列看「重算」有多浪費</h4>
+  <p>F(n) = F(n−1) + F(n−2)。用遞迴算 F(5)：</p>
+  <div class="formula">                F(5)
+           /           \
+       F(4)             F(3)        ← F(3) 算了 2 次
+      /    \           /    \
+   F(3)    F(2)     F(2)   F(1)     ← F(2) 算了 3 次
+  /   \
+F(2) F(1)</div>
+  <p>DP 做法：開一個陣列，F[0]=0、F[1]=1，然後 F[2]、F[3]、F[4]、F[5] 依序填，每格只算一次。n 項只要 n 次加法。</p></div>
+  <details><summary>考題：DP 和分治法的相同與不同？（必背）</summary><div>
+    <p><b>相同</b>：都把問題切成較小、性質相同的子問題。</p>
+    <p><b>不同</b>：分治法 top-down，子問題各自獨立時有效率，但子問題重複時會一直重算；DP bottom-up，先解最小的子問題並<b>存起來</b>，之後直接查表，所以子問題重複時也有效率。</p>
+  </div></details>
+</section>
+
+<!-- Binomial -->
+<section class="ch" id="binom">
+  <span class="pages">p.5 – p.12</span>
+  <h2>二項式係數</h2>
+  <ul class="walk">
+    <li><span>p.5</span><span>(a+b)ⁿ 展開後的係數，排起來就是巴斯卡三角形：1／1 1／1 2 1／1 3 3 1／1 4 6 4 1…</span></li>
+    <li><span>p.6</span><span>係數公式 (n 取 k) = n! / (k!(n−k)!)。另一個寫法：(n 取 k) = (n−1 取 k−1) + (n−1 取 k)，邊界 k=0 或 k=n 時等於 1。</span></li>
+    <li><span>p.7</span><span>演算法 3.1（分治法）：直接照遞迴式寫。問題是 bin(n−2, k−1) 會被算兩次，越往下重複越多，總共要算 2·(n 取 k) − 1 次，非常慢。</span></li>
+    <li><span>p.8–10</span><span>DP：用陣列 B[i][j] 存 (i 取 j)。B[i][j] = B[i−1][j−1] + B[i−1][j]，一列一列往下填。</span></li>
+    <li><span>p.11</span><span>把遞迴的 return 換成「填陣列」，就從演算法 3.1 變成 DP 演算法 3.2。</span></li>
+    <li><span>p.12</span><span>複雜度：第 i 列只要填到 min(i,k)，總共 Θ(nk)。</span></li>
+  </ul>
+  <div class="box key"><h4>白話：每格 = 左上 + 正上</h4>
+  <div class="formula">B[i][j] = B[i−1][j−1] + B[i−1][j]    0 &lt; j &lt; i
+B[i][j] = 1                          j = 0 或 j = i</div>
+  <p>直覺：從 i 個東西挑 j 個，看第 i 個東西「有挑」（剩下從 i−1 個挑 j−1 個）或「沒挑」（從 i−1 個挑 j 個），兩種情況加起來。</p></div>
+  <div class="sim" id="sim-binom"></div>
+  <details><summary>為什麼複雜度是 Θ(nk)？（p.12）</summary><div>
+    <p>第 i 列要填 j = 0 到 min(i,k)，也就是 min(i,k)+1 格：</p>
+    <div class="formula">i  :  0  1  2  …  k    k+1  …  n
+格數:  1  2  3  …  k+1  k+1  …  k+1</div>
+    <p>前面 1+2+…+k = k(k+1)/2；後面 (n−k+1) 列各 k+1 格。加起來 (2n−k+2)(k+1)/2，最大的項是 n·k → <b>Θ(nk)</b>。</p>
+  </div></details>
+</section>
+
+<!-- Graph -->
+<section class="ch" id="graph">
+  <span class="pages">p.14 – p.20</span>
+  <h2>圖形名詞（快速過）</h2>
+  <div class="tbl"><table>
+    <tr><th>名詞</th><th class="l">意思</th></tr>
+    <tr><td>G = (V, E)</td><td class="l">圖 = 點的集合 V ＋ 邊的集合 E</td></tr>
+    <tr><td>無向圖／有向圖</td><td class="l">無向邊寫 (a,b)，兩邊都能走；有向邊寫 &lt;a,b&gt;，只能 a→b</td></tr>
+    <tr><td>加權圖</td><td class="l">每條邊有一個數字（權重），可以用<b>鄰接矩陣</b>存：W[i][j] = 邊的權重，沒邊寫 ∞，自己到自己寫 0</td></tr>
+    <tr><td>路徑 path</td><td class="l">一串相連的點，例 b→a→c→d</td></tr>
+    <tr><td>環 cycle</td><td class="l">起點 = 終點的路徑</td></tr>
+    <tr><td>簡單路徑</td><td class="l">同一個點不會出現兩次</td></tr>
+    <tr><td>路徑長度</td><td class="l">無權重圖：邊數；加權圖：權重總和</td></tr>
+    <tr><td>最佳化問題</td><td class="l">有很多候選解，每個解有一個值，要找值最好（最大或最小）的那個。最短路徑就是一種</td></tr>
+  </table></div>
+</section>
+
+<!-- Dijkstra -->
+<section class="ch" id="dij">
+  <span class="pages">p.21 – p.29</span>
+  <h2>Dijkstra（用 Dist／Prior／Decided 三個陣列）</h2>
+  <ul class="walk">
+    <li><span>p.21</span><span>三個陣列：<b>Dist[v]</b> 目前已知到 v 的最短距離；<b>Prior[v]</b> 最短路徑上 v 的前一個點；<b>Decided[v]</b> v 的最短距離是否已經確定（1/0）。</span></li>
+    <li><span>p.22</span><span>步驟：① 找 Decided=0 且 Dist 最小的點 i，設 Decided[i]=1 ② 對每個未決定的 w：Dist[w] = min{Dist[w], Dist[i] + Cost[i][w]}，變小就把 Prior[w] 改成 i ③ 重複。</span></li>
+    <li><span>p.23–27</span><span>例題一步一步：v1(1) → v3(3) → v2(4) → v5(5) → v4(8) → v6(9)。</span></li>
+    <li><span>p.28</span><span>整理成一張表：每列是 Decided 集合，每格寫「Dist/Prior」。</span></li>
+    <li><span>p.29</span><span>用 Prior 回推路徑：v6←v5←v3←v1←v0，所以 v0→v1→v3→v5→v6 = 9。</span></li>
+  </ul>
+  <div class="sim" id="sim-dij"></div>
+  <div class="box exam"><h4>考卷格式（就是 p.28 那張表）</h4>
+  <p>每列寫「Decided 集合」，每格寫「Dist/Prior」，已決定的點寫「–」。最後用 Prior 一路往回追，寫出每個點的路徑。這張表上面的模擬器會自動長出來，可以拿來對答案。</p></div>
+</section>
+
+<!-- Floyd -->
+<section class="ch" id="floyd">
+  <span class="pages">p.30 – p.39</span>
+  <h2>Floyd 演算法（所有點對的最短路徑）</h2>
+  <ul class="walk">
+    <li><span>p.30</span><span>從鄰接矩陣開始，一直把矩陣裡的數字<b>變小</b>。時間 O(V³)。</span></li>
+    <li><span>p.31</span><span>k = 0：每一格問「經過 v0 會不會更近？」Cost₀[i][j] = min{Cost[i][j], Cost[i][0] + Cost[0][j]}。例：v1→v2 原本 ∞，經過 v0：1+4 = 5，變成 5/0。</span></li>
+    <li><span>p.32–37</span><span>k = 1, 2, …, 6 依序做。每格寫「距離/經過的點」。</span></li>
+    <li><span>p.38</span><span>最後的表就是任兩點的最短距離。v0→v6 = 9。</span></li>
+    <li><span>p.39</span><span>三層迴圈 k、i、j 各跑 n 次 → T(n) = n³ ∈ Θ(n³)。</span></li>
+  </ul>
+  <div class="box key"><h4>白話：一次開放一個「轉運站」</h4>
+  <p>第 k 輪，允許路徑<b>中途經過 vₖ</b>。對每一格 (i,j) 比較兩條路：</p>
+  <div class="formula">原本的路：     D[i][j]
+經過 vk 的路：  D[i][k] + D[k][j]     ← 第 k 列的數字 + 第 k 行的數字
+取比較小的</div>
+  <p>手算技巧：第 k 輪時，<mark>第 k 列和第 k 行不會變</mark>（自己經過自己沒意義），先把它們圈起來；其他每格 = 「同一列在第 k 行的數」+「同一行在第 k 列的數」，跟原本的比。</p></div>
+  <div class="sim" id="sim-floyd"></div>
+  <details><summary>怎麼用 p（經過的點）還原路徑？</summary><div>
+    <p>以 v0→v6 為例：P[0][6] = 5 → 中間經過 v5，拆成 v0→v5 和 v5→v6。P[0][5] = 3 → 拆成 v0→v3、v3→v5。P[0][3] = 1 → 拆成 v0→v1、v1→v3。其餘的 p 都是終點本身，表示直接相連。</p>
+    <p>所以路徑是 v0→v1→v3→v5→v6，長度 1+2+2+4 = 9。</p>
+  </div></details>
+  <details><summary>Dijkstra vs Floyd（常考比較）</summary><div>
+    <div class="tbl"><table><tr><th></th><th>Dijkstra</th><th>Floyd</th></tr>
+    <tr><td>求什麼</td><td>一個起點到所有點</td><td>所有點對</td></tr>
+    <tr><td>方法</td><td>貪婪</td><td>動態規劃</td></tr>
+    <tr><td>複雜度</td><td>Θ(n²)</td><td>Θ(n³)</td></tr></table></div>
+    <p>Dijkstra 對每個起點各跑一次，也是 n × n² = n³，跟 Floyd 一樣級。</p>
+  </div></details>
+</section>
+
+<!-- Principle -->
+<section class="ch" id="opt">
+  <span class="pages">p.40</span>
+  <h2>最佳化原則：什麼時候能用 DP？</h2>
+  <p>解最佳化問題的 DP 三步：① 建立遞迴 ② bottom-up 求出最佳值 ③ bottom-up 建構最佳解（例如用 P 表還原路徑）。</p>
+  <div class="box key"><h4>最佳化原則 principle of optimality</h4>
+  <p>一個問題的最佳解裡面，每個子問題的解也一定是那個子問題的最佳解。<b>符合才能用 DP。</b></p>
+  <ul>
+    <li><b>最短路徑 ✓</b>：v1→v2→v4 是 v1 到 v4 的最短路，那它的一段 v1→v2 也一定是 v1 到 v2 的最短路（不然換成更短的，整條會更短）。</li>
+    <li><b>最長簡單路徑 ✗</b>：v1 到 v4 最長是 v1→v3→v2→v4（1+3+4 = 8）。但它的一段 v1→v3（長度 1）<b>不是</b> v1 到 v3 的最長路，最長是 v1→v2→v3（1+2 = 3）。子問題的最佳解拼不出大問題的最佳解，所以不能用 DP。</li>
+  </ul></div>
+</section>
+
+<!-- Chain -->
+<section class="ch" id="chain">
+  <span class="pages">p.41 – p.54</span>
+  <h2>連續矩陣相乘</h2>
+  <ul class="walk">
+    <li><span>p.41</span><span>(i×j) 乘 (j×k) 要 i×j×k 次乘法。例：2×3 乘 3×4，答案 8 格，每格 3 次乘法，共 24 次。</span></li>
+    <li><span>p.42</span><span>A(20×2) B(2×30) C(30×12) D(12×8)，5 種括號方式的乘法次數差很多：最少是 A((BC)D) = 1232，最多 10320。</span></li>
+    <li><span>p.43</span><span>暴力法：括號方式 tₙ ≥ 2tₙ₋₁，至少 2ⁿ⁻² 種，指數時間。</span></li>
+    <li><span>p.44</span><span>符合最佳化原則：如果 A₁((((A₂A₃)A₄)A₅)A₆) 最佳，那其中 (A₂A₃)A₄ 也一定是 A₂～A₄ 的最佳順序。</span></li>
+    <li><span>p.45</span><span>例：M[4][6] = min{(A₄A₅)A₆ = 392, A₄(A₅A₆) = 528} = 392。</span></li>
+    <li><span>p.46–47</span><span>遞迴式：M[i][j] = min over i≤k≤j−1 ( M[i][k] + M[k+1][j] + d<sub>i−1</sub>·d<sub>k</sub>·d<sub>j</sub> )，M[i][i] = 0。</span></li>
+    <li><span>p.48–53</span><span>一條對角線一條對角線填表，答案 M[1][6] = 348，順序 A₁((((A₂A₃)A₄)A₅)A₆)。</span></li>
+    <li><span>p.54</span><span>複雜度 Σ(n−diagonal)×diagonal = n(n−1)(n+1)/6 ∈ Θ(n³)。</span></li>
+  </ul>
+  <div class="box key"><h4>白話：最後一刀切在哪？</h4>
+  <p>不管括號怎麼加，最後一定是「左邊一大塊 × 右邊一大塊」。切在 k，成本 = 左塊 M[i][k] + 右塊 M[k+1][j] + 最後相乘 d<sub>i−1</sub>·d<sub>k</sub>·d<sub>j</sub>（前×中×後）。每個 k 都試，取最小。左塊右塊都更短，<b>已經在表裡</b>，直接查。</p>
+  <p>維度寫成一排 d₀ d₁ … dₙ，Aᵢ 就是 d<sub>i−1</sub> × d<sub>i</sub>。</p></div>
+  <div class="sim" id="sim-chain"></div>
+  <div class="box exam"><h4>考卷格式</h4>
+  <p>① 寫出 d₀～dₙ ② 每條對角線每一格都列出「k = … : … = …」所有候選，圈最小 ③ 畫 M 表（可以寫成「次數/k」，等於把 P 表合在一起）④ 用 k 由外往內還原括號 ⑤ 照括號順序實際乘一次驗算。</p></div>
+  <details><summary>p.42 的 5 種括號方式自己驗算看看</summary><div>
+    <p>A(20×2) B(2×30) C(30×12) D(12×8)：</p>
+    <div class="formula">A(B(CD))  = 30·12·8 + 2·30·8 + 20·2·8   = 2880+480+320   = 3680
+(AB)(CD)  = 20·2·30 + 30·12·8 + 20·30·8 = 1200+2880+4800 = 8880
+A((BC)D)  = 2·30·12 + 2·12·8 + 20·2·8   = 720+192+320    = 1232  ← 最少
+((AB)C)D  = 20·2·30 + 20·30·12 + 20·12·8 = 1200+7200+1920 = 10320
+(A(BC))D  = 2·30·12 + 20·2·12 + 20·12·8 = 720+480+1920   = 3120</div>
+  </div></details>
+</section>
+
+<!-- Tree -->
+<section class="ch" id="tree">
+  <span class="pages">p.55 – p.61</span>
+  <h2>樹的名詞（為最佳二元搜尋樹暖身）</h2>
+  <div class="tbl"><table>
+    <tr><th>名詞</th><th class="l">意思</th></tr>
+    <tr><td>樹</td><td class="l">沒有環的連通圖（有環或不連通都不是樹）</td></tr>
+    <tr><td>有根樹</td><td class="l">指定一個點當樹根，畫在最上面，像公司組織圖</td></tr>
+    <tr><td>內部節點／外部節點</td><td class="l">有子樹的／沒有子樹的（樹葉）</td></tr>
+    <tr><td>父、子、兄弟節點</td><td class="l">上一層、下一層、同一個父親</td></tr>
+    <tr><td>level 與 depth</td><td class="l">投影片樹根是 <b>level 1、depth 0</b>，往下各加 1（兩者差 1，看清楚題目用哪個）</td></tr>
+    <tr><td>二元樹</td><td class="l">每個節點最多 2 個子節點（左子樹、右子樹）</td></tr>
+    <tr><td>二元搜尋樹 BST</td><td class="l">每個節點：左子樹所有 key 都比它小，右子樹所有 key 都比它大</td></tr>
+    <tr><td>平衡</td><td class="l">左右子樹深度相差不超過 1</td></tr>
+  </table></div>
+  <p>在 BST 找一個 key 的比較次數 = <b>depth + 1</b>（樹根就要比 1 次）。</p>
+</section>
+
+<!-- OBST -->
+<section class="ch" id="obst">
+  <span class="pages">p.62 – p.74</span>
+  <h2>最佳二元搜尋樹</h2>
+  <ul class="walk">
+    <li><span>p.62</span><span>每個 key 被搜尋的機率是 pᵢ，搜尋它要比 cᵢ 次（= depth+1）。目標：讓平均搜尋時間 Σ cᵢ·pᵢ 最小。</span></li>
+    <li><span>p.63</span><span>3 個 key，p = 0.7, 0.2, 0.1，5 種樹分別是 2.6、2.1、1.8、1.5、1.4。最好的是 key1 當樹根、一路往右長（1.4）。最常被搜的要靠近樹根。</span></li>
+    <li><span>p.64</span><span>暴力法要試的樹太多（指數），改用 DP。A[i][j] = keyᵢ～keyⱼ 最佳樹的平均搜尋時間。</span></li>
+    <li><span>p.65</span><span>符合最佳化原則：最佳樹的每個子樹，對它自己的 key 也必須最佳。例：A[2][3] = min{0.4, 0.5} = 0.4。</span></li>
+    <li><span>p.66</span><span>keyₖ 當樹根：左子樹 1～k−1，右子樹 k+1～n。子樹裡每個 key 都多了一層（多比一次），所以要加上它們的機率。</span></li>
+    <li><span>p.67–72</span><span>遞迴式與填表，例題 4 個 key，p = 3/8, 3/8, 1/8, 1/8，答案 A[1][4] = 14/8，樹根 key2。</span></li>
+    <li><span>p.73</span><span>用樹根表 R 由上往下還原樹：2 當根 → 左邊 1；右邊 3～4 的根是 3 → 3 的右邊是 4。</span></li>
+    <li><span>p.74</span><span>複雜度 n(n−1)(n+4)/6 ∈ Θ(n³)。</span></li>
+  </ul>
+  <div class="box key"><h4>核心公式</h4>
+  <div class="formula">A[i][j] = min over i≤k≤j ( A[i][k−1] + A[k+1][j] ) + (pᵢ + … + pⱼ)
+A[i][i−1] = 0 ,  A[j+1][j] = 0 ,  A[i][i] = pᵢ</div>
+  <p>白話：試每個 key 當樹根。左邊那群和右邊那群各自用最佳的樹（查表）。為什麼還要加 pᵢ+…+pⱼ？因為<b>整群裡每個 key 都要先跟樹根比一次</b>，所以每個 key 的比較次數都 +1，平均時間就多了它們的機率總和。</p>
+  <p>跟矩陣相乘長得很像。差別：矩陣是「切在 k 和 k+1 之間」，這裡是「k 本身當樹根」，左右兩邊都不包含 k。</p></div>
+  <div class="sim" id="sim-obst"></div>
+  <details><summary>p.63 的 5 棵樹怎麼算？</summary><div>
+    <p>平均時間 = Σ (比較次數 × 機率)。比較次數 = 那個 key 在第幾層。</p>
+    <div class="formula">(1) key3 根, key2, key1 一路往左： 0.7×3 + 0.2×2 + 0.1×1 = 2.6
+(2) key3 根, key1, key2：           0.7×2 + 0.2×3 + 0.1×1 = 2.1
+(3) key2 根, 左 key1、右 key3：     0.7×2 + 0.2×1 + 0.1×2 = 1.8
+(4) key1 根, key3, key2：           0.7×1 + 0.2×3 + 0.1×2 = 1.5
+(5) key1 根, key2, key3 一路往右：  0.7×1 + 0.2×2 + 0.1×3 = 1.4  ← 最小</div>
+    <p>注意 (3) 是「平衡」的樹，卻不是最好的，因為 key1 被搜的機率高達 0.7，應該放在樹根。</p>
+  </div></details>
+</section>
+
+<!-- TSP -->
+<section class="ch" id="tsp">
+  <span class="pages">p.75 – p.86</span>
+  <h2>售貨員旅行問題（TSP）</h2>
+  <ul class="walk">
+    <li><span>p.75</span><span>從家鄉出發，每座城市剛好拜訪一次，再回到家鄉（漢米爾頓迴路），總長度最短。圖是<b>有向</b>的（單行道）。</span></li>
+    <li><span>p.76</span><span>從 v1 出發，三條旅程長度 22、26、21，最佳是 21。</span></li>
+    <li><span>p.77</span><span>暴力法：第一站 n−1 種、第二站 n−2 種…共 (n−1)! 條路線。</span></li>
+    <li><span>p.78</span><span>符合最佳化原則：最佳旅程 v1→v3→…中，「從 v3 出發走完剩下的點回 v1」那段也一定最短。</span></li>
+    <li><span>p.79–80</span><span>定義 D[vᵢ][A] = 從 vᵢ 出發，經過集合 A 裡每個點一次，回到 v1 的最短長度。</span></li>
+    <li><span>p.81–85</span><span>集合由小到大填表：|A|=0 → 1 → 2 → 3。答案 D[v1][{v2,v3,v4}] = 21，路線 v1→v3→v4→v2→v1。</span></li>
+    <li><span>p.86</span><span>複雜度 Θ(n²2ⁿ)。比 (n−1)! 好很多，但仍是指數。</span></li>
+  </ul>
+  <div class="box key"><h4>核心公式</h4>
+  <div class="formula">D[vᵢ][A] = min over vⱼ∈A ( W[i][j] + D[vⱼ][A − {vⱼ}] )
+D[vᵢ][∅] = W[i][1]                       （沒地方要去了，直接回家）
+答案 = D[v1][V − {v1}]</div>
+  <p>白話：站在 vᵢ，還要去 A 裡的城市。下一站試每一個 vⱼ：先走 W[i][j] 到 vⱼ，剩下的路「從 vⱼ 走完 A−{vⱼ} 回家」已經算好了，查表。</p></div>
+  <div class="sim" id="sim-tsp"></div>
+  <div class="box warn"><h4>小提醒</h4>
+  <ul>
+    <li>W 矩陣是<b>有向</b>的：W[v2][v1] = 1 但 W[v1][v2] = 2，別看反了。看列是「從」，看行是「到」。</li>
+    <li>p.86 投影片最後寫 (n−1)(n−2)2ⁿ⁻¹；用 n = 4 實際加總 Σ 會得到 12 = (3)(2)2¹，所以正確應該是 <b>(n−1)(n−2)2ⁿ⁻³</b>。不管哪個，結論都是 Θ(n²2ⁿ)。考試寫 Θ(n²2ⁿ) 就安全。</li>
+  </ul></div>
+</section>
+
+<!-- Alignment -->
+<section class="ch" id="align">
+  <span class="pages">p.87 – p.98</span>
+  <h2>序列對齊</h2>
+  <ul class="walk">
+    <li><span>p.87</span><span>DNA 由 A、G、C、T 組成，會發生插入、刪除、替代突變。</span></li>
+    <li><span>p.88</span><span>比較兩條序列：對齊後，<b>gap（對到空格）罰 2</b>，<b>不同字母罰 1</b>，相同字母 0。x = AACAGTTACC、y = TAAGGTCA，有一種對齊成本 10，另一種只要 7。</span></li>
+    <li><span>p.89</span><span>符合最佳化原則：最佳對齊去掉第一個位置，剩下的也是剩下序列的最佳對齊（7 − 1 = 6）。</span></li>
+    <li><span>p.90–91</span><span>opt(i, j) = x 從第 i 個、y 從第 j 個開始對齊的最小成本。第一個位置有三種選擇（見下面）。</span></li>
+    <li><span>p.92–94</span><span>邊界：最下面一列 opt(m, j) = 2(n−j)；最右邊一行 opt(i, n) = 2(m−i)。</span></li>
+    <li><span>p.95–97</span><span>由右下往左上填，答案 opt(0,0) = 7。</span></li>
+    <li><span>p.98</span><span>從左上角沿著選中的方向走回去，得到對齊方式。</span></li>
+  </ul>
+  <div class="box key"><h4>三種選擇</h4>
+  <div class="formula">opt(i,j) = min( opt(i+1, j+1) + penalty ,   ↘ x[i] 對 y[j]（相同 0、不同 1）
+                opt(i,   j+1) + 2       ,   → y[j] 對 gap（x 這格空著）
+                opt(i+1, j  ) + 2       )   ↓ x[i] 對 gap（y 這格空著）
+邊界：opt(m, j) = 2(n−j) ,  opt(i, n) = 2(m−i)</div>
+  <p>白話：看兩條序列的「第一個字」。要嘛兩個字對在一起，要嘛其中一個先對空格。剩下的部分已經算好了（右邊、下面、右下的格子），查表加上這一步的罰分。</p>
+  <p>因為要用右邊和下面的格子，所以<mark>從右下角開始往左上填</mark>，跟其他題方向相反！</p></div>
+  <div class="sim" id="sim-align"></div>
+</section>
+
+<!-- Big O -->
+<section class="ch" id="big">
+  <h2>複雜度總表</h2>
+  <div class="tbl"><table>
+    <tr><th>演算法</th><th class="l">怎麼算出來</th><th>結果</th></tr>
+    <tr><td>二項式（分治）</td><td class="l">要算 2·(n 取 k) − 1 個項</td><td>指數</td></tr>
+    <tr><td>二項式（DP）</td><td class="l">第 i 列填 min(i,k)+1 格，加總 (2n−k+2)(k+1)/2</td><td>Θ(nk)</td></tr>
+    <tr><td>Dijkstra</td><td class="l">n−1 輪，每輪找最小＋更新各跑 n−1 次</td><td>Θ(n²)</td></tr>
+    <tr><td>Floyd</td><td class="l">k、i、j 三層迴圈各 n 次 → n³</td><td>Θ(n³)</td></tr>
+    <tr><td>矩陣相乘（暴力）</td><td class="l">tₙ ≥ 2ⁿ⁻²</td><td>指數</td></tr>
+    <tr><td>矩陣相乘（DP）</td><td class="l">Σ (n−diagonal)×diagonal = n(n−1)(n+1)/6</td><td>Θ(n³)</td></tr>
+    <tr><td>最佳二元搜尋樹</td><td class="l">Σ (n−diagonal)×(diagonal+1) = n(n−1)(n+4)/6</td><td>Θ(n³)</td></tr>
+    <tr><td>TSP（暴力）</td><td class="l">(n−1)!</td><td>階乘</td></tr>
+    <tr><td>TSP（DP）</td><td class="l">Σ (n−1−k)·k·(n−1 取 k) = (n−1)(n−2)2ⁿ⁻³</td><td>Θ(n²2ⁿ)</td></tr>
+    <tr><td>序列對齊</td><td class="l">(m+1)×(n+1) 格，每格看 3 個</td><td>Θ(mn)</td></tr>
+  </table></div>
+  <div class="box key"><h4>矩陣相乘的 Σ 怎麼看（數學不好版）</h4>
+  <p>對角線編號 diagonal = 1, 2, …, n−1。第 diagonal 條對角線有 <b>n − diagonal 格</b>（越往右上越少），每格要試 <b>diagonal 個 k</b>。所以總工作 = Σ (格數 × 每格試幾次)。不用會化簡，記得結果是 n³ 等級就好：大約 n²/2 格，每格最多試 n 次。</p></div>
+</section>
+
+<!-- Mock -->
+<section class="ch" id="mock">
+  <h2>模擬考：先在紙上寫，再打開答案</h2>
+  <p>練習數字都在上面模擬器的「練習」按鈕裡，寫完可以切過去一格一格對。</p>
+
+  <div class="box"><p><b>第 1 題</b>　用 DP 計算 (6 取 3)，畫出 B 表，並寫出時間複雜度。</p></div>
+  <details><summary>答案</summary><div>
+    <div class="tbl"><table><tr><th>i\j</th><th>0</th><th>1</th><th>2</th><th>3</th></tr>
+    <tr><th>0</th><td>1</td><td></td><td></td><td></td></tr><tr><th>1</th><td>1</td><td>1</td><td></td><td></td></tr>
+    <tr><th>2</th><td>1</td><td>2</td><td>1</td><td></td></tr><tr><th>3</th><td>1</td><td>3</td><td>3</td><td>1</td></tr>
+    <tr><th>4</th><td>1</td><td>4</td><td>6</td><td>4</td></tr><tr><th>5</th><td>1</td><td>5</td><td>10</td><td>10</td></tr>
+    <tr><th>6</th><td>1</td><td>6</td><td>15</td><td class="hit">20</td></tr></table></div>
+    <p>B[6][3] = B[5][2] + B[5][3] = 10 + 10 = <b>20</b>。只要填到 j = 3。Θ(nk)。</p>
+  </div></details>
+
+  <div class="box"><p><b>第 2 題</b>　無向圖 A-B 3、A-C 8、B-C 2、B-D 6、C-D 1。用 Floyd 求所有點對的最短距離，寫出每個 k 改變了哪些格子。</p></div>
+  <details><summary>答案</summary><div>
+    <p>k=A：沒有變化。k=B：A-C 8→5（3+2）、A-D ∞→9（3+6）。k=C：A-D 9→6（5+1）、B-D 6→3（2+1）。k=D：沒有變化。</p>
+    <div class="tbl"><table><tr><th></th><th>A</th><th>B</th><th>C</th><th>D</th></tr>
+    <tr><th>A</th><td>0</td><td>3</td><td>5</td><td>6</td></tr><tr><th>B</th><td>3</td><td>0</td><td>2</td><td>3</td></tr>
+    <tr><th>C</th><td>5</td><td>2</td><td>0</td><td>1</td></tr><tr><th>D</th><td>6</td><td>3</td><td>1</td><td>0</td></tr></table></div>
+    <p>例：A→D = 6，路徑 A→B→C→D。（表是對稱的，因為是無向圖，手寫時可以只算一半再抄過去。）</p>
+  </div></details>
+
+  <div class="box"><p><b>第 3 題</b>　4 個 key，機率 0.1、0.2、0.4、0.3，求最佳二元搜尋樹與平均搜尋時間。</p></div>
+  <details><summary>答案</summary><div>
+    <p>A[1][4] = <b>1.7</b>，樹根 key3；左子樹根 key2（key2 的左邊是 key1），右邊是 key4。</p>
+    <p>驗算：key3 深度 1、key2 和 key4 深度 2、key1 深度 3 → 0.4×1 + 0.2×2 + 0.3×2 + 0.1×3 = 1.7 ✓</p>
+  </div></details>
+
+  <div class="box"><p><b>第 4 題</b>　有向圖 W（列是從、行是到）：v1: 0 10 15 20 ／ v2: 5 0 9 10 ／ v3: 6 13 0 12 ／ v4: 8 8 9 0。從 v1 出發求最短旅程。</p></div>
+  <details><summary>答案</summary><div>
+    <p>最短旅程 <b>35</b>，路線 v1→v2→v4→v3→v1（10 + 10 + 9 + 6）。在 TSP 模擬器切到「練習」可以看到每一格 D[vᵢ][A]。</p>
+  </div></details>
+
+  <div class="box"><p><b>第 5 題</b>　x = GATTC、y = GTAC，gap 罰 2、不同字母罰 1。求最小成本與對齊方式。</p></div>
+  <details><summary>答案</summary><div>
+    <p>opt(0,0) = <b>3</b>。對齊：</p>
+    <div class="align">G A T T C
+G - T A C
+0 2 0 1 0</div>
+  </div></details>
+
+  <div class="box"><p><b>第 6 題（觀念）</b>　(a) 為什麼最長簡單路徑不能用 DP？(b) 矩陣相乘為什麼不用暴力法？(c) Floyd 和 Dijkstra 各用什麼策略？</p></div>
+  <details><summary>答案</summary><div>
+    <p>(a) 不符合最佳化原則：最長路徑的一段不一定是那段的最長路徑（p.40 的例子）。</p>
+    <p>(b) 括號方式至少 2ⁿ⁻² 種，指數時間；DP 只要 Θ(n³)。</p>
+    <p>(c) Floyd 是動態規劃，Θ(n³)，求所有點對；Dijkstra 是貪婪，Θ(n²)，求單一起點。</p>
+  </div></details>
+</section>
+
+<footer>依 2026 Fall「演算法 Chapter 3 Dynamic Programming」投影片 p.1–p.98 整理。投影片例題和練習題都用程式重算過，結果與投影片一致。</footer>
+</div>
+
+<script>
+/*ALGO-START*/
+const INF=Infinity;
+const fD=v=>v===INF?"∞":String(v);
+const K=(r,c)=>r+","+c;
+
+/* ---------- 二項式係數 ---------- */
+function buildBinom(n,k){
+  const B=[],steps=[];
+  for(let i=0;i<=n;i++){ B[i]=[]; const set={};
+    for(let j=0;j<=Math.min(i,k);j++){
+      let why,refs=[];
+      if(j===0||j===i){B[i][j]=1; why=`B[${i}][${j}]：${j===0?"j = 0":"j = i"}，邊界 → <b>1</b>`;}
+      else{B[i][j]=B[i-1][j-1]+B[i-1][j]; refs=[K(i-1,j-1),K(i-1,j)];
+        why=`B[${i}][${j}] = B[${i-1}][${j-1}] + B[${i-1}][${j}] = ${B[i-1][j-1]} + ${B[i-1][j]} = <b>${B[i][j]}</b>（左上 + 正上）`;}
+      set[K(i,j)]={v:B[i][j],why,refs};
+    }
+    steps.push({set,msg:`第 ${i} 列：頭尾（j=0、j=i）填 1，中間每格 = 左上 + 正上。`+(i>k?`只算到 j = k = ${k} 就停（演算法用 minimum(i,k)）。`:"")});
+  }
+  steps[steps.length-1].msg+=`<br><b>答案：B[${n}][${k}] = (${n} 取 ${k}) = ${B[n][k]}</b>`;
+  return {rows:[...Array(n+1).keys()].map(String),cols:[...Array(k+1).keys()].map(String),corner:"i \\ j",steps,path:[K(n,k)]};
+}
+
+/* ---------- 最短路徑（無向圖）---------- */
+function adjM(g){ const n=g.nodes.length,id={}; g.nodes.forEach((x,i)=>id[x[0]]=i);
+  const W=Array.from({length:n},(_,i)=>Array.from({length:n},(_,j)=>i===j?0:INF));
+  g.edges.forEach(([u,v,w])=>{W[id[u]][id[v]]=w; if(!g.directed) W[id[v]][id[u]]=w;}); return W; }
+function buildDij(g){
+  const W=adjM(g),n=W.length,N=g.nodes.map(x=>x[0]);
+  const dist=W[0].slice(),prior=Array(n).fill(0),dec=Array(n).fill(false); dec[0]=true;
+  const rows=[],steps=[]; const decided=[N[0]];
+  const row=(r,upd,pick)=>{const set={}; for(let j=1;j<n;j++){ const fin=dec[j]&&j!==pick;
+      set[K(r,j-1)]= fin&&r>0&&!upd.justPicked?{v:"–"}:{v:`${fD(dist[j])}/${prior[j]}`,why:upd[j]||`${N[j]}：目前最短 ${fD(dist[j])}，前一點 ${N[prior[j]]}`,cls:j===pick?"hit":upd[j]?"cur":""}; }
+    return set;};
+  const s0={}; for(let j=1;j<n;j++) s0[K(0,j-1)]={v:`${fD(dist[j])}/0`,why:`${N[j]}：從 ${N[0]} 直接走的距離 Cost[0][${j}] = ${fD(W[0][j])}`};
+  steps.push({set:s0,msg:`Decided = {${N[0]}}。Dist[] 先填 Cost[0][·]（${N[0]} 直接走過去的距離），Prior[] 全部填 0。`,dec:[...decided],extra:arr(dist,prior,dec,N)});
+  rows.push(`{${decided.join(",")}}`);
+  for(let t=1;t<n;t++){
+    let x=-1; for(let j=0;j<n;j++) if(!dec[j]&&(x<0||dist[j]<dist[x])) x=j;
+    dec[x]=true; decided.push(N[x]); const upd={},notes=[];
+    for(let w=0;w<n;w++){ if(dec[w]||W[x][w]===INF) continue; const nd=dist[x]+W[x][w];
+      const txt=`Dist[${w}] = min{Dist[${w}], Dist[${x}] + Cost[${x}][${w}]} = min{${fD(dist[w])}, ${dist[x]} + ${W[x][w]}} = <b>${Math.min(nd,dist[w])}</b>`;
+      if(nd<dist[w]){dist[w]=nd;prior[w]=x;} upd[w]=txt; notes.push(txt); }
+    const set={}; for(let j=1;j<n;j++){ if(dec[j]&&j!==x) {set[K(t,j-1)]={v:"–",why:`${N[j]} 已經決定了`};continue;}
+      set[K(t,j-1)]={v:`${fD(dist[j])}/${prior[j]}`,why:j===x?`${N[j]} 在未決定的點中 Dist 最小（${dist[j]}）→ 這輪決定它`:(upd[j]||`${N[j]}：沒有跟 ${N[x]} 相連，不變`),cls:j===x?"hit":upd[j]?"cur":""}; }
+    rows.push(`{${decided.join(",")}}`);
+    steps.push({set,msg:`未決定的點中 <b>${N[x]}</b> 的 Dist = ${dist[x]} 最小 → Decided[${x}] = 1。<br>用 ${N[x]} 更新鄰居：`+(notes.length?notes.join("；"):"沒有未決定的鄰居"),dec:[...decided],pick:N[x],extra:arr(dist,prior,dec,N)});
+  }
+  const path=j=>{const p=[N[j]];while(j!==0){j=prior[j];p.unshift(N[j]);}return p.join("→");};
+  steps[steps.length-1].msg+=`<br><b>全部決定，結束。</b>`+N.slice(1).map((v,j)=>`${v}=${dist[j+1]}（${path(j+1)}）`).join("、");
+  steps.forEach((s,i)=>s.row=i);
+  return {rows,cols:N.slice(1),corner:"Decided",steps,dist,prior};
+}
+function arr(dist,prior,dec,N){ return `<div class="tbl"><table><tr><th></th>${N.map(x=>`<th>${x}</th>`).join("")}</tr>
+<tr><th>Dist</th>${dist.map(d=>`<td>${fD(d)}</td>`).join("")}</tr><tr><th>Prior</th>${prior.map(p=>`<td>${p}</td>`).join("")}</tr><tr><th>Decided</th>${dec.map(d=>`<td class="${d?"ok":""}">${d?1:0}</td>`).join("")}</tr></table></div>`; }
+
+function buildFloyd(g){
+  const D=adjM(g),n=D.length,N=g.nodes.map(x=>x[0]); const P=Array.from({length:n},(_,i)=>Array.from({length:n},(_,j)=>j));
+  const steps=[]; const s0={};
+  for(let i=0;i<n;i++)for(let j=0;j<n;j++) s0[K(i,j)]={v:`${fD(D[i][j])}/${P[i][j]}`,why:`初始：Cost[${i}][${j}] = ${fD(D[i][j])}（${i===j?"自己到自己":D[i][j]===INF?"沒有直接相連":"直接相連的邊"}）`};
+  steps.push({set:s0,msg:`初始矩陣就是鄰接矩陣（d/p：距離 / 經過的點，一開始 p 寫終點 j）。`});
+  for(let k=0;k<n;k++){ const set={},ch=[];
+    for(let i=0;i<n;i++)for(let j=0;j<n;j++){ if(i===k||j===k||i===j) continue; const nd=D[i][k]+D[k][j];
+      if(nd<D[i][j]){ const why=`Cost${k}[${i}][${j}] = min{Cost[${i}][${j}], Cost[${i}][${k}] + Cost[${k}][${j}]} = min{${fD(D[i][j])}, ${fD(D[i][k])} + ${fD(D[k][j])}} = <b>${nd}</b> → 經過 ${N[k]} 比較近`;
+        D[i][j]=nd; P[i][j]=k; set[K(i,j)]={v:`${nd}/${k}`,why,refs:[K(i,k),K(k,j)],cls:"cur"}; ch.push(`[${i}][${j}]`);} }
+    steps.push({set,msg:`k = ${k}：每一格都問「<b>中途經過 ${N[k]}</b> 會不會更近？」Cost[i][j] = min{Cost[i][j], Cost[i][${k}] + Cost[${k}][j]}。<br>`+(ch.length?`變小的格子（橘框）：${ch.join(" ")}`:"這一輪沒有任何格子變小。")});
+  }
+  const path=(i,j)=>{ const mid=(i,j)=>{ if(P[i][j]===j) return []; const k=P[i][j]; return [...mid(i,k),k,...mid(k,j)]; }; return [i,...mid(i,j),j].map(x=>N[x]).join("→"); };
+  steps[steps.length-1].msg+=`<br><b>結束。</b>例：${N[0]}→${N[n-1]} 最短 ${D[0][n-1]}，路徑 ${path(0,n-1)}`;
+  return {rows:N,cols:N,corner:"",steps,D,P,path};
+}
+
+/* ---------- 連續矩陣相乘 ---------- */
+function buildChain(d){
+  const n=d.length-1,M=[],P=[],steps=[];
+  for(let i=1;i<=n;i++){M[i]=[];P[i]=[];}
+  const s0={}; for(let i=1;i<=n;i++){M[i][i]=0; s0[K(i-1,i-1)]={v:"0",why:`M[${i}][${i}] = 0：只有一個矩陣，不用乘`};}
+  steps.push({set:s0,msg:`對角線 0：M[i][i] = 0。`});
+  for(let dg=1;dg<n;dg++){ const set={};
+    for(let i=1;i<=n-dg;i++){ const j=i+dg; let best=INF,bk=0; const lines=[];
+      for(let k=i;k<j;k++){ const c=M[i][k]+M[k+1][j]+d[i-1]*d[k]*d[j];
+        lines.push(`k=${k}：M[${i}][${k}] + M[${k+1}][${j}] + d${i-1}·d${k}·d${j} = ${M[i][k]} + ${M[k+1][j]} + ${d[i-1]}·${d[k]}·${d[j]} = ${c}`);
+        if(c<best){best=c;bk=k;} }
+      M[i][j]=best;P[i][j]=bk;
+      set[K(i-1,j-1)]={v:`${best}/${bk}`,why:`M[${i}][${j}]（A${i}～A${j}）：<br>`+lines.map(l=>l.endsWith(" "+best)&&l.startsWith("k="+bk)?`<b>${l} ← 最小</b>`:l).join("<br>"),refs:[]};
+    }
+    steps.push({set,msg:`對角線 ${dg}：一次乘 ${dg+1} 個矩陣。每格試所有切點 k，取最小。（格子寫「次數/k」）`});
+  }
+  const par=(i,j)=>i===j?`A${i}`:`(${par(i,P[i][j])}${par(P[i][j]+1,j)})`;
+  steps[steps.length-1].msg+=`<br><b>答案：M[1][${n}] = ${M[1][n]}</b>，最佳順序 ${par(1,n)}`;
+  return {rows:[...Array(n)].map((_,i)=>String(i+1)),cols:[...Array(n)].map((_,i)=>String(i+1)),corner:"i \\ j",steps,path:[K(0,n-1)],M,P,par:par(1,n)};
+}
+
+/* ---------- 最佳二元搜尋樹 ---------- */
+function buildOBST(p,den,names){
+  const n=p.length,A=[],R=[],steps=[]; const fm=v=>den===10?(v/10).toFixed(1):`${v}/${den}`;
+  for(let i=1;i<=n+1;i++){A[i]=[];R[i]=[];}
+  const s0={}; for(let i=1;i<=n+1;i++){A[i][i-1]=0; s0[K(i-1,i-1)]={v:"0",why:`A[${i}][${i-1}] = 0：空的樹`};}
+  steps.push({set:s0,msg:`先填 A[i][i−1] = 0（沒有 key 的空樹）。`});
+  const s1={}; for(let i=1;i<=n;i++){A[i][i]=p[i-1];R[i][i]=i; s1[K(i-1,i)]={v:`${fm(p[i-1])}/${i}`,why:`A[${i}][${i}] = p${i} = ${fm(p[i-1])}：只有一個 key，它就是樹根，比 1 次`};}
+  steps.push({set:s1,msg:`A[i][i] = pᵢ：只有一個 key 時，樹根就是它。（格子寫「值/樹根」）`});
+  for(let dg=1;dg<n;dg++){ const set={};
+    for(let i=1;i<=n-dg;i++){ const j=i+dg; let sum=0; for(let m=i;m<=j;m++) sum+=p[m-1]; let best=INF,bk=0; const lines=[];
+      for(let k=i;k<=j;k++){ const c=A[i][k-1]+A[k+1][j]; lines.push([k,`k=${k}（${names[k-1]} 當樹根）：A[${i}][${k-1}] + A[${k+1}][${j}] = ${fm(A[i][k-1])} + ${fm(A[k+1][j])} = ${fm(c)}`,c]); if(c<best){best=c;bk=k;} }
+      A[i][j]=best+sum; R[i][j]=bk;
+      set[K(i-1,j)]={v:`${fm(A[i][j])}/${bk}`,why:`A[${i}][${j}]：<br>`+lines.map(([k,l])=>k===bk?`<b>${l} ← 最小</b>`:l).join("<br>")+`<br>再加 p${i}+…+p${j} = ${fm(sum)} → <b>${fm(best)} + ${fm(sum)} = ${fm(A[i][j])}</b>`};
+    }
+    steps.push({set,msg:`對角線 ${dg}：處理 ${dg+1} 個 key。每個 k 都試當樹根：左子樹 A[i][k−1] + 右子樹 A[k+1][j]，取最小，再加這段所有機率的總和。`});
+  }
+  const tree=(i,j)=>i>j?null:{k:R[i][j],l:tree(i,R[i][j]-1),r:tree(R[i][j]+1,j)};
+  const t=tree(1,n);
+  steps[steps.length-1].msg+=`<br><b>答案：A[1][${n}] = ${fm(A[1][n])}</b>（平均比較次數），樹根是 ${names[R[1][n]-1]}。`;
+  return {rows:[...Array(n+1)].map((_,i)=>String(i+1)),cols:[...Array(n+1)].map((_,i)=>String(i)),corner:"i \\ j",steps,path:[K(0,n)],tree:t,A,R,fm};
+}
+
+/* ---------- 售貨員旅行 ---------- */
+function buildTSP(W){
+  const n=W.length; const others=[...Array(n-1)].map((_,i)=>i+1);
+  const subsets=[]; for(let s=0;s<(1<<(n-1));s++){ const a=others.filter((_,b)=>s>>b&1); subsets.push(a);} subsets.sort((a,b)=>a.length-b.length||a.join().localeCompare(b.join()));
+  const nm=i=>`v${i+1}`, sn=a=>a.length?`{${a.map(nm).join(",")}}`:"∅", key=a=>a.join(",");
+  const D={},P={},steps=[]; const col=a=>subsets.findIndex(s=>key(s)===key(a));
+  for(let size=0;size<=n-2;size++){ const set={};
+    for(const A of subsets.filter(s=>s.length===size)) for(const i of others){ if(A.includes(i)) continue;
+      let best=INF,bj=null; const lines=[];
+      if(size===0){best=W[i][0]; lines.push(`D[${nm(i)}][∅] = W[${nm(i)}][v1] = ${fD(best)}（直接回家）`);}
+      else for(const j of A){ const rest=A.filter(x=>x!==j); const c=W[i][j]+D[i===j?0:j+"|"+key(rest)];
+        lines.push(`經 ${nm(j)}：W[${nm(i)}][${nm(j)}] + D[${nm(j)}][${sn(rest)}] = ${fD(W[i][j])} + ${fD(D[j+"|"+key(rest)])} = ${fD(c)}`); if(c<best){best=c;bj=j;} }
+      D[i+"|"+key(A)]=best;P[i+"|"+key(A)]=bj;
+      set[K(i,col(A))]={v:size===0?fD(best):`${fD(best)}/${bj===null?"-":nm(bj)}`,why:`D[${nm(i)}][${sn(A)}]：從 ${nm(i)} 出發，走過 ${sn(A)} 每個點一次，回到 v1 的最短長度<br>`+lines.map(l=>best!==INF&&l.endsWith("= "+fD(best))?`<b>${l}</b>`:l).join("<br>")};
+    }
+    steps.push({set,msg:size===0?`|A| = 0：D[vᵢ][∅] = W[vᵢ][v1]，直接走回 v1。`:`|A| = ${size}：D[vᵢ][A] = min（W[vᵢ][vⱼ] + D[vⱼ][A−{vⱼ}]），vⱼ 試 A 裡每一個點。（格子寫「長度/下一站」）`});
+  }
+  const all=others; let best=INF,bj=null; const lines=[];
+  for(const j of all){ const rest=all.filter(x=>x!==j); const c=W[0][j]+D[j+"|"+key(rest)]; lines.push(`經 ${nm(j)}：W[v1][${nm(j)}] + D[${nm(j)}][${sn(rest)}] = ${fD(W[0][j])} + ${fD(D[j+"|"+key(rest)])} = ${fD(c)}`); if(c<best){best=c;bj=j;} }
+  const set={}; set[K(0,col(all))]={v:`${best}/${nm(bj)}`,why:`D[v1][${sn(all)}]：<br>`+lines.map(l=>l.endsWith("= "+best)?`<b>${l}</b>`:l).join("<br>")};
+  const tour=["v1"]; let cur=bj, A=all.filter(x=>x!==bj); tour.push(nm(cur)); while(A.length){ const nx=P[cur+"|"+key(A)]; tour.push(nm(nx)); A=A.filter(x=>x!==nx); cur=nx; } tour.push("v1");
+  steps.push({set,msg:`最後算整個旅程 D[v1][V−{v1}]。<br><b>答案：最短旅程長度 ${best}，路線 ${tour.join("→")}</b>（沿著「下一站」一路追回來）`});
+  return {rows:[...Array(n)].map((_,i)=>nm(i)),cols:subsets.map(sn),corner:"",steps,path:[K(0,col(all))],best,tour};
+}
+
+/* ---------- 序列對齊 ---------- */
+function buildAlign(x,y){
+  const m=x.length,n=y.length,O=Array.from({length:m+1},()=>Array(n+1).fill(0)),steps=[];
+  const s0={}; for(let j=0;j<=n;j++){O[m][j]=2*(n-j); s0[K(m,j)]={v:O[m][j],why:`opt(${m}, ${j}) = 2(${n} − ${j}) = ${O[m][j]}：x 已經用完，y 剩 ${n-j} 個字只能全部對 gap`};}
+  for(let i=0;i<m;i++){O[i][n]=2*(m-i); s0[K(i,n)]={v:O[i][n],why:`opt(${i}, ${n}) = 2(${m} − ${i}) = ${O[i][n]}：y 已經用完，x 剩 ${m-i} 個字只能全部對 gap`};}
+  steps.push({set:s0,msg:`先填邊界：最下面一列 opt(m, j) = 2(n − j)，最右邊一行 opt(i, n) = 2(m − i)。`});
+  for(let i=m-1;i>=0;i--){ const set={};
+    for(let j=n-1;j>=0;j--){ const pen=x[i]===y[j]?0:1; const a=O[i+1][j+1]+pen,b=O[i][j+1]+2,c=O[i+1][j]+2; O[i][j]=Math.min(a,b,c);
+      set[K(i,j)]={v:O[i][j],refs:[K(i+1,j+1),K(i,j+1),K(i+1,j)],why:`opt(${i}, ${j})：x[${i}]=${x[i]}、y[${j}]=${y[j]}<br>`+
+        `↘ 兩個字對齊（${pen?"不同，penalty 1":"相同，penalty 0"}）：opt(${i+1}, ${j+1}) + ${pen} = ${O[i+1][j+1]} + ${pen} = ${a}<br>`+
+        `→ y[${j}] 對 gap：opt(${i}, ${j+1}) + 2 = ${O[i][j+1]} + 2 = ${b}<br>`+
+        `↓ x[${i}] 對 gap：opt(${i+1}, ${j}) + 2 = ${O[i+1][j]} + 2 = ${c}<br>取最小 → <b>${O[i][j]}</b>`};
+    }
+    steps.push({set,msg:`第 ${i} 列（x[${i}] = ${x[i]}）：由右往左填。每格看「右下 + penalty」「右邊 + 2」「下面 + 2」三個，取最小。`});
+  }
+  let i=0,j=0; const path=[K(0,0)],top=[],bot=[];
+  while(i<m||j<n){ if(i<m&&j<n&&O[i][j]===O[i+1][j+1]+(x[i]===y[j]?0:1)){top.push(x[i]);bot.push(y[j]);i++;j++;}
+    else if(j<n&&(i===m||O[i][j]===O[i][j+1]+2)){top.push("-");bot.push(y[j]);j++;}
+    else {top.push(x[i]);bot.push("-");i++;} path.push(K(i,j)); }
+  const pen=top.map((t,k)=>t==="-"||bot[k]==="-"?2:t===bot[k]?0:1);
+  steps[steps.length-1].msg+=`<br><b>答案：opt(0, 0) = ${O[0][0]}</b>。從左上角沿著「選中的方向」走到右下角（黃色）就得到對齊方式。`;
+  return {rows:[...x].map((c,k)=>`${k} ${c}`).concat([`${m}`]),cols:[...y].map((c,k)=>`${k} ${c}`).concat([`${n}`]),corner:"i \\ j",steps,path,top,bot,pen,O};
+}
+/*ALGO-END*/
+/* ---------- graph drawing ---------- */
+const NS="http://www.w3.org/2000/svg";
+function el(t,a,p){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;}
+function drawG(box,g,st){
+  box.innerHTML=""; const xs=g.nodes.map(n=>n[1]),ys=g.nodes.map(n=>n[2]); const W=Math.max(...xs)+40,H=Math.max(...ys)+40;
+  const svg=el("svg",{viewBox:`0 0 ${W} ${H}`,width:W,height:H},box); const pos={}; g.nodes.forEach(n=>pos[n[0]]=[n[1],n[2]]); const R=17;
+  g.edges.forEach(([u,v,w])=>{ const on=st.ok&&(st.ok.has(u+"-"+v)||st.ok.has(v+"-"+u)); const [x1,y1]=pos[u],[x2,y2]=pos[v];
+    el("line",{x1,y1,x2,y2,style:`stroke:var(--${on?"ok":"edge"});stroke-width:${on?4:2}`},svg);
+    const dx=x2-x1,dy=y2-y1,L=Math.hypot(dx,dy),lx=(x1+x2)/2-dy/L*12,ly=(y1+y2)/2+dx/L*12;
+    el("rect",{x:lx-10,y:ly-11,width:20,height:19,rx:4,style:"fill:var(--surface)"},svg);
+    const t=el("text",{x:lx,y:ly+4,"text-anchor":"middle","font-size":"14","font-weight":"600",style:`fill:var(--${on?"ok":"muted"});font-family:var(--f-mono)`},svg); t.textContent=w; });
+  g.nodes.forEach(([n,x,y])=>{ const on=st.on&&st.on.has(n), cur=st.cur===n;
+    el("circle",{cx:x,cy:y,r:R,style:`fill:${on?"var(--ok-soft)":"var(--node)"};stroke:${cur?"var(--cand)":on?"var(--ok)":"var(--ink)"};stroke-width:${cur?3.5:on?2.5:1.5}`},svg);
+    const t=el("text",{x,y:y+5,"text-anchor":"middle","font-size":"13","font-weight":"700","font-style":"italic",style:"fill:var(--ink)"},svg); t.textContent=n;
+    if(st.lab&&st.lab[n]!==undefined){ const s=String(st.lab[n]); el("rect",{x:x+R-4,y:y-R-14,width:s.length*8+8,height:17,rx:8,style:`fill:var(--${on?"ok":"accent"})`},svg);
+      const l=el("text",{x:x+R,y:y-R-2,"font-size":"11","font-weight":"700",style:"fill:var(--surface);font-family:var(--f-mono)"},svg); l.textContent=s; } });
+}
+function drawBin(box,t,names){
+  box.innerHTML=""; if(!t) return; const out=[]; let x=0;
+  (function lay(n,d){ if(!n) return; lay(n.l,d+1); out.push({n,x:x++,d}); lay(n.r,d+1); })(t,0);
+  const pos=new Map(out.map(o=>[o.n,[o.x*70+40,o.d*64+28]])); const W=out.length*70+20,H=Math.max(...out.map(o=>o.d))*64+60;
+  const svg=el("svg",{viewBox:`0 0 ${W} ${H}`,width:W,height:H},box);
+  out.forEach(({n})=>["l","r"].forEach(s=>{ if(n[s]){ const [a,b]=pos.get(n),[c,d]=pos.get(n[s]); el("line",{x1:a,y1:b,x2:c,y2:d,style:"stroke:var(--edge);stroke-width:2"},svg);} }));
+  out.forEach(({n})=>{ const [a,b]=pos.get(n); el("circle",{cx:a,cy:b,r:20,style:"fill:var(--accent-soft);stroke:var(--ink);stroke-width:1.5"},svg);
+    const t1=el("text",{x:a,y:b+5,"text-anchor":"middle","font-size":"14","font-weight":"700",style:"fill:var(--ink);font-family:var(--f-mono)"},svg); t1.textContent=n.k;
+    const t2=el("text",{x:a+24,y:b+4,"font-size":"12",style:"fill:var(--muted)"},svg); t2.textContent=names[n.k-1]; });
+}
+
+/* ---------- generic table stepper ---------- */
+function tableSim(id,title,sets,legend){
+  const root=document.getElementById(id);
+  root.innerHTML=`<div class="sim-head"><span class="sim-title">${title}</span><div class="seg">${sets.map((s,i)=>`<button data-i="${i}" class="${i?"":"on"}">${s.label}</button>`).join("")}</div></div>
+  <div class="sim-body"><div class="pre"></div><div class="viz"></div><div class="msg" aria-live="polite"></div>
+  <div class="ctrl"><button class="prev">← 上一步</button><button class="next primary">下一步 →</button><button class="reset">重來</button><button class="end">直接看答案</button><span class="count"></span></div>
+  <div class="legend"><span><i style="background:var(--cand-soft);border:1px solid var(--cand)"></i>這一步新填的</span><span><i style="background:var(--accent-soft);border:2px solid var(--accent)"></i>被點的格子用到的格子</span><span><i style="background:var(--mark)"></i>答案／回推路徑</span>${legend||""}</div>
+  <div class="tblwrap"></div><div class="why"></div></div>`;
+  const q=s=>root.querySelector(s); let si=0,M,k=0,sel=null;
+  function load(i){ si=i; M=sets[i].build(); k=0; sel=null; q(".pre").innerHTML=sets[i].pre?sets[i].pre(M):""; show(); }
+  function cells(){ const c={}; for(let t=0;t<=k;t++) for(const key in M.steps[t].set) c[key]={...M.steps[t].set[key],t}; return c; }
+  function show(){
+    const C=cells(), st=M.steps[k], last=k===M.steps.length-1;
+    const refs=new Set(sel&&C[sel]&&C[sel].refs?C[sel].refs:[]); const path=new Set(last&&M.path?M.path:[]);
+    let h=`<div class="tbl"><table class="dp"><tr><th>${M.corner||""}</th>${M.cols.map(c=>`<th>${c}</th>`).join("")}</tr>`;
+    M.rows.forEach((r,ri)=>{ h+=`<tr><th>${r}</th>`; M.cols.forEach((_,ci)=>{ const key=ri+","+ci, c=C[key];
+      if(!c){ h+=`<td class="na"></td>`; return; }
+      const cls=[c.t===k&&k>0?"new":"", c.t===k&&c.cls?c.cls:"", refs.has(key)?"ref":"", path.has(key)?"hit":"", sel===key?"sel":""].join(" ");
+      h+=`<td class="${cls}" data-k="${key}" tabindex="0">${c.v}</td>`; }); h+="</tr>"; });
+    q(".tblwrap").innerHTML=h+"</table></div>";
+    q(".tblwrap").querySelectorAll("td[data-k]").forEach(td=>{ const go=()=>{ sel=td.dataset.k; show(); }; td.onclick=go; td.onkeydown=e=>{ if(e.key==="Enter") go(); }; });
+    q(".why").innerHTML=sel&&C[sel]&&C[sel].why?C[sel].why:(k===0?"點表格裡任何一格，這裡會顯示它是怎麼算出來的。":"");
+    q(".msg").innerHTML=`<b>步驟 ${k}：</b>`+st.msg;
+    q(".viz").innerHTML=""; if(sets[si].viz) sets[si].viz(M,k,q(".viz"));
+    q(".count").textContent=`${k} / ${M.steps.length-1}`; q(".prev").disabled=k===0; q(".next").disabled=last; }
+  root.querySelectorAll(".sim-head button").forEach(b=>b.onclick=()=>{ root.querySelectorAll(".sim-head button").forEach(x=>x.classList.toggle("on",x===b)); load(+b.dataset.i); });
+  q(".prev").onclick=()=>{ if(k>0){k--;sel=null;show();} }; q(".next").onclick=()=>{ if(k<M.steps.length-1){k++;sel=null;show();} };
+  q(".reset").onclick=()=>{k=0;sel=null;show();}; q(".end").onclick=()=>{k=M.steps.length-1;sel=null;show();};
+  load(0);
+}
+
+/* ---------- data ---------- */
+const G3={directed:false,nodes:[["v0",30,110],["v1",120,40],["v2",120,180],["v3",210,110],["v4",320,40],["v5",320,180],["v6",410,110]],
+  edges:[["v0","v1",1],["v0","v2",4],["v0","v3",5],["v1","v3",2],["v2","v3",4],["v2","v5",3],["v3","v4",5],["v3","v5",2],["v4","v6",6],["v5","v6",4]]};
+const GP={directed:false,nodes:[["A",30,40],["B",170,40],["C",30,170],["D",170,170]],edges:[["A","B",3],["A","C",8],["B","C",2],["B","D",6],["C","D",1]]};
+const matHTML=(W,names)=>`<div class="tbl"><table><tr><th>W</th>${names.map(n=>`<th>${n}</th>`).join("")}</tr>${W.map((r,i)=>`<tr><th>${names[i]}</th>${r.map(v=>`<td>${fD(v)}</td>`).join("")}</tr>`).join("")}</table></div>`;
+
+tableSim("sim-binom","B 表一列一列填",[
+  {label:"(4 取 2)",build:()=>buildBinom(4,2)},{label:"練習：(6 取 3)",build:()=>buildBinom(6,3)},{label:"完整巴斯卡 (4 取 4)",build:()=>buildBinom(4,4)}]);
+
+function dijViz(g){ return (M,k,box)=>{ const st=M.steps[k]; const lab={}; lab[g.nodes[0][0]]=0;
+  const row=M.steps.slice(0,k+1); const last={}; row.forEach(s=>{ for(const key in s.set){ const c=+key.split(",")[1]; if(s.set[key].v!=="–") last[c]=s.set[key].v; } });
+  M.cols.forEach((n,c)=>{ if(last[c]) lab[n]=last[c].split("/")[0]; });
+  const on=new Set(st.dec); const ok=new Set(); if(k===M.steps.length-1){ M.prior.forEach((p,j)=>{ if(j) ok.add(g.nodes[p][0]+"-"+g.nodes[j][0]); }); }
+  drawG(box,g,{on,cur:st.pick,lab,ok}); }; }
+tableSim("sim-dij","Dijkstra：Dist/Prior 表",[
+  {label:"投影片 p.21",build:()=>buildDij(G3),viz:dijViz(G3),pre:M=>""},
+  {label:"練習圖",build:()=>buildDij(GP),viz:dijViz(GP)}]);
+
+tableSim("sim-floyd","Floyd：每個 k 更新一次",[
+  {label:"投影片 p.30",build:()=>buildFloyd(G3),viz:(M,k,box)=>{ const ok=new Set(); if(k===M.steps.length-1){ const p=M.path(0,6).split("→"); for(let i=1;i<p.length;i++) ok.add(p[i-1]+"-"+p[i]); } drawG(box,G3,{ok,cur:k>0?G3.nodes[k-1][0]:null}); }},
+  {label:"練習圖",build:()=>buildFloyd(GP),viz:(M,k,box)=>drawG(box,GP,{cur:k>0?GP.nodes[k-1][0]:null})}],
+  `<span>格子寫「距離/經過的點」；橘色圈＝這一輪的轉運站</span>`);
+
+const dChips=d=>`<div class="chips">${d.map((v,i)=>`<span class="chip">d${i} = ${v}</span>`).join("")}</div><div class="chips" style="margin-top:6px">${d.slice(1).map((v,i)=>`<span class="chip">A${i+1}: ${d[i]}×${v}</span>`).join("")}</div>`;
+tableSim("sim-chain","M 表一條對角線一條對角線填",[
+  {label:"投影片 p.48",build:()=>buildChain([5,2,3,4,6,7,8]),pre:()=>dChips([5,2,3,4,6,7,8])},
+  {label:"考古題第 7 題",build:()=>buildChain([10,4,5,20,2,50]),pre:()=>dChips([10,4,5,20,2,50])},
+  {label:"p.42 四個矩陣",build:()=>buildChain([20,2,30,12,8]),pre:()=>dChips([20,2,30,12,8])}],`<span>格子寫「次數/k」</span>`);
+
+const NM1=["Don","Isabelle","Ralph","Wally"], NM2=["key1","key2","key3"], NM3=["key1","key2","key3","key4"];
+const pChips=(p,den,nm)=>`<div class="chips">${p.map((v,i)=>`<span class="chip">${nm[i]}：p${i+1} = ${den===10?(v/10).toFixed(1):v+"/"+den}</span>`).join("")}</div>`;
+tableSim("sim-obst","A 表與最佳樹",[
+  {label:"投影片 p.68",build:()=>buildOBST([3,3,1,1],8,NM1),pre:()=>pChips([3,3,1,1],8,NM1),viz:(M,k,box)=>{ if(k===M.steps.length-1) drawBin(box,M.tree,NM1); }},
+  {label:"p.63 三個 key",build:()=>buildOBST([7,2,1],10,NM2),pre:()=>pChips([7,2,1],10,NM2),viz:(M,k,box)=>{ if(k===M.steps.length-1) drawBin(box,M.tree,NM2); }},
+  {label:"練習：4 個 key",build:()=>buildOBST([1,2,4,3],10,NM3),pre:()=>pChips([1,2,4,3],10,NM3),viz:(M,k,box)=>{ if(k===M.steps.length-1) drawBin(box,M.tree,NM3); }}],`<span>格子寫「值/樹根」；最後一步畫出樹</span>`);
+
+const W1=[[0,2,9,INF],[1,0,6,4],[INF,7,0,8],[6,3,INF,0]], W2=[[0,10,15,20],[5,0,9,10],[6,13,0,12],[8,8,9,0]], VN=["v1","v2","v3","v4"];
+tableSim("sim-tsp","D[vᵢ][A] 表",[
+  {label:"投影片 p.79",build:()=>buildTSP(W1),pre:()=>matHTML(W1,VN)},
+  {label:"練習",build:()=>buildTSP(W2),pre:()=>matHTML(W2,VN)}],`<span>灰色格＝不需要算（vᵢ 在 A 裡面）</span>`);
+
+const alignViz=(M,k,box)=>{ if(k!==M.steps.length-1) return; box.innerHTML=`<div><div class="align">${M.top.join(" ")}\n${M.bot.join(" ")}\n${M.pen.join(" ")}</div><p style="font-size:13px;color:var(--muted);margin:4px 0 0">第三列是每個位置的罰分，加起來 = ${M.pen.reduce((a,b)=>a+b,0)}</p></div>`; };
+tableSim("sim-align","opt 表由右下往左上填",[
+  {label:"投影片 p.92",build:()=>buildAlign("AACAGTTACC","TAAGGTCA"),viz:alignViz},
+  {label:"練習",build:()=>buildAlign("GATTC","GTAC"),viz:alignViz}],`<span>列＝x[i]，行＝y[j]</span>`);
+</script>
+
+</body></html>

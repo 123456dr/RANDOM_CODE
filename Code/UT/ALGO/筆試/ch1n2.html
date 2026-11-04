@@ -1,0 +1,648 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>效率分析與分治法 特訓</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@400;700&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: one reading column like an exam notebook; sticky chapter strip; every DP gets a "worksheet" table panel you can step through and click. */
+:root{
+  --bg:#F3F5F9; --surface:#FFFFFF; --ink:#17202C; --muted:#5A6576; --line:#D7DDE7;
+  --accent:#2445C2; --accent-soft:#E6EBFB; --mark:#FFE27A; --mark-ink:#17202C;
+  --ok:#1C8448; --ok-soft:#E2F4E9; --bad:#C3362B; --bad-soft:#FBE7E5; --cand:#C97D00; --cand-soft:#FFF2D9;
+  --edge:#A3AEBD; --node:#FFFFFF;
+  --f-display:"LXGW WenKai TC","Noto Sans TC","PingFang TC","Microsoft JhengHei",serif;
+  --f-body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0F141B; --surface:#171E28; --ink:#E5EAF1; --muted:#9AA5B5; --line:#2A3443;
+  --accent:#93A9FF; --accent-soft:#1E2846; --mark:#5B4A0E; --mark-ink:#FFF0B5;
+  --ok:#4CC27F; --ok-soft:#14301F; --bad:#FF7A6E; --bad-soft:#3A1916; --cand:#F2B33D; --cand-soft:#3A2A0C;
+  --edge:#566376; --node:#1C2531; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#0F141B; --surface:#171E28; --ink:#E5EAF1; --muted:#9AA5B5; --line:#2A3443;
+  --accent:#93A9FF; --accent-soft:#1E2846; --mark:#5B4A0E; --mark-ink:#FFF0B5;
+  --ok:#4CC27F; --ok-soft:#14301F; --bad:#FF7A6E; --bad-soft:#3A1916; --cand:#F2B33D; --cand-soft:#3A2A0C;
+  --edge:#566376; --node:#1C2531; color-scheme:dark;}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.75}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+.wrap{max-width:900px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:8px 80px}
+header.hero{padding-block:36px 16px}
+.eyebrow{font-size:13px;letter-spacing:.12em;color:var(--muted)}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;line-height:1.3}
+h1{font-size:clamp(30px,6vw,44px);margin:6px 0 10px}
+h2{font-size:clamp(24px,4.5vw,32px);margin:0 0 4px}
+h3{font-size:21px;margin:28px 0 8px}
+p{margin:10px 0}
+.lede{font-size:18px;color:var(--muted);max-width:62ch}
+nav.chap{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line)}
+nav.chap .in{max-width:900px;margin:0 auto;display:flex;gap:6px;overflow-x:auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:8px}
+nav.chap a{flex:none;font-size:14px;color:var(--ink);text-decoration:none;padding:4px 10px;border-radius:999px;border:1px solid var(--line);white-space:nowrap}
+nav.chap a:hover,nav.chap a:focus-visible{border-color:var(--accent);color:var(--accent);outline:none}
+section.ch{padding-top:40px;scroll-margin-top:56px}
+.pages{font-family:var(--f-mono);font-size:13px;color:var(--accent);background:var(--accent-soft);padding:2px 8px;border-radius:6px;display:inline-block;margin-bottom:6px}
+mark{background:var(--mark);color:var(--mark-ink);padding:0 3px;border-radius:3px}
+code,.mono{font-family:var(--f-mono);font-size:.92em}
+.walk{list-style:none;padding:0;margin:14px 0;display:grid;gap:6px}
+.walk li{display:grid;grid-template-columns:64px 1fr;gap:10px;align-items:baseline;padding:6px 0;border-bottom:1px dashed var(--line)}
+.walk li>span:first-child{font-family:var(--f-mono);font-size:13px;color:var(--muted)}
+.walk li>span{min-width:0}
+.box{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:14px 16px;margin:16px 0}
+.box.key{border-left:4px solid var(--accent)}
+.box.warn{border-left:4px solid var(--bad)}
+.box.exam{border-left:4px solid var(--ok)}
+.box h4{margin:0 0 6px;font-family:var(--f-display);font-size:18px}
+.formula,pre.code{font-family:var(--f-mono);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;overflow-x:auto;white-space:pre;font-size:14px;line-height:1.6;margin:10px 0}
+.tbl{overflow-x:auto;margin:12px 0}
+table{border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
+.tbl>table{min-width:100%}
+th,td{border:1px solid var(--line);padding:5px 9px;text-align:center;white-space:nowrap}
+th{background:var(--bg);font-weight:600}
+td.l,th.l{text-align:left;white-space:normal}
+td.ok{background:var(--ok-soft);color:var(--ok);font-weight:700}
+td.hit{background:var(--mark);color:var(--mark-ink);font-weight:700}
+td.cur{outline:2px solid var(--cand);outline-offset:-2px;background:var(--cand-soft)}
+td.new{background:var(--cand-soft)}
+td.ref{background:var(--accent-soft);outline:2px solid var(--accent);outline-offset:-2px}
+td.sel{outline:3px solid var(--ink);outline-offset:-3px}
+td.na{background:var(--bg)}
+td.dim{color:var(--muted)}
+.dp td{cursor:pointer;font-family:var(--f-mono);font-size:13px;min-width:38px}
+.dp td.na{cursor:default}
+details{border:1px solid var(--line);border-radius:10px;background:var(--surface);margin:10px 0}
+details>summary{cursor:pointer;padding:10px 14px;font-weight:600;list-style:none}
+details>summary::-webkit-details-marker{display:none}
+details>summary::before{content:"▸ ";color:var(--accent)}
+details[open]>summary::before{content:"▾ "}
+details>div{padding:0 14px 12px;border-top:1px dashed var(--line)}
+.sim{border:1.5px solid var(--ink);border-radius:12px;background:var(--surface);margin:20px 0;overflow:hidden}
+.sim-head{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--line);background:var(--bg)}
+.sim-title{font-family:var(--f-display);font-size:18px;font-weight:700}
+.seg{display:flex;gap:4px;flex-wrap:wrap}
+button{font:inherit;font-size:14px;cursor:pointer;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;padding:5px 12px}
+button:hover{border-color:var(--accent)}
+button:focus-visible,td:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button.on{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+button.primary{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+button:disabled{opacity:.4;cursor:default}
+.sim-body{padding:14px;display:grid;gap:12px}
+.sim-body>*{min-width:0}
+.ctrl{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.ctrl .count{font-family:var(--f-mono);font-size:13px;color:var(--muted);margin-left:auto}
+.viz{overflow-x:auto;display:flex;justify-content:center}
+.viz:empty{display:none}
+.viz svg{max-width:100%;height:auto}
+.msg{background:var(--cand-soft);border-radius:8px;padding:10px 12px}
+.why{background:var(--accent-soft);border-radius:8px;padding:10px 12px;font-size:14px;font-family:var(--f-mono);line-height:1.7;overflow-x:auto}
+.why:empty{display:none}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.legend i{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:-2px;margin-right:4px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-family:var(--f-mono);font-size:13px;border:1px solid var(--line);border-radius:6px;padding:2px 8px;background:var(--bg)}
+.align{font-family:var(--f-mono);font-size:16px;letter-spacing:.35em;line-height:1.5;white-space:pre;overflow-x:auto}
+footer{margin-top:60px;color:var(--muted);font-size:13px}
+</style>
+<style>
+.arr{display:flex;gap:4px;flex-wrap:wrap;font-family:var(--f-mono)}
+.arr span{min-width:34px;text-align:center;padding:4px 6px;border:1px solid var(--line);border-radius:6px;background:var(--bg);font-size:14px}
+.arr span.hl{background:var(--cand-soft);border-color:var(--cand);font-weight:700}
+.arr span.pv{background:var(--accent-soft);border-color:var(--accent);font-weight:700}
+.arr span.fx{background:var(--ok-soft);border-color:var(--ok)}
+.arr span.out{opacity:.35}
+.arr small{display:block;font-size:10px;color:var(--muted)}
+.log{font-family:var(--f-mono);font-size:13px;line-height:1.8;overflow-x:auto;white-space:pre;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.log .c{color:var(--accent)} .log .m{color:var(--ok)}
+.ins{display:flex;gap:10px;flex-wrap:wrap}
+label.f{display:flex;flex-direction:column;gap:2px;font-size:13px;color:var(--muted);flex:1 1 160px;min-width:0}
+input[type=text],input[type=number]{font:inherit;font-family:var(--f-mono);font-size:14px;padding:5px 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);min-width:0;width:100%}
+.mat{display:grid;grid-template-columns:repeat(2,64px);gap:4px}
+.mat input{text-align:center}
+.matrow{display:flex;gap:18px;align-items:center;flex-wrap:wrap;font-family:var(--f-mono)}
+</style>
+
+<nav class="chap" aria-label="章節"><div class="in">
+<a href="#start">怎麼讀</a><a href="#c1-algo">演算法是什麼</a><a href="#c1-search">循序／二元搜尋</a><a href="#c1-fib">費氏數列</a><a href="#c1-tc">時間複雜度</a><a href="#c1-order">O Ω Θ o</a><a href="#c2-dc">分治法</a><a href="#c2-bs">遞迴二元搜尋</a><a href="#c2-ms">合併排序</a><a href="#c2-qs">快速排序</a><a href="#c2-st">Strassen</a><a href="#c2-big">大整數</a><a href="#c2-end">門檻與限制</a><a href="#big">複雜度總表</a><a href="#mock">模擬考</a>
+</div></nav>
+
+<div class="wrap">
+<header class="hero" id="start">
+  <div class="eyebrow">演算法 · Chapter 1 效率分析 ＋ Chapter 2 Divide-and-Conquer</div>
+  <h1>效率分析與分治法 特訓</h1>
+  <p class="lede">第 1 章教你「怎麼量一個演算法有多快」，第 2 章教你第一種設計方法「切開來各個擊破」。期中考第 1～5 題全部出自這兩章。</p>
+  <div class="box key"><h4>兩章各一句話</h4>
+  <p><b>第 1 章</b>：<mark>數「基本運算」做了幾次，寫成 n 的函數，只看最大的那一項。</mark></p>
+  <p><b>第 2 章</b>：<mark>大問題切成小問題（Divide）→ 各自解決（Conquer）→ 必要時合併答案（Combine）。</mark></p></div>
+  <h3>分析複雜度的固定寫法（每題都照這 4 行）</h3>
+  <div class="formula">基本運算：  （例：x 與 S[mid] 的比較）
+輸入大小：  （例：陣列的項目數 n）
+遞迴式或加總：（例：W(n) = W(n/2) + 1，W(1) = 1）
+結果：      （例：W(n) = lg n + 1 ∈ Θ(lg n)）</div>
+  <p>老師在每一頁投影片都用這個格式，考卷也照抄，分數就有一半了。</p>
+</header>
+
+<!-- ===== CH1 ===== -->
+<section class="ch" id="c1-algo">
+  <span class="pages">Ch1 p.2 – p.3</span>
+  <h2>問題、實例、演算法</h2>
+  <div class="tbl"><table>
+    <tr><th>名詞</th><th class="l">意思</th><th class="l">投影片例子</th></tr>
+    <tr><td>problem 問題</td><td class="l">要回答的問題</td><td class="l">x 有沒有在 n 個數的串列 S 裡？</td></tr>
+    <tr><td>parameter 參數</td><td class="l">問題裡還沒給值的變數</td><td class="l">S、n、x</td></tr>
+    <tr><td>instance 實例</td><td class="l">參數都給了值的一題</td><td class="l">S = [10,7,11,5,13,8]，n = 6，x = 5</td></tr>
+    <tr><td>solution 解</td><td class="l">這個實例的答案</td><td class="l">yes</td></tr>
+    <tr><td>algorithm 演算法</td><td class="l">對<b>每一個</b>實例都能算出答案的步驟</td><td class="l">從第一個開始一個一個比</td></tr>
+  </table></div>
+  <p>演算法要有三個性質：<b>Finiteness 有限</b>（一定會停）、<b>Definiteness 明確</b>（每步都清楚）、<b>Correctness 正確</b>。</p>
+</section>
+
+<section class="ch" id="c1-search">
+  <span class="pages">Ch1 p.4 – p.6</span>
+  <h2>循序搜尋 vs 二元搜尋</h2>
+  <ul class="walk">
+    <li><span>p.4</span><span>循序搜尋（linear search）：從第一個一路比到最後。陣列不用排序。</span></li>
+    <li><span>p.5</span><span>二元搜尋：陣列<b>必須先排好</b>。跟中間 a[m] 比：相等就成功；比較小去左半 a[l]～a[m−1]；比較大去右半 a[m+1]～a[r]。例：找 78，看 52 → 77 → 78，3 次。</span></li>
+    <li><span>p.6</span><span>32 個元素找不到：循序 32 次，二元只要 lg 32 + 1 = 6 次。40 億個元素：循序 40 億次，二元 33 次。</span></li>
+  </ul>
+  <div class="sim" id="sim-search">
+    <div class="sim-head"><span class="sim-title">搜尋模擬器</span><div class="seg"><button data-m="bin" class="on">二元搜尋</button><button data-m="seq">循序搜尋</button></div></div>
+    <div class="sim-body">
+      <div class="ins"><label class="f">陣列（逗號分隔）<input type="text" id="s-arr" value="6,33,39,41,52,55,69,77,78,81"></label><label class="f" style="flex:0 1 110px">要找的 x<input type="number" id="s-x" value="78"></label></div>
+      <div class="seg"><button data-p="6,33,39,41,52,55,69,77,78,81|78">p.5 找 78</button><button data-p="6,33,39,41,52,55,69,77,78,81|90">找不到（90）</button><button data-p="18,3,9,15,10,5,6,11|10">p.4 循序找 10</button><button data-p="18,3,9,15,10,5,6,11|12">p.4 找 12</button></div>
+      <div id="s-out"></div>
+    </div>
+  </div>
+</section>
+
+<section class="ch" id="c1-fib">
+  <span class="pages">Ch1 p.7 – p.11</span>
+  <h2>費氏數列：遞迴 vs 迴圈</h2>
+  <ul class="walk">
+    <li><span>p.7</span><span>0, 1, 1, 2, 3, 5, 8, 13…，F(n) = F(n−1) + F(n−2)。用遞迴（演算法 1.6）算 F(5)，遞迴樹裡要算 15 個項。</span></li>
+    <li><span>p.8–9</span><span>定理 1.1：遞迴樹的項數 T(n) &gt; 2<sup>n/2</sup>，指數成長。用數學歸納法證明。</span></li>
+    <li><span>p.10</span><span>問題出在<b>同一個值被算很多次</b>。改成算一個存一個在陣列裡（演算法 1.7），只要 n+1 個項。</span></li>
+    <li><span>p.11</span><span>二元搜尋和遞迴費氏是第 2 章的分治法；迴圈費氏是第 3 章的動態規劃。</span></li>
+  </ul>
+  <div class="sim" id="sim-fib">
+    <div class="sim-head"><span class="sim-title">遞迴樹有多大？</span></div>
+    <div class="sim-body">
+      <div class="ins"><label class="f" style="flex:0 1 160px">n（0～40）<input type="number" id="f-n" value="5" min="0" max="40"></label></div>
+      <div class="viz" id="f-viz"></div>
+      <div id="f-out"></div>
+    </div>
+  </div>
+  <div class="box key"><h4>T(n) &gt; 2<sup>n/2</sup> 的白話證明（p.8）</h4>
+  <div class="formula">T(n) = T(n−1) + T(n−2) + 1     ← 自己 1 個 + 左右兩棵子樹
+     &gt; 2 · T(n−2)                ← 因為 T(n−1) &gt; T(n−2)
+     &gt; 2 · 2 · T(n−4)
+     &gt; 2 · 2 · 2 · T(n−6)
+     …每次 n 少 2，乘一個 2，總共乘 n/2 次
+     &gt; 2^(n/2)</div>
+  <p>正式的歸納法證明（p.9）：<b>基底</b> T(2)=3 &gt; 2¹、T(3)=5 &gt; 2^1.5≈2.83；<b>假設</b> 2 ≤ m &lt; n 都成立；<b>推論</b> T(n) = T(n−1)+T(n−2)+1 &gt; 2^((n−1)/2) + 2^((n−2)/2) &gt; 2·2^((n−2)/2) = 2^(n/2)。</p></div>
+</section>
+
+<section class="ch" id="c1-tc">
+  <span class="pages">Ch1 p.12 – p.15</span>
+  <h2>時間複雜度：T(n)、W(n)、B(n)、A(n)</h2>
+  <ul class="walk">
+    <li><span>p.12</span><span>分析效率 = 數<b>基本運算</b>（例如比較）做了幾次，寫成<b>輸入大小</b> n 的函數。</span></li>
+    <li><span>p.13</span><span>陣列加總：不管數字是多少都跑 n 次 → <b>T(n) = n</b>（every-case，每種情況都一樣）。循序搜尋就不是：次數跟 x 在哪裡有關。</span></li>
+    <li><span>p.14</span><span>所以分三種：<b>W(n)</b> 最差、<b>B(n)</b> 最好、<b>A(n)</b> 平均。循序搜尋 W(n) = n（最後一個或不在）、B(n) = 1（第一個）。</span></li>
+    <li><span>p.15</span><span>循序搜尋平均：x 一定在 S 裡時 A(n) = (n+1)/2。</span></li>
+  </ul>
+  <div class="box key"><h4>A(n) = (n+1)/2 怎麼來？</h4>
+  <p>x 在第 k 個位置的機率都是 1/n，在第 k 個要比 k 次：</p>
+  <div class="formula">A(n) = 1·(1/n) + 2·(1/n) + … + n·(1/n)
+     = (1 + 2 + … + n) / n
+     = [n(n+1)/2] / n
+     = (n+1)/2</div>
+  <p>白話：平均要找一半左右。如果 x 有機率 p 在陣列裡、1−p 不在：A(n) = n(1 − p/2) + p/2。代 p = 1 就回到 (n+1)/2。</p></div>
+  <div class="box warn"><h4>常見錯誤</h4>
+  <p>「最好情況」是指<b>同樣大小 n</b> 的輸入中最快的那個（x 剛好在第一個），不是「n = 1」。</p></div>
+</section>
+
+<section class="ch" id="c1-order">
+  <span class="pages">Ch1 p.16 – p.30</span>
+  <h2>O、Ω、Θ、o：比較誰長得快</h2>
+  <ul class="walk">
+    <li><span>p.16</span><span>演算法 A 是 100n、B 是 0.01n²。n &gt; 10000 之後 B 就比 A 慢。<b>n 夠大時，n 一定贏 n²</b>，係數不重要。</span></li>
+    <li><span>p.17–18</span><span>丟掉低次項：0.1n² + n + 100 跟 0.1n² 在 n 很大時幾乎一樣。常見等級：lg n &lt; n &lt; n lg n &lt; n² &lt; n³ &lt; 2ⁿ。要 n lg n 或更好才能處理超大資料。</span></li>
+    <li><span>p.19–20</span><span><b>big O（上限）</b>：存在 c 和 N，使得 n ≥ N 時 g(n) ≤ c·f(n)。</span></li>
+    <li><span>p.21–22</span><span><b>Ω（下限）</b>：存在 d 和 N，使得 n ≥ N 時 g(n) ≥ d·f(n)。</span></li>
+    <li><span>p.23–25</span><span><b>Θ（夾住）</b>：同時是 O 又是 Ω。用反證法證 n ∉ Ω(n²)。</span></li>
+    <li><span>p.26–28</span><span><b>small o（嚴格比較小）</b>：<b>每一個</b> c &gt; 0 都找得到 N。n ∈ o(n²)，但 n ∉ o(5n)。</span></li>
+    <li><span>p.29–30</span><span>性質：所有 log 同一級；不同底的指數不同級；n! 比任何指數都慢；係數和低次項都可以丟。</span></li>
+  </ul>
+  <div class="box key"><h4>四個符號，用「比大小」記</h4>
+  <div class="tbl"><table>
+    <tr><th>符號</th><th class="l">意思（n 夠大以後）</th><th>像</th><th class="l">要找什麼</th></tr>
+    <tr><td>g ∈ O(f)</td><td class="l">g 不會比 f 的某個倍數大</td><td>≤</td><td class="l"><b>存在</b>一組 c、N</td></tr>
+    <tr><td>g ∈ Ω(f)</td><td class="l">g 不會比 f 的某個倍數小</td><td>≥</td><td class="l"><b>存在</b>一組 d、N</td></tr>
+    <tr><td>g ∈ Θ(f)</td><td class="l">兩邊都被夾住，同一級</td><td>=</td><td class="l">O 和 Ω 都證</td></tr>
+    <tr><td>g ∈ o(f)</td><td class="l">g 比 f 小一整級</td><td>&lt;</td><td class="l"><b>每一個</b> c 都要找得到 N</td></tr>
+  </table></div>
+  <p>證明題的套路：<b>寫出定義 → 選 c（或 d）和 N → 驗證不等式</b>。證「不屬於」就用反證法：假設屬於，推出矛盾。</p></div>
+
+  <div class="sim" id="sim-order">
+    <div class="sim-head"><span class="sim-title">找 c 和 N 的練習器</span></div>
+    <div class="sim-body">
+      <div class="seg" id="o-ex"></div>
+      <div class="ins"><label class="f" style="flex:0 1 140px">c（或 d）<input type="number" id="o-c" step="any"></label><label class="f" style="flex:0 1 140px">N<input type="number" id="o-N" min="0"></label></div>
+      <div id="o-out"></div>
+    </div>
+  </div>
+
+  <h3>投影片的證明，考試照這樣寫</h3>
+  <details><summary>證明 n² + 10n ∈ O(n²)（p.20，兩種 c、N 都對）</summary><div>
+    <p><b>方法一</b>：取 c = 2、N = 10。當 n ≥ 10，10n ≤ n·n = n²，所以 n² + 10n ≤ n² + n² = 2n²。</p>
+    <p><b>方法二</b>：取 c = 11、N = 1。當 n ≥ 1，10n ≤ 10n²，所以 n² + 10n ≤ n² + 10n² = 11n²。</p>
+    <p>重點：c、N 只要<b>存在一組</b>就好，不用最小。</p>
+  </div></details>
+  <details><summary>證明 n ∉ Ω(n²)（p.25，反證法）</summary><div>
+    <p>假設 n ∈ Ω(n²)，則存在 d &gt; 0 和 N，使得所有 n ≥ N 都有 n ≥ d·n²。</p>
+    <p>兩邊除以 dn：1/d ≥ n。但當 n &gt; 1/d 時這不成立，跟「所有 n ≥ N 都成立」矛盾。所以 n ∉ Ω(n²)。</p>
+  </div></details>
+  <details><summary>證明 n ∈ o(n²)，以及 n ∉ o(5n)（p.27）</summary><div>
+    <p><b>n ∈ o(n²)</b>：任意 c &gt; 0，要找 N 讓 n ≤ cn²。兩邊除以 cn：1/c ≤ n。所以取 N ≥ 1/c 就好。c 再小都找得到 → 成立。</p>
+    <p><b>n ∉ o(5n)</b>：假設成立，那 c = 1/6 時也要有 N。但 n ≤ (1/6)·5n = (5/6)n 對正整數 n 永遠不成立 → 矛盾。</p>
+    <p>直覺：n 和 5n 是同一級（Θ），差的只是倍數，所以不是「嚴格小一級」。</p>
+  </div></details>
+  <details><summary>p.29 的性質，一次看懂</summary><div>
+    <ul>
+      <li>g ∈ O(f) ⇔ f ∈ Ω(g)（我 ≤ 你，就是你 ≥ 我）。</li>
+      <li>log₂n、log₃n、log₁₀n 都是 Θ(lg n)：換底只差一個常數倍。</li>
+      <li>2ⁿ ∈ o(3ⁿ)：不同底的指數<b>不是</b>同一級（3ⁿ/2ⁿ = 1.5ⁿ 會一直變大）。</li>
+      <li>完整排序：lg n &lt; n &lt; n lg n &lt; n² &lt; nʲ &lt; nᵏ &lt; aⁿ &lt; bⁿ &lt; n!（k &gt; j &gt; 2，b &gt; a &gt; 1）。</li>
+    </ul>
+  </div></details>
+</section>
+
+<!-- ===== CH2 ===== -->
+<section class="ch" id="c2-dc">
+  <span class="pages">Ch2 p.2、p.13</span>
+  <h2>Divide-and-Conquer 分治法</h2>
+  <p>拿破崙在奧斯特里茲會戰把兵力比他多的敵軍從中間切成兩半，再各個擊破。折筷子也一樣：一把折不斷，一根一根就折斷了。</p>
+  <div class="box key"><h4>三步驟</h4>
+  <ol><li><b>Divide</b>：把大問題切成一個或多個較小、同類型的實例。</li><li><b>Conquer</b>：解決每個小實例。不夠小就繼續遞迴。</li><li><b>Combine</b>：必要時合併小實例的解。</li></ol>
+  <p>二元搜尋<b>不用合併</b>（只去其中一半）；合併排序<b>要合併</b>。分治法是<b>由上而下 top-down</b>。</p></div>
+</section>
+
+<section class="ch" id="c2-bs">
+  <span class="pages">Ch2 p.3 – p.6</span>
+  <h2>二元搜尋的遞迴版</h2>
+  <ul class="walk">
+    <li><span>p.3</span><span>跟第 1 章一樣的二元搜尋，找 78。</span></li>
+    <li><span>p.4</span><span>演算法 2.1：相等就回傳 mid；x &lt; S[mid] 就 <code>return location(low, mid−1)</code>；否則 <code>return location(mid+1, high)</code>。</span></li>
+    <li><span>p.5</span><span>遞迴要用堆疊（stack）記住暫存的東西，最差深度約 lg n + 1。迴圈版不用維護堆疊，比較快。這種「最後一步才遞迴」叫 tail recursion。</span></li>
+    <li><span>p.6</span><span>最差情況分析：x 比全部都大。n = 16 時 mid = 8，剩右半 8 個。W(n) = W(n/2) + 1，W(1) = 1 → <b>W(n) = ⌊lg n⌋ + 1 ∈ Θ(lg n)</b>。</span></li>
+  </ul>
+  <div class="box key"><h4>遞迴式白話</h4>
+  <div class="formula">W(n) = W(n/2) + 1      ← 這層比 1 次，剩一半繼續
+W(1) = 1               ← 只剩 1 個時比 1 次
+W(16) = W(8)+1 = W(4)+2 = W(2)+3 = W(1)+4 = 5 = lg 16 + 1</div>
+  <p>「n 要除以 2 幾次才變成 1」就是 lg n，再加最後那 1 次。</p></div>
+</section>
+
+<section class="ch" id="c2-ms">
+  <span class="pages">Ch2 p.7 – p.12</span>
+  <h2>合併排序 Merge Sort</h2>
+  <ul class="walk">
+    <li><span>p.7</span><span>切成兩半（各約 n/2）→ 各自排序（遞迴）→ 合併成一個排好的陣列。</span></li>
+    <li><span>p.8</span><span>合併：兩個排好的陣列，每次比兩邊最前面的，小的先放。</span></li>
+    <li><span>p.9</span><span>例：37 41 19 81 41 25 56 61 49，一直切到剩 1 個，再一路合回來。</span></li>
+    <li><span>p.10</span><span>合併的最差比較次數 W(h, m) = h + m − 1（兩邊交錯，最後才有一邊用完）。</span></li>
+    <li><span>p.11</span><span>W(n) = 2W(n/2) + n − 1，W(1) = 0 → <b>W(n) = n lg n − (n − 1) ∈ Θ(n lg n)</b>。</span></li>
+    <li><span>p.12</span><span>合併排序<b>不是</b>原地排序（in-place）：要額外的陣列 U、V，總共約 2n 的空間。演算法 2.4 改成用索引，減少額外空間。</span></li>
+  </ul>
+  <div class="sim" id="sim-merge">
+    <div class="sim-head"><span class="sim-title">合併兩個排好的陣列</span></div>
+    <div class="sim-body">
+      <div class="ins"><label class="f">U<input type="text" id="m-u" value="9,12,17,21,37"></label><label class="f">V<input type="text" id="m-v" value="3,11,20,55,67,71,89"></label></div>
+      <div class="seg"><button data-p="9,12,17,21,37|3,11,20,55,67,71,89">p.8 例題</button><button data-p="2,4,6,8,10|1,3,5,7,9,11">p.10 最差情況</button><button data-p="1,2,3|10,20,30,40">最好情況</button></div>
+      <div id="m-out"></div>
+    </div>
+  </div>
+  <div class="sim" id="sim-msort">
+    <div class="sim-head"><span class="sim-title">合併排序全過程</span></div>
+    <div class="sim-body">
+      <div class="ins"><label class="f">陣列<input type="text" id="ms-in" value="37,41,19,81,41,25,56,61,49"></label></div>
+      <div class="seg"><button data-p="37,41,19,81,41,25,56,61,49">p.9 例題</button><button data-p="8,3,6,1,9,4,7,2">8 個元素</button></div>
+      <div id="ms-out"></div>
+    </div>
+  </div>
+  <div class="box key"><h4>W(n) = n lg n − (n−1) 的直覺</h4>
+  <p>想像切成 lg n 層。每一層所有的合併加起來，處理的元素總共 n 個，比較次數最多 n 次左右。lg n 層 × 每層約 n 次 = n lg n。</p>
+  <p>驗算 n = 8：8·3 − 7 = 17。用遞迴式：W(2) = 1、W(4) = 2·1+3 = 5、W(8) = 2·5+7 = 17 ✓</p></div>
+</section>
+
+<section class="ch" id="c2-qs">
+  <span class="pages">Ch2 p.14 – p.20</span>
+  <h2>快速排序 Quick Sort</h2>
+  <ul class="walk">
+    <li><span>p.14</span><span>挑一個<b>樞紐 pivot</b>（通常是第一個），把比它小的放左邊、比它大的放右邊（partition），pivot 就到了正確位置。再分別處理左右兩邊。<b>不需要合併</b>。</span></li>
+    <li><span>p.15</span><span>分割例：40 41 19 81 41 25 56 21 61 49 → 25 21 19 <b>40</b> 41 81 56 41 61 49。</span></li>
+    <li><span>p.16</span><span>完整排序例：37 41 19 81 41 25 56 61 49。</span></li>
+    <li><span>p.17</span><span>分割一次：除了 pivot，每個都跟 pivot 比一次 → T(n) = n − 1。</span></li>
+    <li><span>p.18–19</span><span><b>最差情況：陣列已經排好</b>。每次 pivot 都是最小的，左邊 0 個、右邊 n−1 個。W(n) = W(n−1) + n − 1 → <b>W(n) = n(n−1)/2 ∈ Θ(n²)</b>。</span></li>
+    <li><span>p.20</span><span>平均情況：pivot 落在每個位置的機率都是 1/n。A(n) ≈ 1.38(n+1) lg n ∈ <b>Θ(n lg n)</b>。</span></li>
+  </ul>
+  <div class="sim" id="sim-part"></div>
+  <div class="sim" id="sim-qs">
+    <div class="sim-head"><span class="sim-title">快速排序全過程</span></div>
+    <div class="sim-body">
+      <div class="ins"><label class="f">陣列<input type="text" id="qs-in" value="37,41,19,81,41,25,56,61,49"></label></div>
+      <div class="seg"><button data-p="37,41,19,81,41,25,56,61,49">p.16 例題</button><button data-p="1,2,3,4,5,6">已排序（最差）</button><button data-p="40,41,19,81,41,25,56,21,61,49">p.15 陣列</button></div>
+      <div class="legend"><span><i style="background:var(--accent-soft);border:1px solid var(--accent)"></i>這次的 pivot</span><span><i style="background:var(--ok-soft);border:1px solid var(--ok)"></i>已經歸位</span><span>淡色＝不在這次處理的範圍</span></div>
+      <div id="qs-out"></div>
+    </div>
+  </div>
+  <div class="box warn"><h4>合併排序 vs 快速排序（常考）</h4>
+  <div class="tbl"><table><tr><th></th><th>合併排序</th><th>快速排序</th></tr>
+  <tr><td>辛苦的步驟</td><td>合併（Combine）</td><td>分割（Divide）</td></tr>
+  <tr><td>最差</td><td>Θ(n lg n)</td><td>Θ(n²)（已排序時）</td></tr>
+  <tr><td>平均</td><td>Θ(n lg n)</td><td>Θ(n lg n)，約 1.38 n lg n</td></tr>
+  <tr><td>額外空間</td><td>要額外陣列</td><td>原地交換</td></tr></table></div></div>
+</section>
+
+<section class="ch" id="c2-st">
+  <span class="pages">Ch2 p.21 – p.26</span>
+  <h2>Strassen 矩陣相乘</h2>
+  <ul class="walk">
+    <li><span>p.21</span><span>標準矩陣乘法三層迴圈：n×n×n 次乘法，Θ(n³)。</span></li>
+    <li><span>p.22</span><span>2×2 標準算法：8 次乘法、4 次加法。</span></li>
+    <li><span>p.23</span><span>Strassen：用 M₁～M₇ 只要 <b>7 次乘法</b>（多了一些加減）。大矩陣切成四塊 n/2 × n/2，每塊當成一個「數字」套同樣公式。</span></li>
+    <li><span>p.24</span><span>範例 2.5：4×4 矩陣切成 2×2 的區塊，算 M₁ = (A₁₁+A₂₂)(B₁₁+B₂₂)。矩陣夠小時改用標準方法。</span></li>
+    <li><span>p.25</span><span>乘法次數：T(n) = 7T(n/2)，T(1) = 1 → T(n) = n<sup>lg 7</sup> ≈ <b>n<sup>2.81</sup></b>。</span></li>
+    <li><span>p.26</span><span>加減次數：T(n) = 7T(n/2) + 18(n/2)²，T(1) = 0 → 6n<sup>2.81</sup> − 6n² ∈ Θ(n<sup>2.81</sup>)。</span></li>
+  </ul>
+  <div class="formula">M1 = (A11 + A22)(B11 + B22)      C11 = M1 + M4 − M5 + M7
+M2 = (A21 + A22) B11             C12 = M3 + M5
+M3 = A11 (B12 − B22)             C21 = M2 + M4
+M4 = A22 (B21 − B11)             C22 = M1 + M3 − M2 + M6
+M5 = (A11 + A12) B22
+M6 = (A21 − A11)(B11 + B12)
+M7 = (A12 − A22)(B21 + B22)</div>
+  <div class="sim" id="sim-st">
+    <div class="sim-head"><span class="sim-title">Strassen 驗算器（2×2）</span></div>
+    <div class="sim-body">
+      <div class="matrow"><span>A =</span><div class="mat" id="st-a"></div><span>B =</span><div class="mat" id="st-b"></div></div>
+      <div class="seg"><button data-p="3,5,11,13|17,10,7,9">p.24 的 M₁ 那一步</button><button data-p="1,2,3,4|5,6,7,8">簡單例子</button></div>
+      <div id="st-out"></div>
+    </div>
+  </div>
+  <div class="box key"><h4>為什麼少 1 次乘法差這麼多？</h4>
+  <p>遞迴下去每一層都少乘一次。8 次的話 T(n) = 8T(n/2) → n³；7 次的話 → n<sup>lg 7</sup> = n<sup>2.81</sup>。n = 1024 時：n³ ≈ 10.7 億，n<sup>2.81</sup> ≈ 2.8 億。</p>
+  <p>規律：T(n) = a·T(n/2) → n<sup>lg a</sup>。lg 8 = 3、lg 7 ≈ 2.81、lg 4 = 2、lg 3 ≈ 1.58。</p></div>
+</section>
+
+<section class="ch" id="c2-big">
+  <span class="pages">Ch2 p.27 – p.31</span>
+  <h2>大整數乘法</h2>
+  <ul class="walk">
+    <li><span>p.27</span><span>大整數用陣列一格存一位數。加減法一個 for 迴圈 → 線性時間。</span></li>
+    <li><span>p.28</span><span>把 n 位數切成兩半：567,832 = 567 × 10³ + 832。一般寫成 u = x × 10ᵐ + y，m = ⌊n/2⌋。</span></li>
+    <li><span>p.29</span><span>uv = xw × 10²ᵐ + (xz + wy) × 10ᵐ + yz。要 <b>4 次</b>小乘法。</span></li>
+    <li><span>p.30</span><span>W(n) = 4W(n/2) + cn → Θ(n<sup>lg 4</sup>) = Θ(n²)，跟直式乘法一樣，沒有變快。（投影片標了中文課本的錯：中間那項應該是 prod(x,z) + prod(w,y)。）</span></li>
+    <li><span>p.31</span><span>技巧：r = (x+y)(w+z) = xw + (xz+yw) + yz，所以 xz+yw = r − xw − yz。只要 <b>3 次</b>乘法（p = xw、q = yz、r）→ Θ(n<sup>lg 3</sup>) ≈ Θ(n<sup>1.58</sup>)。</span></li>
+  </ul>
+  <div class="sim" id="sim-big">
+    <div class="sim-head"><span class="sim-title">大整數乘法拆解</span></div>
+    <div class="sim-body">
+      <div class="ins"><label class="f">u<input type="text" id="b-u" value="567832"></label><label class="f">v<input type="text" id="b-v" value="9423723"></label></div>
+      <div id="b-out"></div>
+    </div>
+  </div>
+</section>
+
+<section class="ch" id="c2-end">
+  <span class="pages">Ch2 p.32 – p.33</span>
+  <h2>門檻值，以及什麼時候不能用分治法</h2>
+  <p><b>最佳門檻值 threshold</b>：問題切到比這個大小還小時，改用簡單的演算法（例如 Strassen 切到夠小就用標準乘法），因為再切下去分治法的額外成本反而更花時間。</p>
+  <div class="box warn"><h4>不能用分治法的兩種情況（必背）</h4>
+  <ol>
+    <li>大小 n 的問題切成兩個以上、<b>大小還是接近 n</b> 的問題 → 指數時間。例：遞迴費氏數列，F(n) 切成 F(n−1) 和 F(n−2)。</li>
+    <li>大小 n 的問題切成<b>將近 n 個</b>大小 n/c 的問題 → n<sup>Θ(lg n)</sup>。</li>
+  </ol>
+  <p>第一種情況就該改用第 3 章的動態規劃。</p></div>
+</section>
+
+<section class="ch" id="big">
+  <h2>複雜度總表</h2>
+  <div class="tbl"><table>
+    <tr><th>演算法</th><th class="l">遞迴式／算法</th><th>結果</th></tr>
+    <tr><td>循序搜尋</td><td class="l">W = n、B = 1、A = (n+1)/2</td><td>Θ(n)</td></tr>
+    <tr><td>二元搜尋</td><td class="l">W(n) = W(n/2) + 1，W(1) = 1</td><td>⌊lg n⌋+1 ∈ Θ(lg n)</td></tr>
+    <tr><td>遞迴費氏</td><td class="l">T(n) = T(n−1)+T(n−2)+1</td><td>&gt; 2<sup>n/2</sup>（指數）</td></tr>
+    <tr><td>迴圈費氏</td><td class="l">算 n+1 項</td><td>Θ(n)</td></tr>
+    <tr><td>合併</td><td class="l">最差 h + m − 1</td><td>Θ(n)</td></tr>
+    <tr><td>合併排序</td><td class="l">W(n) = 2W(n/2) + n − 1，W(1) = 0</td><td>n lg n − (n−1) ∈ Θ(n lg n)</td></tr>
+    <tr><td>分割 partition</td><td class="l">每個跟 pivot 比一次</td><td>n − 1</td></tr>
+    <tr><td>快速排序最差</td><td class="l">W(n) = W(n−1) + n − 1，W(0) = 0</td><td>n(n−1)/2 ∈ Θ(n²)</td></tr>
+    <tr><td>快速排序平均</td><td class="l">pivot 位置機率各 1/n</td><td>≈ 1.38(n+1) lg n ∈ Θ(n lg n)</td></tr>
+    <tr><td>標準矩陣乘法</td><td class="l">n·n·n</td><td>Θ(n³)</td></tr>
+    <tr><td>Strassen</td><td class="l">T(n) = 7T(n/2)</td><td>n<sup>lg 7</sup> ≈ n<sup>2.81</sup></td></tr>
+    <tr><td>大整數（4 次）</td><td class="l">W(n) = 4W(n/2) + cn</td><td>Θ(n²)</td></tr>
+    <tr><td>大整數（3 次）</td><td class="l">W(n) = 3W(n/2) + cn</td><td>Θ(n<sup>1.58</sup>)</td></tr>
+  </table></div>
+</section>
+
+<section class="ch" id="mock">
+  <h2>模擬考：先在紙上寫，再打開答案</h2>
+  <p>期中考第 1～5 題的詳解在另一份「演算法期中考古題詳解」。這裡是同類型的新題目。</p>
+  <div class="box"><p><b>第 1 題</b>　證明 3n² + 5n ∈ Θ(n²)，寫出你選的 c、d、N。</p></div>
+  <details><summary>答案</summary><div>
+    <p><b>O</b>：取 c = 8、N = 1。n ≥ 1 時 5n ≤ 5n²，所以 3n² + 5n ≤ 3n² + 5n² = 8n²。</p>
+    <p><b>Ω</b>：取 d = 3、N = 0。3n² + 5n ≥ 3n²，因為 5n ≥ 0。</p>
+    <p>兩個都成立 → Θ(n²)。可以用上面的練習器輸入檢查。</p>
+  </div></details>
+  <div class="box"><p><b>第 2 題</b>　用合併排序排 [8, 3, 6, 1, 9, 4, 7, 2]，寫出每次合併的結果和比較次數，並和 W(8) 比較。</p></div>
+  <details><summary>答案</summary><div>
+    <div class="formula">[8][3]→[3 8] 1次   [6][1]→[1 6] 1次   [9][4]→[4 9] 1次   [7][2]→[2 7] 1次
+[3 8][1 6]→[1 3 6 8] 3次          [4 9][2 7]→[2 4 7 9] 3次
+[1 3 6 8][2 4 7 9]→[1 2 3 4 6 7 8 9] 7次
+總共 17 次 = W(8) = 8·3 − 7，剛好是最差情況（每次合併都交錯到最後）</div>
+  </div></details>
+  <div class="box"><p><b>第 3 題</b>　對 [30, 50, 10, 70, 20, 60, 40] 做一次 partition（pivot = 第一個），寫出每次交換。</p></div>
+  <details><summary>答案</summary><div>
+    <div class="formula">pivot = 30
+i 停在 50（位置 1），j 停在 20（位置 4）→ 交換 → 30 20 10 70 50 60 40
+i 停在 70（位置 3），j 停在 10（位置 2）→ i ≥ j，停
+pivot 和 S[2]=10 交換 → 10 20 30 70 50 60 40</div>
+    <p>30 歸位在位置 2。可以把陣列丟進上面的分割模擬器檢查。</p>
+  </div></details>
+  <div class="box"><p><b>第 4 題</b>　(a) 為什麼快速排序在「已排序」的陣列最慢？(b) Strassen 乘法次數的遞迴式和結果？(c) 大整數乘法怎麼從 4 次變 3 次？</p></div>
+  <details><summary>答案</summary><div>
+    <p>(a) pivot 永遠是最小的，每次只分出左邊 0 個、右邊 n−1 個，問題只縮小 1。W(n) = W(n−1) + n−1 = n(n−1)/2。</p>
+    <p>(b) T(n) = 7T(n/2)，T(1) = 1 → n<sup>lg 7</sup> ≈ n<sup>2.81</sup>。</p>
+    <p>(c) 算 r = (x+y)(w+z)，則 xz + yw = r − xw − yz；xw、yz 本來就要算，所以只要 xw、yz、r 三次乘法。</p>
+  </div></details>
+</section>
+
+<footer>依 2026 Fall「演算法 Chapter 1」（p.1–30）與「Chapter 2」（p.1–33）投影片整理。模擬器的分割、合併、Strassen 與大整數結果都和投影片例題核對過。</footer>
+</div>
+
+<script>
+/*ALGO-START*/
+function seqSearch(S,x){ const rows=[]; for(let i=0;i<S.length;i++){ rows.push({i,v:S[i],hit:S[i]===x}); if(S[i]===x) return {rows,found:i}; } return {rows,found:-1}; }
+function binSearch(S,x){ let l=0,r=S.length-1; const rows=[];
+  while(l<=r){ const m=Math.floor((l+r)/2); const res=x===S[m]?"eq":x<S[m]?"lt":"gt"; rows.push({l,r,m,v:S[m],res}); if(res==="eq") return {rows,found:m}; if(res==="lt") r=m-1; else l=m+1; }
+  rows.push({l,r,end:true}); return {rows,found:-1}; }
+function fibT(n){ const T=[1,1]; for(let i=2;i<=n;i++) T[i]=T[i-1]+T[i-2]+1; return T; }
+function mergeCount(U,V){ let i=0,j=0,c=0; const out=[],log=[];
+  while(i<U.length&&j<V.length){ c++; if(U[i]<V[j]){ log.push(`${U[i]} vs ${V[j]} → 放 ${U[i]}`); out.push(U[i++]); } else { log.push(`${U[i]} vs ${V[j]} → 放 ${V[j]}`); out.push(V[j++]); } }
+  const rest=i<U.length?U.slice(i):V.slice(j); if(rest.length) log.push(`${i<U.length?"V":"U"} 用完了，剩下 ${rest.join(", ")} 直接抄過去（不用比）`);
+  return {out:out.concat(rest),c,log}; }
+function mergeSortTrace(S){ const steps=[]; let total=0;
+  (function ms(a,d){ if(a.length<=1){ return a; } const h=Math.floor(a.length/2); const L=a.slice(0,h),R=a.slice(h);
+    steps.push({d,type:"切",txt:`[${a.join(" ")}] → [${L.join(" ")}] ＋ [${R.join(" ")}]`});
+    const sl=ms(L,d+1), sr=ms(R,d+1); const m=mergeCount(sl,sr); total+=m.c;
+    steps.push({d,type:"合",txt:`[${sl.join(" ")}] ＋ [${sr.join(" ")}] → [${m.out.join(" ")}]　比較 ${m.c} 次`}); return m.out; })(S,0);
+  return {steps,total}; }
+function partition(S,low,high,log){ const p=S[low]; let i=low+1,j=high; const snap=()=>S.slice();
+  log.push({a:snap(),hl:[low],msg:`樞紐 pivot = ${p}（第一個）。i 從左往右找「比 ${p} 大或相等」的，j 從右往左找「比 ${p} 小或相等」的。`});
+  while(true){ while(i<=high&&S[i]<p) i++; while(S[j]>p) j--;
+    if(i>=j){ log.push({a:snap(),hl:[i<=high?i:null,j].filter(x=>x!==null),msg:`i = ${i}、j = ${j}，i 已經超過或碰到 j → 停。把 pivot 和 S[${j}] = ${S[j]} 交換。`}); break; }
+    log.push({a:snap(),hl:[i,j],msg:`i 停在 ${S[i]}（位置 ${i}），j 停在 ${S[j]}（位置 ${j}）→ 交換。`});
+    [S[i],S[j]]=[S[j],S[i]]; i++; j--; log.push({a:snap(),hl:[i-1,j+1],msg:`交換後。`}); }
+  [S[low],S[j]]=[S[j],S[low]]; log.push({a:snap(),hl:[j],piv:j,msg:`完成：${p} 到了位置 ${j}。左邊都 ≤ ${p}，右邊都 ≥ ${p}。`}); return j; }
+function quickTrace(S){ S=S.slice(); const rows=[{a:S.slice(),msg:"原始陣列"}]; let comps=0; const fixed=new Set();
+  (function qs(lo,hi){ if(lo>hi) return; if(lo===hi){ fixed.add(lo); return; } const lg=[]; const pv=partition(S,lo,hi,lg); fixed.add(pv);
+    rows.push({a:S.slice(),range:[lo,hi],piv:pv,fixed:new Set(fixed),msg:`對 [${lo}..${hi}] 分割，pivot ${S[pv]} 歸位到 ${pv}`}); qs(lo,pv-1); qs(pv+1,hi); })(0,S.length-1);
+  return rows; }
+function strassen2(A,B){ const [[a11,a12],[a21,a22]]=A,[[b11,b12],[b21,b22]]=B;
+  const M=[(a11+a22)*(b11+b22),(a21+a22)*b11,a11*(b12-b22),a22*(b21-b11),(a11+a12)*b22,(a21-a11)*(b11+b12),(a12-a22)*(b21+b22)];
+  const C=[[M[0]+M[3]-M[4]+M[6],M[2]+M[4]],[M[1]+M[3],M[0]+M[2]-M[1]+M[5]]];
+  const S=[[a11*b11+a12*b21,a11*b12+a12*b22],[a21*b11+a22*b21,a21*b12+a22*b22]]; return {M,C,S}; }
+function bigMul(u,v){ u=BigInt(u); v=BigInt(v); const n=Math.max(u.toString().length,v.toString().length); const m=Math.floor(n/2); const T=10n**BigInt(m);
+  const x=u/T,y=u%T,w=v/T,z=v%T; const xw=x*w,yz=y*z,xz=x*z,yw=y*w,r=(x+y)*(w+z);
+  return {n,m,x,y,w,z,xw,yz,xz,yw,r,mid:r-xw-yz,ans:xw*T*T+(r-xw-yz)*T+yz,check:u*v}; }
+/*ALGO-END*/
+const $=id=>document.getElementById(id);
+const nums=s=>s.split(/[,，\s]+/).map(Number).filter(x=>!isNaN(x)&&x!=="" );
+const parse=s=>s.split(/[,，\s]+/).filter(x=>x!=="").map(Number).filter(x=>!isNaN(x));
+const arrHTML=(a,cls)=>`<div class="arr">${a.map((v,i)=>`<span class="${cls?cls(i):""}">${v}<small>[${i}]</small></span>`).join("")}</div>`;
+
+/* search */
+(function(){ let mode="bin"; const out=$("s-out");
+  function run(){ let S=parse($("s-arr").value); const x=Number($("s-x").value); if(!S.length){out.innerHTML="";return;}
+    let h="";
+    if(mode==="bin"){ const sorted=[...S].sort((a,b)=>a-b); const was=S.join()!==sorted.join(); S=sorted; const r=binSearch(S,x);
+      h+=(was?`<p style="color:var(--bad)">二元搜尋要先排序，已經幫你排好：</p>`:"")+arrHTML(S,i=>i===r.found?"fx":"");
+      h+=`<div class="tbl"><table><tr><th>次</th><th>l</th><th>r</th><th>m = ⌊(l+r)/2⌋</th><th>a[m]</th><th class="l">結果</th></tr>${r.rows.map((w,i)=>w.end?`<tr><td>—</td><td>${w.l}</td><td>${w.r}</td><td colspan="3" class="l">l &gt; r，找不到，結束</td></tr>`:`<tr><td>${i+1}</td><td>${w.l}</td><td>${w.r}</td><td>${w.m}</td><td>${w.v}</td><td class="l ${w.res==="eq"?"ok":""}">${w.res==="eq"?`${x} = a[${w.m}]，成功`:w.res==="lt"?`${x} &lt; ${w.v} → 往左，r = ${w.m-1}`:`${x} &gt; ${w.v} → 往右，l = ${w.m+1}`}</td></tr>`).join("")}</table></div>`;
+      const c=r.rows.filter(w=>!w.end).length; h+=`<p>比較 <b>${c}</b> 次。n = ${S.length}，最差情況 ⌊lg n⌋ + 1 = ${Math.floor(Math.log2(S.length))+1} 次。</p>`;
+    } else { const r=seqSearch(S,x); h+=arrHTML(S,i=>i===r.found?"fx":i<r.rows.length?"hl":"");
+      h+=`<p>${r.rows.map(w=>`S[${w.i}]=${w.v}${w.hit?" ✓":" ✗"}`).join("　")}</p><p>${r.found>=0?`找到，在位置 ${r.found}`:"找不到"}，比較 <b>${r.rows.length}</b> 次。n = ${S.length}：B(n) = 1、W(n) = ${S.length}、A(n) = (n+1)/2 = ${(S.length+1)/2}。</p>`; }
+    out.innerHTML=h; }
+  document.querySelectorAll("#sim-search .sim-head button").forEach(b=>b.onclick=()=>{ mode=b.dataset.m; document.querySelectorAll("#sim-search .sim-head button").forEach(x=>x.classList.toggle("on",x===b)); run(); });
+  document.querySelectorAll("#sim-search [data-p]").forEach(b=>b.onclick=()=>{ const [a,x]=b.dataset.p.split("|"); $("s-arr").value=a; $("s-x").value=x; if(b.textContent.includes("循序")||b.textContent.includes("p.4")){ mode="seq"; } else mode="bin"; document.querySelectorAll("#sim-search .sim-head button").forEach(y=>y.classList.toggle("on",y.dataset.m===mode)); run(); });
+  $("s-arr").oninput=run; $("s-x").oninput=run; run(); })();
+
+/* fib */
+(function(){ const NS="http://www.w3.org/2000/svg"; const el=(t,a,p)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);p&&p.appendChild(e);return e;};
+  const col=["var(--edge)","var(--edge)","var(--ok)","var(--cand)","var(--accent)","var(--bad)","var(--ink)"];
+  function run(){ let n=Math.max(0,Math.min(40,parseInt($("f-n").value)||0)); const T=fibT(Math.max(n,1));
+    const box=$("f-viz"); box.innerHTML="";
+    if(n<=6){ const out=[]; let x=0; (function lay(k,d){ const me={k,d}; if(k>=2){ me.l=lay(k-1,d+1); me.r=lay(k-2,d+1); me.x=(me.l.x+me.r.x)/2; } else me.x=x++; out.push(me); return me; })(n,0);
+      const W=Math.max(1,x)*40+20, H=(Math.max(...out.map(o=>o.d))+1)*50+20; const svg=el("svg",{viewBox:`0 0 ${W} ${H}`,width:W,height:H},box);
+      const P=o=>[o.x*40+30,o.d*50+24];
+      out.forEach(o=>{ if(o.l){ [o.l,o.r].forEach(c=>{ const [a,b]=P(o),[cx,cy]=P(c); el("line",{x1:a,y1:b,x2:cx,y2:cy,style:"stroke:var(--edge);stroke-width:1.5"},svg); }); } });
+      const cnt={}; out.forEach(o=>cnt[o.k]=(cnt[o.k]||0)+1);
+      out.forEach(o=>{ const [a,b]=P(o); el("circle",{cx:a,cy:b,r:15,style:`fill:${cnt[o.k]>1?"var(--cand-soft)":"var(--node)"};stroke:var(--ink);stroke-width:1.2`},svg);
+        const t=el("text",{x:a,y:b+4,"text-anchor":"middle","font-size":"11","font-weight":"700",style:"fill:var(--ink);font-family:var(--f-mono)"},svg); t.textContent="F"+o.k; });
+      const rep=Object.entries(cnt).filter(([k,c])=>c>1).map(([k,c])=>`F(${k}) 算了 ${c} 次`).reverse().join("、");
+      $("f-out").innerHTML=`<p>橘色＝被重複計算的。${rep||"沒有重複"}。</p>`;
+    } else $("f-out").innerHTML=`<p style="color:var(--muted)">n ≤ 6 時會畫出遞迴樹。</p>`;
+    const rec=n<=1?1:T[n];
+    $("f-out").innerHTML+=`<div class="tbl"><table><tr><th>n</th><th>遞迴版要算幾項 T(n)</th><th>2^(n/2)</th><th>迴圈版 n+1</th></tr><tr><td>${n}</td><td><b>${rec.toLocaleString()}</b></td><td>${Math.pow(2,n/2).toFixed(1)}</td><td>${n+1}</td></tr></table></div>
+    <div class="tbl"><table><tr><th>n</th>${[0,1,2,3,4,5,6,10,20,30].map(k=>`<th>${k}</th>`).join("")}</tr><tr><th>T(n)</th>${[0,1,2,3,4,5,6,10,20,30].map(k=>`<td>${(k<=1?1:fibT(k)[k]).toLocaleString()}</td>`).join("")}</tr></table></div>`; }
+  $("f-n").oninput=run; run(); })();
+
+/* order */
+(function(){ const EX=[
+  {t:"5n² ∈ O(n²)",g:n=>5*n*n,f:n=>n*n,gs:"5n²",fs:"n²",op:"le",c:5,N:0},
+  {t:"n²+10n ∈ O(n²)",g:n=>n*n+10*n,f:n=>n*n,gs:"n²+10n",fs:"n²",op:"le",c:2,N:10},
+  {t:"n²+10n ∈ Ω(n²)",g:n=>n*n+10*n,f:n=>n*n,gs:"n²+10n",fs:"n²",op:"ge",c:1,N:0},
+  {t:"3n²+5n ∈ O(n²)",g:n=>3*n*n+5*n,f:n=>n*n,gs:"3n²+5n",fs:"n²",op:"le",c:4,N:0},
+  {t:"n ∈ Ω(n²)？",g:n=>n,f:n=>n*n,gs:"n",fs:"n²",op:"ge",c:0.1,N:0},
+  {t:"n² ∈ O(n)？",g:n=>n*n,f:n=>n,gs:"n²",fs:"n",op:"le",c:100,N:0}];
+  let cur=EX[0];
+  $("o-ex").innerHTML=EX.map((e,i)=>`<button data-i="${i}" class="${i?"":"on"}">${e.t}</button>`).join("");
+  function run(){ const c=parseFloat($("o-c").value), N=Math.max(0,parseInt($("o-N").value)||0); if(isNaN(c)){ $("o-out").innerHTML=""; return; }
+    const ns=[]; for(let n=N;n<=N+14;n++) ns.push(n); ns.push(N+50,N+100,N+1000);
+    const ok=n=>cur.op==="le"?cur.g(n)<=c*cur.f(n):cur.g(n)>=c*cur.f(n);
+    const all=ns.every(ok); const sym=cur.op==="le"?"≤":"≥";
+    $("o-out").innerHTML=`<p>要檢查：n ≥ ${N} 時，${cur.gs} ${sym} ${c}·${cur.fs} 是否<b>永遠</b>成立？</p><div class="tbl"><table><tr><th>n</th>${ns.map(n=>`<th>${n}</th>`).join("")}</tr><tr><th>${cur.gs}</th>${ns.map(n=>`<td>${cur.g(n).toLocaleString()}</td>`).join("")}</tr><tr><th>${c}·${cur.fs}</th>${ns.map(n=>`<td>${(+(c*cur.f(n)).toFixed(2)).toLocaleString()}</td>`).join("")}</tr><tr><th>成立？</th>${ns.map(n=>`<td class="${ok(n)?"ok":"bad"}">${ok(n)?"✓":"✗"}</td>`).join("")}</tr></table></div>
+    <p>${all?`表上都成立 ✓ 這組 c = ${c}、N = ${N} 看起來可以（考試還是要用不等式證明）。`:`有 ✗ → 這組 c、N 不行。${cur.t.endsWith("？")?"這題不管 c 選多大（或多小），n 夠大時一定會出現 ✗，所以這個關係不成立。":"換大一點的 c 或 N 試試。"}`}</p>`; }
+  function pick(i){ cur=EX[i]; $("o-c").value=cur.c; $("o-N").value=cur.N; document.querySelectorAll("#o-ex button").forEach(b=>b.classList.toggle("on",+b.dataset.i===i)); run(); }
+  document.querySelectorAll("#o-ex button").forEach(b=>b.onclick=()=>pick(+b.dataset.i)); $("o-c").oninput=run; $("o-N").oninput=run; pick(0); })();
+
+/* merge */
+(function(){ function run(){ const U=parse($("m-u").value).sort((a,b)=>a-b),V=parse($("m-v").value).sort((a,b)=>a-b); if(!U.length||!V.length){$("m-out").innerHTML="";return;}
+    const r=mergeCount(U,V); $("m-out").innerHTML=`<div class="log">${r.log.map((l,i)=>`${l.includes("用完")?"   ":String(i+1).padStart(2)+"."} ${l}`).join("\n")}</div><p>結果 [${r.out.join(", ")}]。比較 <b>${r.c}</b> 次；h = ${U.length}、m = ${V.length}，最差情況 h + m − 1 = ${U.length+V.length-1}。${r.c===U.length+V.length-1?"這組就是最差情況：兩邊交錯到最後。":""}</p>`; }
+  document.querySelectorAll("#sim-merge [data-p]").forEach(b=>b.onclick=()=>{ const [u,v]=b.dataset.p.split("|"); $("m-u").value=u; $("m-v").value=v; run(); });
+  $("m-u").oninput=run; $("m-v").oninput=run; run(); })();
+(function(){ function run(){ const S=parse($("ms-in").value); if(S.length<2){$("ms-out").innerHTML="";return;} const r=mergeSortTrace(S);
+    $("ms-out").innerHTML=`<div class="log">${r.steps.map(s=>"    ".repeat(s.d)+`<span class="${s.type==="切"?"c":"m"}">${s.type}</span> ${s.txt}`).join("\n")}</div><p>總比較次數 <b>${r.total}</b>。（左半取 ⌊n/2⌋ 個，跟演算法 2.2 一樣）</p>`; }
+  document.querySelectorAll("#sim-msort [data-p]").forEach(b=>b.onclick=()=>{ $("ms-in").value=b.dataset.p; run(); }); $("ms-in").oninput=run; run(); })();
+
+/* partition stepper */
+(function(){ const root=$("sim-part");
+  root.innerHTML=`<div class="sim-head"><span class="sim-title">分割 partition 一步一步</span><div class="seg"><button data-p="40,41,19,81,41,25,56,21,61,49" class="on">p.15 例題</button><button data-p="30,50,10,70,20,60,40">模擬考第 3 題</button></div></div>
+  <div class="sim-body"><div class="ins"><label class="f">陣列<input type="text" id="p-in" value="40,41,19,81,41,25,56,21,61,49"></label></div><div class="viz" id="p-viz" style="justify-content:flex-start"></div><div class="msg" id="p-msg"></div>
+  <div class="ctrl"><button class="prev">← 上一步</button><button class="next primary">下一步 →</button><button class="end">直接看結果</button><span class="count"></span></div></div>`;
+  let L=[],k=0; const q=s=>root.querySelector(s);
+  function load(){ const S=parse($("p-in").value); L=[]; if(S.length>1) partition(S.slice(),0,S.length-1,L); k=0; show(); }
+  function show(){ if(!L.length){ $("p-viz").innerHTML=""; $("p-msg").textContent="至少輸入兩個數字。"; return; } const s=L[k];
+    $("p-viz").innerHTML=arrHTML(s.a,i=>s.piv===i?"fx":i===0&&s.piv===undefined?"pv":s.hl.includes(i)?"hl":"");
+    $("p-msg").innerHTML=`<b>步驟 ${k}：</b>${s.msg}`; q(".count").textContent=`${k} / ${L.length-1}`; q(".prev").disabled=k===0; q(".next").disabled=k===L.length-1; }
+  q(".prev").onclick=()=>{if(k>0){k--;show();}}; q(".next").onclick=()=>{if(k<L.length-1){k++;show();}}; q(".end").onclick=()=>{k=L.length-1;show();};
+  root.querySelectorAll(".sim-head button").forEach(b=>b.onclick=()=>{ $("p-in").value=b.dataset.p; root.querySelectorAll(".sim-head button").forEach(x=>x.classList.toggle("on",x===b)); load(); });
+  $("p-in").oninput=load; load(); })();
+(function(){ function run(){ const S=parse($("qs-in").value); if(S.length<2){$("qs-out").innerHTML="";return;} const R=quickTrace(S);
+    $("qs-out").innerHTML=R.map((r,i)=>`<p style="margin:8px 0 4px;font-size:14px"><b>${i?`第 ${i} 次：`:""}</b>${r.msg}</p>`+arrHTML(r.a,j=>{ if(!r.range) return ""; if(j===r.piv) return "pv"; if(r.fixed.has(j)) return "fx"; return j<r.range[0]||j>r.range[1]?"out":""; })).join("")+`<p>共分割 ${R.length-1} 次。</p>`; }
+  document.querySelectorAll("#sim-qs [data-p]").forEach(b=>b.onclick=()=>{ $("qs-in").value=b.dataset.p; run(); }); $("qs-in").oninput=run; run(); })();
+
+/* strassen */
+(function(){ const mk=(id,vals)=>{ $(id).innerHTML=vals.map((v,i)=>`<input type="number" id="${id}${i}" value="${v}" aria-label="${id} ${i}">`).join(""); };
+  mk("st-a",[3,5,11,13]); mk("st-b",[17,10,7,9]);
+  function run(){ const g=(id)=>[0,1,2,3].map(i=>Number($(id+i).value)||0); const a=g("st-a"),b=g("st-b"); const A=[[a[0],a[1]],[a[2],a[3]]],B=[[b[0],b[1]],[b[2],b[3]]]; const r=strassen2(A,B);
+    const eq=JSON.stringify(r.C)===JSON.stringify(r.S);
+    $("st-out").innerHTML=`<div class="formula">M1 = (${a[0]}+${a[3]})(${b[0]}+${b[3]}) = ${r.M[0]}
+M2 = (${a[2]}+${a[3]})·${b[0]} = ${r.M[1]}
+M3 = ${a[0]}·(${b[1]}−${b[3]}) = ${r.M[2]}
+M4 = ${a[3]}·(${b[2]}−${b[0]}) = ${r.M[3]}
+M5 = (${a[0]}+${a[1]})·${b[3]} = ${r.M[4]}
+M6 = (${a[2]}−${a[0]})(${b[0]}+${b[1]}) = ${r.M[5]}
+M7 = (${a[1]}−${a[3]})(${b[2]}+${b[3]}) = ${r.M[6]}
+
+C11 = M1+M4−M5+M7 = ${r.C[0][0]}     C12 = M3+M5 = ${r.C[0][1]}
+C21 = M2+M4 = ${r.C[1][0]}           C22 = M1+M3−M2+M6 = ${r.C[1][1]}
+
+標準算法（8 次乘法）：[[${r.S[0].join(", ")}], [${r.S[1].join(", ")}]]</div><p>${eq?"✓ Strassen 7 次乘法的結果和標準算法一樣。":"✗ 不一樣（不應該發生）"}</p>`; }
+  document.querySelectorAll("#sim-st input").forEach(i=>i.oninput=run);
+  document.querySelectorAll("#sim-st [data-p]").forEach(b=>b.onclick=()=>{ const [x,y]=b.dataset.p.split("|"); x.split(",").forEach((v,i)=>$("st-a"+i).value=v); y.split(",").forEach((v,i)=>$("st-b"+i).value=v); run(); }); run(); })();
+
+/* big int */
+(function(){ function run(){ const u=$("b-u").value.replace(/\D/g,""), v=$("b-v").value.replace(/\D/g,""); if(!u||!v){$("b-out").innerHTML="";return;}
+    const r=bigMul(u,v); const f=x=>x.toLocaleString("en-US");
+    $("b-out").innerHTML=`<div class="formula">n = ${r.n} 位，m = ⌊n/2⌋ = ${r.m}
+u = ${f(r.x)} × 10^${r.m} + ${f(r.y)}      → x = ${f(r.x)}，y = ${f(r.y)}
+v = ${f(r.w)} × 10^${r.m} + ${f(r.z)}      → w = ${f(r.w)}，z = ${f(r.z)}
+
+【4 次乘法】uv = xw·10^${2*r.m} + (xz + yw)·10^${r.m} + yz
+  xw = ${f(r.xw)}
+  xz = ${f(r.xz)}
+  yw = ${f(r.yw)}
+  yz = ${f(r.yz)}
+
+【3 次乘法】p = xw = ${f(r.xw)}，q = yz = ${f(r.yz)}
+  r = (x+y)(w+z) = ${f(r.x+r.y)} × ${f(r.w+r.z)} = ${f(r.r)}
+  xz + yw = r − p − q = ${f(r.mid)}   （跟 ${f(r.xz)} + ${f(r.yw)} = ${f(r.xz+r.yw)} 一樣 ✓）
+
+uv = ${f(r.xw)}·10^${2*r.m} + ${f(r.mid)}·10^${r.m} + ${f(r.yz)}
+   = ${f(r.ans)}</div><p>${r.ans===r.check?"✓ 跟直接相乘的結果一樣。":"✗"}</p>`; }
+  $("b-u").oninput=run; $("b-v").oninput=run; run(); })();
+</script>
+
+</body></html>
