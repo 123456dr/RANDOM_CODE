@@ -1,0 +1,2862 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>組語期中特訓</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap">
+<style>
+/* 版面概念：像一張 x86 規格表——左邊是區段（單元）清單，右邊一次一題，狀態列像暫存器傾印 */
+:root{
+  --bg:#ECEFF3; --surface:#FFFFFF; --sunk:#F4F6F9; --ink:#17212C; --muted:#5B6674; --line:#D3DAE2;
+  --accent:#2348C2; --accent-soft:#E2E8F8; --accent-ink:#FFFFFF;
+  --ok:#157A4B; --ok-soft:#E1F2E9; --bad:#BD3329; --bad-soft:#FBE7E5; --warn:#9A6300; --warn-soft:#FBF0D9;
+  --code:#F3F5F8; --code-ink:#1F2A37; --kw:#2348C2;
+  --f-display:"IBM Plex Sans","Noto Sans TC",system-ui,sans-serif;
+  --f-body:"Noto Sans TC","IBM Plex Sans",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,"Cascadia Mono",Consolas,"Noto Sans TC",monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0E1319; --surface:#151C24; --sunk:#111820; --ink:#E3E8EE; --muted:#95A2B1; --line:#27313D;
+  --accent:#86A6FF; --accent-soft:#1D2944; --accent-ink:#0E1319;
+  --ok:#4CC48C; --ok-soft:#12291F; --bad:#FF8379; --bad-soft:#331816; --warn:#E9B652; --warn-soft:#2E2412;
+  --code:#10161D; --code-ink:#D9E1EA; --kw:#9DB7FF; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0E1319; --surface:#151C24; --sunk:#111820; --ink:#E3E8EE; --muted:#95A2B1; --line:#27313D;
+  --accent:#86A6FF; --accent-soft:#1D2944; --accent-ink:#0E1319;
+  --ok:#4CC48C; --ok-soft:#12291F; --bad:#FF8379; --bad-soft:#331816; --warn:#E9B652; --warn-soft:#2E2412;
+  --code:#10161D; --code-ink:#D9E1EA; --kw:#9DB7FF; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15.5px;line-height:1.7}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 56px}
+button{font:inherit;color:inherit}
+code,pre,.mono{font-family:var(--f-mono)}
+code{background:var(--sunk);border:1px solid var(--line);border-radius:5px;padding:0 .3em;font-size:.92em}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0}
+
+/* 頁首 */
+header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 24px;margin-bottom:16px}
+.brand h1{font-size:clamp(1.5rem,3.2vw,2rem);font-weight:700;letter-spacing:.01em}
+.brand p{margin:2px 0 0;color:var(--muted);font-size:.95rem}
+.regs{display:flex;flex-wrap:wrap;gap:6px;font-family:var(--f-mono);font-size:.82rem}
+.reg{background:var(--surface);border:1px solid var(--line);border-radius:7px;padding:4px 10px;display:flex;gap:8px;align-items:baseline;font-variant-numeric:tabular-nums}
+.reg b{font-weight:600;color:var(--muted);letter-spacing:.06em}
+.reg span.h{font-weight:600}
+.reg.ok span.h{color:var(--ok)} .reg.bad span.h{color:var(--bad)}
+
+/* 主分頁 */
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:18px}
+.tab{background:none;border:0;border-bottom:3px solid transparent;padding:10px 16px;cursor:pointer;font-family:var(--f-display);font-weight:600;color:var(--muted);font-size:1rem}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.tab:focus-visible,.btn:focus-visible,.unit:focus-visible,.chip:focus-visible,.dot:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* 填空區版面 */
+.drill{display:grid;grid-template-columns:270px minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:860px){.drill{grid-template-columns:minmax(0,1fr)}}
+aside.units{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:10px;position:sticky;top:calc(env(safe-area-inset-top,0px) + 10px)}
+@media (max-width:860px){aside.units{position:static}}
+.units h3{font-size:.78rem;letter-spacing:.08em;color:var(--muted);text-transform:uppercase;padding:4px 8px 6px;font-weight:600}
+.unit{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:2px 10px;width:100%;text-align:left;background:none;border:0;border-radius:8px;padding:7px 8px;cursor:pointer;align-items:center}
+.unit:hover{background:var(--sunk)}
+.unit[aria-current="true"]{background:var(--accent-soft)}
+.unit .seg{font-family:var(--f-mono);font-size:.74rem;color:var(--muted);width:2.1em}
+.unit .nm{font-size:.92rem;font-weight:500;line-height:1.35}
+.unit .ct{font-family:var(--f-mono);font-size:.74rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.unit .bar{grid-column:2/4;height:3px;background:var(--line);border-radius:3px;overflow:hidden;display:flex}
+.unit .bar i{display:block;height:100%}
+.unit .bar i.o{background:var(--ok)} .unit .bar i.x{background:var(--bad)}
+.unit .tag{grid-column:2/4;font-size:.72rem;color:var(--bad);line-height:1.2}
+@media (max-width:860px){.unitlist{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px}.unit{min-width:180px;border:1px solid var(--line)}}
+
+.filters{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;align-items:center}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 12px;font-size:.88rem;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.chip .n{font-family:var(--f-mono);font-size:.78rem;opacity:.75;margin-left:4px}
+.spacer{flex:1}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:7px 14px;cursor:pointer;font-weight:500;font-size:.93rem}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
+.btn.ghost{background:none}
+.btn:disabled{opacity:.45;cursor:default}
+
+/* 題目卡 */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px 22px;display:flex;flex-direction:column;gap:14px}
+@media (max-width:520px){.card{padding:16px 14px}}
+.meta{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;font-size:.82rem;color:var(--muted)}
+.addr{font-family:var(--f-mono);font-weight:600;color:var(--ink)}
+.src{border-radius:5px;padding:1px 8px;font-weight:600;font-size:.76rem;letter-spacing:.03em}
+.src.orig{background:var(--bad-soft);color:var(--bad)}
+.src.var{background:var(--warn-soft);color:var(--warn)}
+.src.new{background:var(--accent-soft);color:var(--accent)}
+.state{margin-left:auto;font-family:var(--f-mono);font-size:.76rem}
+.state.ok{color:var(--ok)} .state.bad{color:var(--bad)} .state.part{color:var(--warn)}
+.card h2{font-size:1.28rem;font-weight:600}
+.q{margin:0;color:var(--ink)}
+.codebox{background:var(--code);color:var(--code-ink);border:1px solid var(--line);border-radius:8px;padding:14px 16px;overflow-x:auto;font-family:var(--f-mono);font-size:.92rem;line-height:2.05;white-space:pre;margin:0;tab-size:4}
+.blank{font-family:var(--f-mono);font-size:.9rem;background:var(--surface);color:var(--ink);border:1.5px solid var(--accent);border-radius:5px;padding:1px 6px;margin:0 1px;min-width:3.2em;line-height:1.5}
+.blank:focus{outline:2px solid var(--accent-soft);outline-offset:1px}
+.blank.ok{border-color:var(--ok);background:var(--ok-soft)}
+.blank.bad{border-color:var(--bad);background:var(--bad-soft)}
+.blank.part{border-color:var(--warn);background:var(--warn-soft)}
+.fix{display:inline-block;font-size:.78rem;color:var(--ok);background:var(--ok-soft);border-radius:4px;padding:0 5px;margin-left:3px;line-height:1.5;vertical-align:middle}
+.actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.hint{background:var(--sunk);border-left:3px solid var(--warn);padding:8px 12px;border-radius:0 8px 8px 0;font-size:.94rem}
+.verdict{border-radius:8px;padding:10px 14px;font-weight:600}
+.verdict.ok{background:var(--ok-soft);color:var(--ok)}
+.verdict.bad{background:var(--bad-soft);color:var(--bad)}
+.verdict.part{background:var(--warn-soft);color:var(--warn)}
+.notes{display:flex;flex-direction:column;gap:6px;font-size:.92rem}
+.note{border:1px dashed var(--line);border-radius:8px;padding:6px 10px}
+.note b{font-family:var(--f-mono)}
+.explain{border-top:1px solid var(--line);padding-top:12px;font-size:.98rem}
+.explain>h3{font-size:.8rem;letter-spacing:.08em;color:var(--muted);text-transform:uppercase;margin-bottom:6px}
+.explain p{margin:.45em 0}
+.explain ul,.explain ol{margin:.3em 0;padding-left:1.4em}
+.explain pre{background:var(--code);color:var(--code-ink);border:1px solid var(--line);border-radius:8px;padding:10px 12px;overflow-x:auto;font-size:.86rem;line-height:1.6;margin:.5em 0}
+.tw{overflow-x:auto}
+table.t{border-collapse:collapse;font-size:.88rem;margin:.5em 0;font-variant-numeric:tabular-nums}
+table.t th,table.t td{border:1px solid var(--line);padding:4px 10px;text-align:left;vertical-align:top}
+table.t th{background:var(--sunk);font-weight:600}
+.retry{font-size:.9rem;color:var(--muted)}
+.nav{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.dots{display:flex;flex-wrap:wrap;gap:4px;flex:1;min-width:0}
+.dot{width:14px;height:14px;border-radius:3px;border:1px solid var(--line);background:var(--surface);cursor:pointer;padding:0}
+.dot.ok{background:var(--ok);border-color:var(--ok)} .dot.bad{background:var(--bad);border-color:var(--bad)} .dot.part{background:var(--warn);border-color:var(--warn)}
+.dot.cur{outline:2px solid var(--ink);outline-offset:1px}
+.empty{background:var(--surface);border:1px dashed var(--line);border-radius:var(--r);padding:28px;text-align:center;color:var(--muted)}
+.exam-bar{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;background:var(--accent-soft);border-radius:8px;padding:8px 12px;margin-bottom:12px;font-size:.92rem}
+.exam-bar b{font-family:var(--f-mono)}
+.howto{font-size:.9rem;color:var(--muted);margin:0 0 12px}
+
+/* 上機區 */
+.lab-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:22px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px 22px}
+@media (max-width:520px){.panel{padding:16px 14px}}
+.panel>h2{font-size:1.2rem;margin-bottom:4px}
+.panel>.sub{color:var(--muted);margin:0 0 12px;font-size:.93rem}
+ol.steps{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:2px;counter-reset:s}
+ol.steps li{display:grid;grid-template-columns:auto auto minmax(0,1fr);gap:10px;align-items:start;padding:8px 6px;border-radius:8px;counter-increment:s}
+ol.steps li:hover{background:var(--sunk)}
+ol.steps li::before{content:counter(s);font-family:var(--f-mono);font-size:.8rem;color:var(--muted);width:1.6em;text-align:right;padding-top:.15em}
+ol.steps input{margin-top:.45em;width:16px;height:16px;accent-color:var(--ok)}
+ol.steps .st{font-weight:600}
+ol.steps .sd{color:var(--muted);font-size:.93rem}
+ol.steps li.done .st{text-decoration:line-through;color:var(--muted)}
+.codewrap{position:relative}
+.codewrap pre{background:var(--code);color:var(--code-ink);border:1px solid var(--line);border-radius:8px;padding:14px 16px;overflow-x:auto;font-size:.86rem;line-height:1.6;margin:0}
+.copy{position:absolute;top:8px;right:8px;font-size:.78rem;padding:3px 10px}
+.labcard{border:1px solid var(--line);border-radius:var(--r);background:var(--surface);overflow:hidden}
+.labhead{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;padding:14px 18px;cursor:pointer;background:none;border:0;width:100%;text-align:left}
+.labhead h3{font-size:1.06rem;font-weight:600}
+.labhead .lstat{margin-left:auto;font-family:var(--f-mono);font-size:.78rem;color:var(--muted)}
+.labhead .lstat.done{color:var(--ok)}
+.labbody{padding:0 18px 18px;display:flex;flex-direction:column;gap:12px}
+.cpts{display:flex;flex-wrap:wrap;gap:6px}
+.cpt{font-size:.8rem;background:var(--accent-soft);color:var(--accent);border-radius:5px;padding:1px 8px}
+.term{background:#0D1117;color:#D6DEE7;border-radius:8px;padding:12px 14px;font-family:var(--f-mono);font-size:.85rem;white-space:pre;overflow-x:auto;line-height:1.55}
+.lbl{font-size:.78rem;letter-spacing:.08em;color:var(--muted);text-transform:uppercase;font-weight:600;margin-bottom:4px}
+.hintlist{display:flex;flex-direction:column;gap:6px}
+.chk{display:flex;flex-direction:column;gap:4px}
+.chk label{display:flex;gap:8px;align-items:flex-start;font-size:.94rem}
+.chk input{margin-top:.4em;accent-color:var(--ok)}
+.errtable{overflow-x:auto}
+.errtable table{border-collapse:collapse;width:100%;font-size:.88rem;min-width:640px}
+.errtable th,.errtable td{border-bottom:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+.errtable th{font-weight:600;color:var(--muted);font-size:.8rem;letter-spacing:.04em}
+.errtable td:first-child{font-family:var(--f-mono);font-size:.82rem;white-space:nowrap}
+.callout{background:var(--sunk);border-radius:8px;padding:10px 14px;font-size:.93rem}
+
+/* A4 大抄：紙張刻意固定白底黑字，兩種主題都一樣 */
+.sheetbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+.sheetbar .sub{color:var(--muted);font-size:.9rem;flex-basis:100%;margin:0}
+.pagelabel{display:flex;gap:10px;align-items:baseline;margin:14px 0 6px;font-size:.88rem;color:var(--muted)}
+.pagelabel b{color:var(--ink);font-family:var(--f-display)}
+.pagelabel .warn{color:var(--bad);font-weight:600}
+.pagelabel .fit{color:var(--ok)}
+.a4wrap{overflow:hidden}
+.a4{width:210mm;height:297mm;background:#FFFFFF;color:#111111;box-shadow:0 1px 3px rgba(0,0,0,.18),0 8px 24px rgba(0,0,0,.08);transform-origin:top left;padding:7mm 7.5mm}
+.a4in{height:100%;overflow:hidden;column-count:2;column-gap:5mm;column-fill:auto;column-rule:.2mm solid #D7D7D7;font-family:"Noto Sans TC","Noto Sans CJK TC",system-ui,sans-serif;font-size:7.3pt;line-height:1.33;outline:none;color:#111}
+.a4in:focus{box-shadow:inset 0 0 0 .3mm #2348C2}
+.a4in .sh-title{column-span:all;font-family:"IBM Plex Sans","Noto Sans TC","Noto Sans CJK TC",sans-serif;font-weight:700;font-size:9.5pt;border-bottom:.4mm solid #111;padding-bottom:1mm;margin-bottom:1.5mm}
+.a4in h4{font-family:"IBM Plex Sans","Noto Sans TC","Noto Sans CJK TC",sans-serif;font-size:7.7pt;font-weight:700;margin:1.6mm 0 .6mm;background:#E9EDF5;padding:.2mm 1.2mm;break-after:avoid;color:#111}
+.a4in pre{font-family:"IBM Plex Mono","DejaVu Sans Mono",Consolas,"Noto Sans CJK TC",monospace;font-size:6.6pt;line-height:1.2;margin:0 0 .8mm;white-space:pre-wrap;background:none;border:0;padding:0;color:#111;break-inside:avoid}
+.a4in p{margin:0 0 .8mm}
+.a4in code{font-family:"IBM Plex Mono","DejaVu Sans Mono",Consolas,monospace;font-size:6.6pt;background:#F1F1F1;border:0;padding:0 .4mm;color:#111}
+.a4in b{font-weight:700}
+.a4in table{border-collapse:collapse;width:100%;margin:0 0 .8mm;break-inside:avoid;font-size:6.9pt}
+.a4in td,.a4in th{border:.15mm solid #BBBBBB;padding:.2mm .8mm;text-align:left;font-weight:400}
+.a4in th{background:#F1F1F1;font-weight:700}
+.a4in .err{background:#FFF1EF}
+@media (prefers-reduced-motion:no-preference){.card,.panel{transition:border-color .15s}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <h1>組語期中特訓</h1>
+      <p>6 次小考原題 ＋ 換數字變化題 ＋ 課本有教但還沒考的。先自己填，再看詳解，最後清空重寫一次。</p>
+    </div>
+    <div class="regs" id="regs" aria-label="進度"></div>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button class="tab" role="tab" id="tab-drill" aria-selected="true" aria-controls="view-drill">填空特訓</button>
+    <button class="tab" role="tab" id="tab-lab" aria-selected="false" aria-controls="view-lab">上機實作</button>
+    <button class="tab" role="tab" id="tab-sheet" aria-selected="false" aria-controls="view-sheet">A4 大抄</button>
+  </nav>
+
+  <section id="view-drill" role="tabpanel" aria-labelledby="tab-drill">
+    <div class="drill">
+      <aside class="units">
+        <h3>單元</h3>
+        <div class="unitlist" id="unitlist"></div>
+      </aside>
+      <div>
+        <div class="filters" id="filters"></div>
+        <div id="exambar"></div>
+        <p class="howto">在格子裡輸入答案，按 Enter 或「對答案」。英文不分大小寫、空白會被忽略，跟小考規則一樣。</p>
+        <div id="cardslot"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="view-lab" role="tabpanel" aria-labelledby="tab-lab" hidden>
+    <div class="lab-grid" id="labroot"></div>
+  </section>
+
+  <section id="view-sheet" role="tabpanel" aria-labelledby="tab-sheet" hidden>
+    <div class="sheetbar">
+      <button class="btn" id="sheetCopy">複製內容給 Claude</button>
+      <button class="btn ghost" id="sheetReset">還原成原始版本</button>
+      <p class="sub">兩張都是真實 A4 尺寸（210×297 mm），直接點進紙面就能改字、刪字、加字，改完會自動存在這個瀏覽器。超出一頁時上方會變紅提醒。要印出來：按「複製內容給 Claude」貼回對話，我幫你轉成 PDF。</p>
+    </div>
+    <div id="sheetroot"><section class="a4" data-page="1">
+<div class="a4in" contenteditable="true" spellcheck="false" id="sheet-1">
+<div class="sh-title">組合語言 上機大抄 · 正面（程式）</div>
+<h4>① 萬用模板（.model flat, stdcall）</h4>
+<pre>.386
+.model flat, stdcall
+option casemap:none
+includelib kernel32.lib
+includelib msvcrt.lib
+includelib legacy_stdio_definitions.lib
+includelib ucrt.lib          ; 少了→LNK2019
+ExitProcess PROTO :DWORD     ; API: stdcall
+printf PROTO C :VARARG       ; C 函式: cdecl
+scanf  PROTO C :VARARG
+time   PROTO C :DWORD
+srand  PROTO C :DWORD
+rand   PROTO C
+strlen PROTO C :DWORD
+system PROTO C :DWORD        ; "pause"
+.data
+fmtD  BYTE "%d",0
+fmtS  BYTE "%s",0
+msg   BYTE "ans=%d",10,0     ; 10=換行 0=結尾
+n     DWORD ?
+buf   BYTE 100 DUP(0)
+.code
+main PROC
+  INVOKE scanf, OFFSET fmtD, OFFSET n ; 讀:位址
+  INVOKE printf, OFFSET msg, n        ; 印:值
+  INVOKE ExitProcess, 0
+main ENDP
+END main                     ; 起點=main</pre>
+<p class="s">.model flat, c 版本：ExitProcess 要寫 <b>PROTO STDCALL :DWORD</b>；自己的 PROC 預設變 C。</p>
+<h4>② VS 建專案</h4>
+<p class="s">空白專案(英文路徑) → 專案右鍵「建置相依性→建置自訂」勾 <b>masm</b> → 平台 <b>x86</b> → 來源檔案加入新項目 <b>main.asm</b> → Ctrl+Shift+B 建置 → <b>Ctrl+F5</b> 執行。追蹤：中斷點+F5、F10，偵錯→視窗→暫存器/記憶體。exe 在 Debug\。</p>
+<p class="s">cmd：<code>ml /c /coff a.asm</code> → <code>link a.obj kernel32.lib … /subsystem:console /entry:main</code></p>
+<h4>③ INVOKE ↔ push/call</h4>
+<pre>INVOKE printf, OFFSET f, a, b
+= push b            ; 由右至左
+  push a
+  push OFFSET f
+  call printf
+  add esp, 12       ; C:呼叫者清 個數×4
+push 0
+call ExitProcess    ; stdcall:不 add esp</pre>
+<h4>④ 自己的程序（stdcall / C）</h4>
+<pre>F PROC STDCALL x:DWORD, y:DWORD
+  mov eax, x        ; =[ebp+8]  y=[ebp+12]
+  add eax, y        ; 回傳值放 eax
+  ret               ; 自動變 ret 8
+F ENDP              ; 寫在 main ENDP 後
+; 呼叫: push y / push x / call F（不清）
+G PROC C x:DWORD    ; C:呼叫後 add esp,4
+H PROC USES ebx esi ; 自動 push/pop
+L PROC
+  LOCAL t:DWORD     ; 必須第1行 =[ebp-4]
+  lea eax, t        ; 區域變數取位址用 lea</pre>
+<h4>⑤ 迴圈</h4>
+<pre>  mov ecx, n        ; loop 一定用 ecx(≠0!)
+L1: ...
+  loop L1           ; ecx-1, ≠0 就跳
+; 巢狀: push ecx … pop ecx
+; 條件迴圈: inc ebx / cmp ebx,n / jl L1</pre>
+<h4>⑥ 陣列走訪（兩種，不要混）</h4>
+<pre>mov esi, OFFSET arr     ; esi=位址
+mov ecx, LENGTHOF arr
+L1: add eax, [esi]      ; 不再×4
+    add esi, TYPE arr   ; DWORD=4 WORD=2
+    loop L1
+; 另一種 esi=索引
+mov esi, 0
+L2: add eax, arr[esi*4]
+    inc esi
+    loop L2
+; 取 AA[3]: lea ebx,AA / mov eax,[ebx+12]</pre>
+<h4>⑦ printf 格式、其他</h4>
+<p class="s"><code>%d</code> 整數 <code>%u</code> 無號 <code>%x</code> 16進位 <code>%c</code> 字元 <code>%s</code> 字串(傳位址) <code>%5d</code> 寬5。換行 <code>10</code> 或 <code>0Ah</code>（<code>13,10</code>=\r\n）。暫停：<code>p BYTE "pause",0</code> → <code>INVOKE system, OFFSET p</code>。中文：<code>SetConsoleOutputCP PROTO :DWORD</code> → <code>INVOKE SetConsoleOutputCP, 65001</code>。反轉字串：<code>movzx eax, s[esi]</code> / <code>push eax</code> … <code>pop eax</code> / <code>mov s[esi], al</code>。</p>
+<h4>⑧ 字串走訪到 0</h4>
+<pre>  mov esi, OFFSET buf
+nx: mov al, [esi]
+  test al, al
+  jz done             ; 遇到 0 結束
+  cmp al, 'A'
+  jb  sk              ; 字元=無號
+  cmp al, 'Z'
+  ja  sk
+  or  al, 20h         ; 大→小
+  mov [esi], al
+sk: inc esi
+  jmp nx</pre>
+<p class="s">大→小 <b>or 20h / add 20h</b>；小→大 <b>and 0DFh / sub 20h</b>；互換 <b>xor 20h</b>。'A'=41h 'a'=61h '0'=30h。長度：<code>INVOKE strlen, OFFSET buf</code> → eax。</p>
+<h4>⑨ 除法、亂數、乘法</h4>
+<pre>xor edx, edx      ; 無號先清 (有號: cdq)
+mov ecx, 7
+div ecx           ; 商 eax 餘數 edx (idiv)
+; 亂數 a~b
+INVOKE time, 0
+INVOKE srand, eax ; 只做一次，在迴圈外
+INVOKE rand
+xor edx, edx
+mov ecx, b-a+1    ; 例 3~98 → 96
+div ecx
+add edx, a        ; 結果在 edx
+mul ecx           ; edx:eax = eax×ecx
+imul eax, ebx     ; 有號 eax=eax×ebx</pre>
+<h4>⑩ 分支模板（每段結尾要 jmp！）</h4>
+<pre>  cmp eax, target
+  je  same
+  jg  big
+  ...太小...  jmp again
+big: ...太大... jmp again
+same: ...
+; 交換: xchg ax,bx / 最大值: cmp ax,bx / cmovl ax,bx</pre>
+<h4>⑪ 錯誤速查</h4>
+<p class="s"><b>A1000</b> 中文路徑 · <b>LNK2019 _printf</b> 少 legacy_stdio · <b>__stdio_common</b> 少 ucrt · <b>A2006</b> 拼錯/少 PROTO/大小寫 · <b>A2008</b> 保留字(name,size)/rand() · <b>A2070</b> mem,mem 或大小不合 · <b>A2022</b> 大小不同 · <b>A2111</b> PROTO/PROC 慣例不一致 · x64→改 x86 · 一閃就關→Ctrl+F5 · 亂碼→英文字串 · 當掉→push/pop 不對稱、stdcall 多 add esp、忘 ExitProcess · 迴圈不停→ecx=0、只設 cx、忘 jmp。</p>
+<p class="s"><b>call 會弄壞 eax ecx edx</b>；要保留的值放 ebx esi edi 或先 push。</p>
+<h4>⑫ 範例：STDCALL 判斷倍數</h4>
+<pre>IsMul PROC STDCALL num:DWORD, k:DWORD
+  mov eax, num
+  xor edx, edx
+  div k                 ; 可直接除記憶體
+  cmp edx, 0
+  jne no
+  mov eax, 1
+  ret                   ; = ret 8
+no: mov eax, 0
+  ret
+IsMul ENDP
+; main: push 3 / push n / call IsMul
+;       cmp eax,1 / je yes</pre>
+<h4>⑬ 範例：最大值 + 總和</h4>
+<pre>  mov esi, OFFSET arr
+  mov ecx, LENGTHOF arr
+  mov eax, [esi]
+  mov maxV, eax         ; 先當第一個最大
+  xor eax, eax
+L1: mov edx, [esi]
+  add eax, edx
+  cmp edx, maxV         ; mem,mem 不行→用 edx
+  jle skip              ; 無號用 jbe
+  mov maxV, edx
+skip: add esi, 4
+  loop L1</pre>
+<h4>⑭ 範例：巢狀迴圈 1²+2²+…+n²</h4>
+<pre>  mov ecx, n
+  mov ebx, 1            ; 底數
+out1: push ecx          ; 存外圈
+  mov ecx, ebx
+  xor edx, edx
+in1: add edx, ebx       ; i 加 i 次 = i²
+  loop in1
+  add sum, edx
+  inc ebx
+  pop ecx
+  loop out1</pre>
+
+</div>
+</section>
+
+<section class="a4" data-page="2">
+<div class="a4in" contenteditable="true" spellcheck="false" id="sheet-2">
+<div class="sh-title">組合語言 上機大抄 · 背面（觀念）</div>
+<h4>① 條件跳躍</h4>
+<table><tr><th></th><th>無號 A/B</th><th>有號 G/L</th></tr>
+<tr><td>&gt; / ≥</td><td>ja / jae</td><td>jg / jge</td></tr>
+<tr><td>&lt; / ≤</td><td>jb / jbe</td><td>jl / jle</td></tr>
+<tr><td>= / ≠</td><td colspan="2">je=jz / jne=jnz</td></tr></table>
+<p class="s">用 sub 代替 cmp：<b>有號看 js</b>（負）、<b>無號看 jc</b>（借位）、<b>相等看 jz</b>；logic：<code>xor bx,ax / jz</code>。先看清楚<b>誰減誰</b>：<code>sub bx,ax</code>=v2−v1，負→v1&gt;v2。字元、位址 = 無號。</p>
+<h4>② 旗標（EFLAGS bit）</h4>
+<table><tr><th>CF 0</th><th>PF 2</th><th>AF 4</th><th>ZF 6</th><th>SF 7</th><th>DF 10</th><th>OF 11</th></tr></table>
+<p class="s"><b>CF</b> 無號放不下/借位 · <b>OF</b> 有號超範圍（正+正=負、負+負=正）· <b>ZF</b> 結果=0 · <b>SF</b> 最高位=1 · <b>PF</b> 低8位1的個數偶數→1 · <b>AF</b> bit3→4 進位。<b>inc/dec 不動 CF</b>；neg 非0→CF=1；not 不動旗標；test/and/or 清 CF、OF。OF = CF xor carryIn。</p>
+<p class="s">讀旗標：<code>pushfd / pop eax / and eax,0800h</code>（OF）；ZF 0040h、SF 0080h、CF 0001h。不能 mov eax,eflags。stc/clc 設/清 CF，cld 讓 DF=0（字串往後）。</p>
+<h4>③ 定址模式（英文）</h4>
+<table><tr><td>mov ax,bx</td><td>register</td></tr><tr><td>mov ax,11h</td><td>immediate</td></tr>
+<tr><td>mov ax,themax</td><td>direct</td></tr><tr><td>mov ax,[dx]</td><td>register indirect</td></tr>
+<tr><td>[ebx+8]</td><td>based/indexed with displacement</td></tr><tr><td>AB[esi*4]</td><td>indexed</td></tr>
+<tr><td>[ebx+edi]</td><td>based-indexed</td></tr><tr><td>[edx+esi*4]</td><td>based-indexed with scaling</td></tr>
+<tr><td>clc / ret</td><td>implied</td></tr><tr><td>jmp 標籤 / jmp eax</td><td>relative / register indirect</td></tr></table>
+<h4>④ 呼叫慣例</h4>
+<table><tr><th></th><th>cdecl (C)</th><th>stdcall</th></tr>
+<tr><td>誰清堆疊</td><td>呼叫者 add esp,X</td><td>被呼叫者 ret X</td></tr>
+<tr><td>VARARG</td><td>可（printf）</td><td>不可</td></tr>
+<tr><td>名字</td><td>_f</td><td>_f@8</td></tr><tr><td>用途</td><td>C 函式庫</td><td>Windows API</td></tr></table>
+<p class="s">兩者都由右至左 push。回傳：32 位 EAX、16 AX、8 AL、64 EDX:EAX。<b>INVOKE 是 directive（巨集）</b>，CALL 是 CPU 指令。call=push 返回位址+改 EIP；ret=pop 到 EIP、ESP+4。</p>
+<pre>[ebp+12] 參數2   [ebp+8] 參數1
+[ebp+4]  返回位址 [ebp+0] 舊 ebp
+[ebp-4]  區域變數
+開頭 push ebp / mov ebp,esp / sub esp,4
+結尾 mov esp,ebp / pop ebp / ret</pre>
+<p class="s">push：ESP−4；pop：ESP+4；後進先出，pop 順序相反。PUSHAD：EAX ECX EDX EBX ESP EBP ESI EDI（−32）。</p>
+<h4>⑤ 資料與運算子</h4>
+<p class="s">BYTE 1 · WORD 2 · DWORD 4 · QWORD 8 · REAL8 8。<b>TYPE</b> 一格大小、<b>LENGTHOF</b> 個數、<b>SIZEOF</b>=兩者相乘（字串含結尾0）。<b>OFFSET</b> 組譯時位址（mov 後面、.data）；<b>ADDR</b> 只在 INVOKE；<b>lea</b> 是指令，可算 [AB+esi*4]、LOCAL。<code>$</code>=目前位置：<code>N = ($-arr)/TYPE DWORD</code>。<b>=</b> 可重定義、<b>EQU</b> 不行；都不佔記憶體。DUP：<code>4 DUP("STACK")</code>=20B。16 進位字母開頭補 0：0A3h、0DFh。後綴 b q/o d h。</p>
+<p class="s"><b>PTR</b>：[ ] 說在哪、ptr 說拿多大；另一邊沒暫存器(<code>mov [esi],5</code>、<code>inc [esi]</code>)一定要寫。myDouble DWORD 12345678h → WORD PTR = 5678h、[+2] = 1234h、BYTE PTR = 78h（little endian：78 56 34 12）。</p>
+<p class="s"><b>MOV 規則</b>：不能 mem,mem；大小相同；EIP 不能當目的。<b>movzx</b> 補 0（無號）、<b>movsx</b> 補符號（有號）：bl=9Bh → movzx 0000009B、movsx FFFFFF9B。寫 al/ax 不清高位：EAX=12345678 → mov ax,0 → 12340000。</p>
+<h4>⑥ 位元運算 / 快速寫法</h4>
+<p class="s">and 遇 0 清、or 遇 1 開、xor 一樣→0、not 全反。清 0：<code>xor ebx,ebx</code>（最快）/ sub ebx,ebx / mov ebx,0。eax−−：sub eax,1 / add eax,−1 / dec eax。×8：add ax,ax×3 或 shl ax,3；×3：mov bx,ax / add ax,ax / add ax,bx。奇偶：<code>test eax,1 / jz 偶</code>。字串比對：esi、edi、ecx、<b>cld</b>、<b>repe cmpsb</b>、je 相同（cmpsb 1B / cmpsw 2 / cmpsd 4）。</p>
+<h4>⑦ 數字表示</h4>
+<p class="s">n bits：有號 −2<sup>n−1</sup>~2<sup>n−1</sup>−1、無號 0~2<sup>n</sup>−1（5 bits：−16~15、31；8：−128~127、255；16：−32768~32767、65535）。1 補數全反；2 補數=1 補數+1（從右第一個 1 之後全反）。A+(−A) 在 n bits = 全 0（進位掉出）。parity：數 1，even 補到偶數。little endian：低位元組放低位址（x86）。IEEE754 單精度 1+8+23、bias 127（倍精度 11/52、1023）：17.25=10001.01=1.000101×2⁴ → 0 10000011 000101…；−0.75=BF400000h。</p>
+<h4>⑧ 其他常考</h4>
+<p class="s">.asm →(ml)→ .obj →(link + .lib)→ .exe。ml <b>/c</b> 只組譯 <b>/coff</b> 格式；link <b>/subsystem:console /entry:main</b>。DOS：dir、dir *.obj、del、<b>type</b>（看內容）、cls、rename/ren、cd ..、<b>cd \</b>、cd sb2。EIP 下個指令、CS 程式、DS 資料、SS 堆疊、ESP 堆疊頂、EBP 框架、ECX 計數、ESI/EDI 字串。DRAM 主記憶體、SRAM cache、CMOS RAM 設定、ROM BIOS。Fetch→Decode→Execute；data bus 雙向、address bus 單向（32 位→4GB）。</p>
+<h4>⑨ 我的易錯清單</h4>
+<p class="s err">loop 用 <b>ecx</b> 不是 cx · div 餘數 <b>edx</b>、商 eax · pop 順序相反 · PROC 標頭 <b>名字 PROC STDCALL x:DWORD</b>（參數名在前）· PROTO≠PROC · add esp 要<b>重數參數</b> · 第一個 push 是 <b>offset</b> 字串 · [esi] 已是位址不再×4 · LENGTHOF≠SIZEOF · srand(time) 不是 time() · 組語不寫括號 · AA[3]=+12 · 空格在行首→lea、在 mov 後→offset · 字元 jb/ja · Windows 指令不是 ls、cd ~ · 5 bits 答案只寫 5 位 · 運算指令後寫 jz/jc（不寫 je/jb）。</p>
+<h4>⑩ 16 進位 ↔ 2 進位 ↔ 10 進位</h4>
+<table><tr><th>16</th><th>2</th><th>10</th><th>16</th><th>2</th><th>10</th></tr>
+<tr><td>0</td><td>0000</td><td>0</td><td>8</td><td>1000</td><td>8</td></tr>
+<tr><td>1</td><td>0001</td><td>1</td><td>9</td><td>1001</td><td>9</td></tr>
+<tr><td>2</td><td>0010</td><td>2</td><td>A</td><td>1010</td><td>10</td></tr>
+<tr><td>3</td><td>0011</td><td>3</td><td>B</td><td>1011</td><td>11</td></tr>
+<tr><td>4</td><td>0100</td><td>4</td><td>C</td><td>1100</td><td>12</td></tr>
+<tr><td>5</td><td>0101</td><td>5</td><td>D</td><td>1101</td><td>13</td></tr>
+<tr><td>6</td><td>0110</td><td>6</td><td>E</td><td>1110</td><td>14</td></tr>
+<tr><td>7</td><td>0111</td><td>7</td><td>F</td><td>1111</td><td>15</td></tr></table>
+<p class="s">一個 16 進位字 = 4 bits，兩個 = 1 byte。2 的次方：2⁴=16 2⁵=32 2⁶=64 2⁷=128 2⁸=256 2¹⁰=1024 2¹⁵=32768 2¹⁶=65536 2³²≈42.9 億。遮罩：bit n = 2ⁿ（bit11=800h、bit7=80h、bit6=40h、bit5=20h）。</p>
+<h4>⑪ 旗標追蹤例題（實測）</h4>
+<table><tr><th>指令</th><th>結果</th><th>CF</th><th>ZF</th><th>SF</th><th>OF</th></tr>
+<tr><td>al=FFh; add al,1</td><td>00</td><td>1</td><td>1</td><td>0</td><td>0</td></tr>
+<tr><td>al=7Fh; add al,1</td><td>80h</td><td>0</td><td>0</td><td>1</td><td>1</td></tr>
+<tr><td>al=1; sub al,2</td><td>FFh</td><td>1</td><td>0</td><td>1</td><td>0</td></tr>
+<tr><td>bl=−128; dec bl</td><td>7Fh</td><td>–</td><td>0</td><td>0</td><td>1</td></tr>
+<tr><td>bl=−127; sub bl,1</td><td>80h</td><td>0</td><td>0</td><td>1</td><td>0</td></tr>
+<tr><td>al=F0h; and al,0</td><td>00</td><td>0</td><td>1</td><td>0</td><td>0</td></tr>
+<tr><td>ax=7FF0h; add al,10h</td><td>AL=00</td><td>1</td><td>1</td><td>0</td><td>0</td></tr>
+<tr><td>→ add ah,1</td><td>AH=80h</td><td>0</td><td>0</td><td>1</td><td>1</td></tr>
+<tr><td>→ add ax,2</td><td>8002h</td><td>0</td><td>0</td><td>1</td><td>0</td></tr>
+<tr><td>al=−128; neg al</td><td>80h</td><td>1</td><td>0</td><td>1</td><td>1</td></tr></table>
+<h4>⑫ 容易混的一對</h4>
+<table><tr><td>lea ebx,AA</td><td>算位址（指令，可帶暫存器）</td></tr>
+<tr><td>mov ebx,OFFSET AA</td><td>同上效果（組譯時常數）</td></tr>
+<tr><td>mov bl,AA</td><td>拿裡面的值</td></tr>
+<tr><td>PROTO / PROC</td><td>宣告別人的 / 寫自己的</td></tr>
+<tr><td>cmp / sub</td><td>都減；cmp 不存結果</td></tr>
+<tr><td>test / and</td><td>都 and；test 不存結果</td></tr>
+<tr><td>xchg / cmovl</td><td>真交換 / 條件蓋掉</td></tr>
+<tr><td>esi / [esi]</td><td>位址本身 / 位址裡的值</td></tr>
+<tr><td>= / EQU / TEXTEQU</td><td>可改數字 / 不可改 / 文字巨集</td></tr>
+<tr><td>directive / instruction</td><td>給組譯器(DWORD,PROC,INVOKE) / CPU 執行(mov,add)</td></tr></table>
+<p class="s">xchg、mov：兩邊不能都是記憶體、大小一致。識別字開頭不能是數字（可 _ @ ? $），不能用保留字。ALIGN 4 推到 4 的倍數位址；<code>v16 LABEL WORD</code> 同位址換大小不佔空間；<code>.data?</code> 放未初始化大陣列。</p>
+</div>
+</section>
+</div>
+  </section>
+</div>
+
+<script>
+// ===== 單元 1–3 =====
+// 欄位：id, u(單元), src(orig/var/new), from, title, q(題目文字,可含[[n]]), code(可含[[n]]),
+// a(每格可接受答案), prev(上次小考寫的錯答案), soft([格, 答案, 說明]), hint, ex(詳解)
+const BANK1 = [
+// ---------------- U1 資料表示 ----------------
+{id:'a1',u:1,src:'orig',from:'9/7 第1題',title:'XOR 逐位元運算',
+q:'5 bits 的 CPU，每個數都是 5 個位元。A=11010、B=10001、C=10010（二進位）。xor 是逐位元的「互斥或」。',
+code:`(1) A xor B         = [[0]]
+(2) C xor C         = [[1]]
+(3) (A xor C) xor C = [[2]]`,
+a:[['01011'],['00000'],['11010']],prev:['00011',null,null],
+hint:'把兩個數上下對齊，一個位元一個位元比：一樣寫 0，不一樣寫 1。',
+ex:`<p><b>XOR 規則只有一句：一樣 → 0，不一樣 → 1。</b></p>
+<pre>  A = 1 1 0 1 0
+  B = 1 0 0 0 1
+      ─────────
+xor = 0 1 0 1 1   ← 第1位 1和1一樣→0，第2位 1和0不一樣→1 …</pre>
+<p>上次你寫 00011，第 2 位算錯了（A 的第 2 位是 1、B 是 0，不一樣要寫 1）。<b>一定要上下對齊再一位一位比</b>，不要心算。</p>
+<p>兩個必背性質：</p>
+<ul><li><b>自己 xor 自己 = 0</b>，所以 C xor C = 00000。組語用 <code>xor eax, eax</code> 清 0 就是這個原理。</li>
+<li><b>xor 同一個數兩次會變回原本</b>：(A xor C) xor C = A = 11010。這是簡單加密的原理。</li></ul>`},
+
+{id:'a2',u:1,src:'var',from:'9/7 第1題 變化',title:'AND / OR / XOR 一起來',
+q:'5 bits 環境，A=10110、B=01101。',
+code:`A xor B         = [[0]]
+A and B         = [[1]]
+A or  B         = [[2]]
+(A xor B) xor B = [[3]]`,
+a:[['11011'],['00100'],['11111'],['10110']],
+hint:'AND：兩個都是 1 才是 1。OR：有一個是 1 就是 1。',
+ex:`<pre>  A   = 1 0 1 1 0
+  B   = 0 1 1 0 1
+  xor = 1 1 0 1 1   不一樣才 1
+  and = 0 0 1 0 0   兩個都 1 才 1
+  or  = 1 1 1 1 1   有 1 就 1</pre>
+<p>(A xor B) xor B：xor 同一個 B 兩次會抵銷，答案就是 A = 10110，不用算。</p>
+<p>記法：<b>and 像「而且」</b>（兩個條件都要成立），<b>or 像「或者」</b>（一個成立就好）。</p>`},
+
+{id:'a3',u:1,src:'orig',from:'9/7 第2題',title:'同位元檢查 parity',
+q:'傳送 01110000（二進位）。',
+code:`even parity 系統，parity bit = [[0]]
+odd  parity 系統，parity bit = [[1]]`,
+a:[['1'],['0']],
+hint:'先數有幾個 1。even = 加上 parity bit 後 1 的總數要是偶數。',
+ex:`<p>01110000 裡面有 <b>3 個 1</b>（奇數個）。</p>
+<ul><li><b>even parity</b>（偶同位）：要讓 1 的總數變成偶數 → 再補一個 1 → parity bit = <b>1</b></li>
+<li><b>odd parity</b>（奇同位）：要讓總數變成奇數 → 已經是 3 個了，補 0 → parity bit = <b>0</b></li></ul>
+<p>口訣：<b>數 1 → 不夠就補 1，夠了就補 0。</b></p>
+<p>補充：CPU 的 PF 旗標也是在看「結果最低 8 位有幾個 1」，偶數個 → PF=1。</p>`},
+
+{id:'a4',u:1,src:'var',from:'9/7 第2題 變化',title:'parity 換數字',
+q:'',
+code:`10110110 → even parity bit = [[0]]，odd parity bit = [[1]]
+11000011 → even parity bit = [[2]]，odd parity bit = [[3]]`,
+a:[['1'],['0'],['0'],['1']],
+hint:'10110110 有 5 個 1；11000011 有 4 個 1。',
+ex:`<p>10110110：1 有 <b>5</b> 個（奇數）→ even 要補 <b>1</b> 變 6 個；odd 已經是奇數補 <b>0</b>。</p>
+<p>11000011：1 有 <b>4</b> 個（偶數）→ even 補 <b>0</b>；odd 要補 <b>1</b> 變 5 個。</p>
+<p>換數字的題目最常錯在「數錯 1 的個數」，建議用筆每 4 位切一段：1011 0110 → 3 + 2 = 5。</p>`},
+
+{id:'a5',u:1,src:'orig',from:'9/7 第3題',title:'A + A 的 2 補數',
+q:'5 bits CPU 環境，A 的 2\'s complement（2 的補數）為 B。',
+code:`(1) A + B 的結果 = [[0]]（二進位，5 bits）
+(2) (A 的 1's complement) + 1 = [[1]]`,
+a:[['00000'],['b','-a']],prev:['100000',null],
+hint:'只有 5 個位元的格子，第 6 位放不下會怎樣？',
+ex:`<p>2 的補數就是「負的 A」，所以 A + B = A + (−A) = 0。</p>
+<p>用例子看：A = 00011（3），B = 11101（−3）</p>
+<pre>    0 0 0 1 1
+  + 1 1 1 0 1
+  ───────────
+  1 0 0 0 0 0   ← 6 個位元！</pre>
+<p>可是 CPU 只有 <b>5 bits</b>，最左邊那個 1 <b>放不下、直接掉出去</b>（它跑去 CF 進位旗標了）。所以留在格子裡的是 <b>00000</b>。</p>
+<p>上次你寫 100000（6 位）。<b>題目說幾 bits，答案就只能寫幾位。</b></p>
+<p>(2) 2 的補數的定義就是「1 的補數 + 1」，所以答案就是 B（也就是 −A）。</p>`},
+
+{id:'a6',u:1,src:'orig',from:'9/7 第4題',title:'5 bits 的數值範圍',
+q:'5 bits CPU 環境。',
+code:`有號整數(2 的補數) 最大值 = [[0]]  最小值 = [[1]]
+無號整數(unsigned)  最大值 = [[2]]  最小值 = [[3]]`,
+a:[['15','+15'],['-16'],['31'],['0']],prev:['127',null,null,null],
+hint:'n bits 的有號數：−2^(n−1) ~ 2^(n−1)−1。',
+ex:`<p>上次寫 127，那是 <b>8 bits</b> 的答案，不是 5 bits。</p>
+<p>公式（n = 位元數）：</p>
+<table class="t"><tr><th></th><th>最小</th><th>最大</th></tr>
+<tr><td>有號</td><td>−2<sup>n−1</sup></td><td>2<sup>n−1</sup> − 1</td></tr>
+<tr><td>無號</td><td>0</td><td>2<sup>n</sup> − 1</td></tr></table>
+<p>n = 5：2<sup>4</sup> = 16、2<sup>5</sup> = 32 → 有號 <b>−16 ~ 15</b>，無號 <b>0 ~ 31</b>。</p>
+<p>用位元看更直觀：有號最大是 <code>01111</code>（最左邊 0 代表正），= 8+4+2+1 = 15；無號最大是 <code>11111</code> = 31。</p>
+<p>要背的 2 的次方：2,4,8,16,32,64,128,256 … 32768、65536。</p>`},
+
+{id:'a7',u:1,src:'var',from:'9/7 第4題 變化',title:'換位元數的範圍',
+q:'',
+code:`8 bits ：有號 [[0]] ~ 127，無號最大 [[1]]
+6 bits ：有號 [[2]] ~ [[3]]，無號最大 [[4]]
+16 bits：有號 -32768 ~ [[5]]，無號最大 [[6]]`,
+a:[['-128'],['255'],['-32'],['31','+31'],['63'],['32767'],['65535']],
+hint:'6 bits：2^5 = 32、2^6 = 64。',
+ex:`<table class="t"><tr><th>bits</th><th>有號範圍</th><th>無號最大</th></tr>
+<tr><td>5</td><td>−16 ~ 15</td><td>31</td></tr>
+<tr><td>6</td><td>−32 ~ 31</td><td>63</td></tr>
+<tr><td>8</td><td>−128 ~ 127</td><td>255</td></tr>
+<tr><td>16</td><td>−32768 ~ 32767</td><td>65535</td></tr></table>
+<p>規律：<b>有號的負數比正數多一個</b>（因為 0 算在正的那邊）。無號最大 = 有號最大 × 2 + 1。</p>
+<p>這也是 OF 溢位題的基礎：8 bits 的 127 + 1 會超過 127 → OF=1。</p>`},
+
+{id:'a8',u:1,src:'orig',from:'9/7 第5、9題',title:'1 的補數與 2 的補數',
+q:'5 bits 環境。',
+code:`A = 11110：2 的補數 = [[0]]，1 的補數 = [[1]]
+A = 01110：2 的補數 = [[2]]，1 的補數 = [[3]]`,
+a:[['00010'],['00001'],['10010'],['10001']],
+hint:'1 的補數：0、1 全部互換。2 的補數：1 的補數再 +1。',
+ex:`<p><b>1 的補數</b>：每一位 0↔1 互換。11110 → 00001。</p>
+<p><b>2 的補數</b>：1 的補數 + 1。00001 + 1 = 00010。</p>
+<p><b>快速法（簡報 Method 2）</b>：從右往左看，遇到第一個 1 之前（含那個 1）都照抄，之後全部互換。</p>
+<pre>01110 → 從右邊：0 照抄、1 照抄（第一個1）
+      → 剩下 011 互換成 100
+      → 10010</pre>
+<p>這兩題你上次都對，保持住！</p>`},
+
+{id:'a9',u:1,src:'var',from:'9/7 第5題 變化',title:'補數 + 有號值',
+q:'5 bits 環境，A = 10100。',
+code:`A 的 1 的補數 = [[0]]
+A 的 2 的補數 = [[1]]
+A 當成有號數(2 的補數)是十進位 [[2]]`,
+a:[['01011'],['01100'],['-12']],
+hint:'最左邊是 1 → 負數。負數的大小 = 它的 2 補數的值。',
+ex:`<p>1 的補數：10100 → <b>01011</b>。2 的補數：01011 + 1 = <b>01100</b>。</p>
+<p>A 最左邊是 1 → 是負數。它的大小就是 2 補數的值：01100 = 8 + 4 = 12 → A = <b>−12</b>。</p>
+<p>另一種算法：有號 5 bits 的最左邊那一位代表 −16：<br>10100 = −16 + 4 = −12。這招算很快。</p>`},
+
+{id:'a10',u:1,src:'orig',from:'9/7 第6題',title:'for 迴圈追蹤',
+q:'',
+code:`int a=1, b=20, c=39, dd=0;
+for (a++, c--; b>10; c++, b-=5);
+dd = a+b+c;
+印出 a = [[0]]，b = [[1]]，c = [[2]]，dd = [[3]]`,
+a:[['2'],['10'],['40'],['52']],
+hint:'注意 for 後面直接是分號：迴圈本體是空的。順序：初始化一次 → 檢查 → 本體 → 更新 → 檢查…',
+ex:`<p>for 的三段：<code>for(初始化; 條件; 每圈結束做)</code></p>
+<table class="t"><tr><th>步驟</th><th>a</th><th>b</th><th>c</th></tr>
+<tr><td>初始化 a++, c--</td><td>2</td><td>20</td><td>38</td></tr>
+<tr><td>20&gt;10 ✓ → c++, b-=5</td><td>2</td><td>15</td><td>39</td></tr>
+<tr><td>15&gt;10 ✓ → c++, b-=5</td><td>2</td><td>10</td><td>40</td></tr>
+<tr><td>10&gt;10 ✗ 結束</td><td>2</td><td>10</td><td>40</td></tr></table>
+<p>dd = 2 + 10 + 40 = 52。</p>
+<p>陷阱：<b>a++ 只在初始化做一次</b>，不是每圈都做。</p>`},
+
+{id:'a11',u:1,src:'var',from:'9/7 第6題 變化',title:'for 迴圈追蹤（換數字）',
+q:'',
+code:`int a=3, b=30, c=5;
+for (a--, c+=2; b>12; c--, b-=6);
+印出 a = [[0]]，b = [[1]]，c = [[2]]`,
+a:[['2'],['12'],['4']],
+hint:'先做初始化：a=2, c=7。再一圈一圈畫表。',
+ex:`<table class="t"><tr><th>步驟</th><th>a</th><th>b</th><th>c</th></tr>
+<tr><td>初始化</td><td>2</td><td>30</td><td>7</td></tr>
+<tr><td>30&gt;12 ✓</td><td>2</td><td>24</td><td>6</td></tr>
+<tr><td>24&gt;12 ✓</td><td>2</td><td>18</td><td>5</td></tr>
+<tr><td>18&gt;12 ✓</td><td>2</td><td>12</td><td>4</td></tr>
+<tr><td>12&gt;12 ✗</td><td>2</td><td>12</td><td>4</td></tr></table>
+<p>畫表是最不會錯的方法，考試時也照這樣畫。</p>`},
+
+{id:'a12',u:1,src:'orig',from:'9/7 第7題＋延伸',title:'ASCII 碼',
+q:'用 16 進位填寫。',
+code:`'A' = [[0]]h   'a' = [[1]]h
+'Z' = [[2]]h   'z' = [[3]]h
+'0' = [[4]]h   空白' ' = [[5]]h
+大小寫相差 [[6]]h（十進位 32）`,
+a:[['41'],['61'],['5a'],['7a'],['30'],['20'],['20']],
+hint:'A 是 41h，往後 25 個字母到 Z。',
+ex:`<table class="t"><tr><th>字元</th><th>16 進位</th><th>二進位</th></tr>
+<tr><td>'A'</td><td>41h</td><td>0100 0001</td></tr>
+<tr><td>'a'</td><td>61h</td><td>0110 0001</td></tr>
+<tr><td>'Z'</td><td>5Ah</td><td>0101 1010</td></tr>
+<tr><td>'z'</td><td>7Ah</td><td>0111 1010</td></tr>
+<tr><td>'0'</td><td>30h</td><td>0011 0000</td></tr>
+<tr><td>' '</td><td>20h</td><td>0010 0000</td></tr></table>
+<p>'A' 和 'a' 只差 <b>第 5 位元（20h）</b>，這就是大小寫轉換題的核心：or 20h 變小寫、and 0DFh 變大寫、xor 20h 互換。</p>
+<p>Z = A + 25 = 41h + 19h = 5Ah。</p>`},
+
+{id:'a13',u:1,src:'orig',from:'9/7 第8、10題',title:'交換兩個變數',
+q:'',
+code:`// 寫法一：用一個暫存 v
+int v, x1=66, x2=99;
+v = x1;
+[[0]];
+x2 = v;
+
+// 寫法二：用兩個暫存 v, w
+v = x1;
+w = x2;
+[[1]] = v;
+[[2]] = w;`,
+a:[['x1=x2'],['x2'],['x1']],
+hint:'想像兩杯飲料要互換杯子，需要第三個空杯。',
+ex:`<p>直接寫 <code>x1=x2; x2=x1;</code> 會錯：x1 的 66 先被蓋掉，兩個都變 99。</p>
+<p>所以要先把 x1 存到 v（空杯），再 x1=x2，最後 x2=v。</p>
+<p>組語版：<code>mov cx, ax / mov ax, bx / mov bx, cx</code>，或直接一行 <code>xchg ax, bx</code>。</p>`},
+
+{id:'a14',u:1,src:'orig',from:'9/21 第1題',title:'Little / Big endian',
+q:'int vv = 4321d，vv 在記憶體的起始位址為 AA00（照老師的出法，把 4321 看成「43」「21」兩個位元組）。',
+code:`little endian：AA00 存放 [[0]]d，AA01 存放 [[1]]d
+big    endian：AA00 存放 [[2]]d，AA01 存放 [[3]]d`,
+a:[['21'],['43'],['43'],['21']],prev:[null,null,null,'31'],
+hint:'little endian = 小的那一端（低位數）放在小的位址。',
+ex:`<p><b>Little endian：低位的位元組放在低位址</b>（「小頭先放」）。4321 的低位是 21、高位是 43：</p>
+<pre>位址   little   big
+AA00    21      43
+AA01    43      21</pre>
+<p><b>Big endian 就是「照我們寫字的順序」</b>：43 先、21 後。</p>
+<p>上次最後一格寫 31，應該是看錯數字。big endian 就是把 4321 原樣切兩半照放。</p>
+<p>x86（我們用的 Intel CPU）是 <b>little endian</b>。所以 <code>myDouble DWORD 12345678h</code> 在記憶體裡是 78 56 34 12，這也是 <code>WORD PTR myDouble</code> 拿到 5678h 的原因。</p>`},
+
+{id:'a15',u:1,src:'var',from:'9/21 第1題 變化',title:'endian 換成 4 位元組',
+q:'DWORD 值 12345678h 存在位址 1000h 開始的 4 個位元組（填 16 進位兩位數）。',
+code:`little endian：1000h=[[0]]  1001h=[[1]]  1002h=[[2]]  1003h=[[3]]
+big    endian：1000h=[[4]]  1003h=[[5]]`,
+a:[['78','78h'],['56','56h'],['34','34h'],['12','12h'],['12','12h'],['78','78h']],
+hint:'12345678h 每兩個 16 進位數字是一個位元組：12 | 34 | 56 | 78，最低位是 78。',
+ex:`<pre>             1000h 1001h 1002h 1003h
+little:       78    56    34    12
+big:          12    34    56    78</pre>
+<p>16 進位每<b>兩個字</b>是一個位元組（8 bits）。12345678h 的最低位元組是 <b>78</b>，little endian 就把 78 放最前面。</p>
+<p>簡報的題目：4097 用 4 bytes 存 = 00 00 10 01h → little endian 依序是 01、10、00、00。</p>`},
+
+// ---------------- U2 指令轉換與記憶體 ----------------
+{id:'b1',u:2,src:'orig',from:'9/21 第2題',title:'WORD 陣列用 esi 取值',
+q:'依註解填空。（index 從 0 開始）',
+code:`.data
+arr2 WORD 11, 22, 33, 44, 55
+res2 WORD [[0]]          ; 宣告、未給初值
+.code
+mov ax, 0
+mov esi, [[1]]   ; 取得陣列的記憶體位址
+add ax, [ [[2]] ]   ; 加總第1個元素 (index=1)
+add ax, [ [[3]] ]   ; 加總第3個元素 (index=3)
+mov res2, ax`,
+a:[['?'],['offsetarr2'],['esi+2','2+esi'],['esi+6','6+esi']],prev:[null,'&arr[0]','arr[0]','arr[2]'],
+hint:'WORD 一格佔 2 個位元組。index k 的位置 = 起點 + k×2。',
+ex:`<p><b>1. 未給初值用 <code>?</code></b></p>
+<p><b>2. 取位址用 <code>OFFSET</code></b>。<code>&amp;arr[0]</code> 是 C 語言寫法，組語不認得。</p>
+<p><b>3. 中括號裡是「位元組」</b>：</p>
+<pre>位元組: 0-1  2-3  4-5  6-7  8-9
+內容:   11   22   33   44   55
+index:   0    1    2    3    4</pre>
+<p>index 1 → 1×2 = <b>esi+2</b>；index 3 → 3×2 = <b>esi+6</b>。</p>
+<p>你上次寫 <code>arr[0]</code>，那是 Java 寫法。組語中括號裡要放「位址」，而 esi 現在就是陣列開頭的位址，所以寫 esi+幾。</p>`},
+
+{id:'b2',u:2,src:'var',from:'9/21 第2題 變化',title:'DWORD 陣列取值',
+q:'把 index 0、2、4 三個元素加起來存到 res。',
+code:`.data
+arr DWORD 5, 10, 15, 20, 25
+res DWORD ?
+.code
+mov eax, 0
+mov esi, OFFSET arr
+add eax, [esi]          ; index 0
+add eax, [ [[0]] ]      ; index 2
+add eax, [ [[1]] ]      ; index 4
+mov res, eax            ; res = [[2]]`,
+a:[['esi+8','8+esi'],['esi+16','16+esi'],['45']],
+hint:'DWORD 一格 4 個位元組。',
+ex:`<p>DWORD 每格 4 bytes：index k 在 <b>k × 4</b>。</p>
+<p>index 2 → 8，index 4 → 16。5 + 15 + 25 = 45。</p>
+<table class="t"><tr><th>型態</th><th>一格</th><th>index 3 在</th></tr>
+<tr><td>BYTE</td><td>1</td><td>+3</td></tr><tr><td>WORD</td><td>2</td><td>+6</td></tr><tr><td>DWORD</td><td>4</td><td>+12</td></tr></table>`},
+
+{id:'b3',u:2,src:'orig',from:'9/21 第3題',title:'eax-- 的三種寫法',
+q:'',
+code:`eax--;  // 可轉換為三種組語指令
+(1) [[0]]   ; hint: S...
+(2) [[1]]
+(3) [[2]]   ; 執行速度最快`,
+a:[['subeax,1'],['addeax,-1'],['deceax']],prev:['sub eax, -1',null,null],
+soft:[[0,'subeax,-1','sub eax,-1 是「減 −1」= 加 1，方向反了！']],
+hint:'減 1 = 加上 −1。',
+ex:`<p>eax-- 就是 eax = eax − 1：</p>
+<ul><li><code>sub eax, 1</code>：直接減 1</li><li><code>add eax, -1</code>：加上 −1 等於減 1</li><li><code>dec eax</code>：專門減 1 的指令，最短最快</li></ul>
+<p>上次你寫 <code>sub eax, -1</code>：減掉 −1 = <b>加 1</b>，剛好相反。負負得正！</p>
+<p>小細節：<code>inc / dec</code> <b>不會改變 CF</b>，<code>add / sub</code> 會。</p>`},
+
+{id:'b4',u:2,src:'var',from:'9/21 第3題 變化',title:'eax++ 的三種寫法',
+q:'',
+code:`eax++;
+(1) [[0]]   ; 用 add
+(2) [[1]]   ; 用 sub
+(3) [[2]]   ; 最快`,
+a:[['addeax,1'],['subeax,-1'],['inceax']],
+hint:'減掉 −1 等於加 1。',
+ex:`<p>這次 <code>sub eax, -1</code> 就對了：減 −1 = 加 1。跟上一題剛好相反，兩題一起記：</p>
+<table class="t"><tr><th></th><th>add</th><th>sub</th><th>最快</th></tr>
+<tr><td>eax++</td><td>add eax,1</td><td>sub eax,-1</td><td>inc eax</td></tr>
+<tr><td>eax--</td><td>add eax,-1</td><td>sub eax,1</td><td>dec eax</td></tr></table>`},
+
+{id:'b5',u:2,src:'orig',from:'9/21 第5題',title:'ebx = 0 的三種寫法',
+q:'',
+code:`ebx = 0;
+(1) [[0]]   ; 最慢
+(2) [[1]]
+(3) [[2]]   ; 執行速度最快`,
+a:[['movebx,0'],['subebx,ebx'],['xorebx,ebx']],prev:[null,'mov ebx, 0','mov ebx, 0'],
+hint:'什麼數減自己會變 0？什麼運算自己對自己會變 0？',
+ex:`<ul><li><code>mov ebx, 0</code>：最直覺，但指令裡要放一個 4 bytes 的 0，比較長。</li>
+<li><code>sub ebx, ebx</code>：自己減自己 = 0。</li>
+<li><code>xor ebx, ebx</code>：自己 xor 自己 = 0（一樣→0），<b>最快最短</b>，老師範例都用這個。</li></ul>
+<p>三格要寫三種<b>不同</b>的方法，上次你三格都寫 mov。</p>`},
+
+{id:'b6',u:2,src:'orig',from:'9/21 第6題＋延伸',title:'組譯與連結的副檔名',
+q:'',
+code:`原始程式檔        .[[0]]
+Assemble 處理後   .[[1]]
+linker 處理後     .[[2]]
+函式庫檔          .[[3]]
+組譯器程式名稱    [[4]].exe
+連結器程式名稱    [[5]].exe`,
+a:[['asm'],['obj'],['exe'],['lib'],['ml'],['link']],prev:[null,'asm',null,null,null,null],
+hint:'流程：寫程式 → 組譯 → 連結 → 執行。',
+ex:`<pre>編輯器 → a.asm ─(ml.exe 組譯)→ a.obj ─(link.exe 連結 + .lib)→ a.exe → 載入記憶體執行</pre>
+<ul><li><b>.asm</b>：你寫的原始碼</li><li><b>.obj</b>：object file，已經是機器碼，但還缺函式庫</li><li><b>.lib</b>：函式庫（printf 在 ucrt.lib 等）</li><li><b>.exe</b>：可以執行的檔案</li></ul>
+<p>上次第一格寫 asm：那是組譯<b>前</b>，題目問組譯<b>後</b>。</p>`},
+
+{id:'b7',u:2,src:'orig',from:'9/21 第7題',title:'ax × 8，不准用乘法',
+q:'Ax = Ax * 8，不准用乘法指令（老師答案用 add）。',
+code:`[[0]]   ; ax × 2
+[[1]]   ; ax × 4
+[[2]]   ; ax × 8`,
+a:[['addax,ax'],['addax,ax'],['addax,ax']],prev:['mov eax, Ax','shl eax, 3','mov Ax, eax'],
+soft:[[0,'shlax,1','shl ax,1 也是 ×2，觀念對；老師答案是 add ax,ax，考試照寫比較保險。'],[1,'shlax,1','同上，老師答案是 add ax,ax。'],[2,'shlax,1','同上，老師答案是 add ax,ax。']],
+hint:'自己加自己 = 乘 2。做三次是乘多少？',
+ex:`<p><code>add ax, ax</code> = ax + ax = <b>ax × 2</b>。做三次：×2 → ×4 → ×8。</p>
+<p>上次你寫 <code>shl eax, 3</code>，觀念其實對（左移 3 位 = ×8），但題目有三格，而且 Ax 不是變數、是暫存器，不能 <code>mov eax, Ax</code>。</p>
+<p>左移和乘 2 的關係：二進位左移一位，就像十進位後面補一個 0 會 ×10 一樣，二進位補 0 會 ×2。<code>shl ax, 3</code> = ×8。</p>`},
+
+{id:'b8',u:2,src:'orig',from:'9/21 第9題',title:'ax × 3，不准用乘法',
+q:'ax = ax * 3',
+code:`mov bx, ax    ; 先備份原本的 ax
+[[0]]         ; ax 變成 2 倍
+[[1]]         ; 2 倍 + 1 倍 = 3 倍`,
+a:[['addax,ax'],['addax,bx']],prev:['shl ax, 1','add ax, ax'],
+soft:[[0,'shlax,1','shl ax,1 也是 ×2，觀念對；老師答案是 add ax,ax。']],
+hint:'3 倍 = 2 倍 + 1 倍。1 倍的值存在哪裡？',
+ex:`<p>假設 ax = 7：</p>
+<pre>mov bx, ax    ; bx = 7（備份）
+add ax, ax    ; ax = 14（2 倍）
+add ax, bx    ; ax = 14 + 7 = 21（3 倍）</pre>
+<p>上次你第二格寫 <code>add ax, ax</code>，會變成 ×4（28），所以第二格要加回<b>備份的 bx</b>。</p>`},
+
+{id:'b9',u:2,src:'var',from:'9/21 第9題 變化',title:'ax × 5 與 ax × 10',
+q:'都不准用乘法。',
+code:`; ax = ax * 5
+mov bx, ax
+add ax, ax      ; ×2
+[[0]]           ; ×4
+[[1]]           ; ×5
+
+; ax = ax * 10（用左移）
+mov bx, ax
+shl ax, [[2]]   ; ×4
+add ax, bx      ; ×5
+shl ax, [[3]]   ; ×10`,
+a:[['addax,ax'],['addax,bx'],['2'],['1']],
+hint:'5 = 4 + 1；10 = 5 × 2。shl 1 位 = ×2，2 位 = ×4。',
+ex:`<p>拆數字的技巧：<b>把倍數拆成 2 的次方相加</b>。</p>
+<ul><li>5 = 4 + 1 → 先變 4 倍，再加回 1 倍（bx）</li><li>10 = (4 + 1) × 2 → 先做 ×5，再左移 1 位</li><li>6 = (2 + 1) × 2、9 = 8 + 1</li></ul>
+<p><code>shl ax, n</code> = 乘 2<sup>n</sup>：1→×2、2→×4、3→×8。</p>`},
+
+{id:'b10',u:2,src:'orig',from:'9/21 第10題＋延伸',title:'交換 ax、bx',
+q:'透過 cx 交換 ax 和 bx。',
+code:`; 老師的虛擬寫法
+cx = ax;
+[[0]] = bx;
+[[1]];
+
+; 寫成真正的組語
+mov cx, ax
+mov [[2]]
+mov [[3]]
+
+; 一行搞定
+[[4]]`,
+a:[['ax'],['bx=cx'],['ax,bx'],['bx,cx'],['xchgax,bx','xchgbx,ax']],
+hint:'cx 是空杯。',
+ex:`<p>順序：cx 先存 ax → ax 拿 bx 的值 → bx 拿回 cx（原本的 ax）。</p>
+<p><code>xchg ax, bx</code>：交換指令，一行完成。規則：<b>兩邊不能都是記憶體</b>、<b>大小要一樣</b>（<code>xchg al, bx</code> 錯）。</p>
+<p>同樣的道理：<code>mov var2, var1</code> 也不合法（mov 不能記憶體到記憶體），要先 <code>mov ax, var1</code> 再 <code>mov var2, ax</code>。</p>`},
+
+{id:'b11',u:2,src:'orig',from:'9/21 第8題',title:'記憶體元件',
+q:'填縮寫。',
+code:`main memory 採用 [[0]]
+Cache 採用       [[1]]
+系統設定存放在   [[2]]
+BIOS 存放在      [[3]]`,
+a:[['dram'],['sram'],['cmosram','cmos'],['rom']],prev:['linker','linker','linker','linker'],
+hint:'D = Dynamic（要一直刷新），S = Static（快、貴）。',
+ex:`<table class="t"><tr><th>元件</th><th>特性</th><th>用在</th></tr>
+<tr><td>DRAM</td><td>便宜、要一直 refresh</td><td>主記憶體</td></tr>
+<tr><td>SRAM</td><td>快、貴、不用 refresh</td><td>Cache</td></tr>
+<tr><td>CMOS RAM</td><td>電池供電，關機不消失</td><td>BIOS 設定（系統設定）</td></tr>
+<tr><td>ROM</td><td>燒死的，不能改</td><td>BIOS 程式本身</td></tr>
+<tr><td>EPROM</td><td>紫外線可清除</td><td></td></tr>
+<tr><td>VRAM</td><td>雙埠</td><td>顯示資料</td></tr></table>
+<p>記法：<b>Cache 要快 → Static</b>；<b>主記憶體要大要便宜 → Dynamic</b>。</p>`},
+
+{id:'b12',u:2,src:'orig',from:'9/21 第4題',title:'陣列向右旋轉（Java）',
+q:'把陣列 {1,...,10} 向右轉一格，結果 10 1 2 3 … 9。',
+code:`int last = arr[9];
+for (int j = 9; j > 0; j--)  [[0]];
+[[1]];`,
+a:[['arr[j]=arr[j-1]'],['arr[0]=last']],
+hint:'從最後面往前搬，每格拿左邊鄰居的值。',
+ex:`<p>向右轉：每個元素往右移一格，最後一個繞到最前面。</p>
+<p>要<b>從後面往前搬</b>（j 從 9 到 1），每格拿左邊的：<code>arr[j]=arr[j-1]</code>。如果從前面搬，值會被一路蓋掉。</p>
+<p>最後把一開始存起來的 last 放到 arr[0]。</p>`},
+
+{id:'b13',u:2,src:'var',from:'9/21 第4題 + 作業2',title:'陣列向左旋轉（組語）',
+q:'作業 2 的寫法：把 arr3（4 個 DWORD）向左轉一格。',
+code:`mov edx, arr3[0]      ; 先備份第一個元素
+mov ecx, 3            ; 搬 3 次
+mov esi, 0
+rotate_loop:
+  mov eax, arr3[ [[0]] ]   ; 拿後一個
+  mov arr3[esi], eax       ; 往前蓋
+  add esi, [[1]]
+  [[2]] rotate_loop
+mov arr3[esi], [[3]]       ; 第一個放到最後`,
+a:[['esi+4','4+esi'],['4'],['loop'],['edx']],
+hint:'向左轉：每格拿右邊鄰居（下一格）的值。DWORD 下一格在 +4。',
+ex:`<p>向左轉 = 每格拿<b>右邊</b>鄰居：Java 是 <code>arr[i]=arr[i+1]</code>。DWORD 的「下一格」在 <b>esi+4</b>。</p>
+<p>迴圈跑完 esi = 12，剛好指到最後一格，把備份在 edx 的第一個元素放進去。</p>
+<p>注意 <code>mov arr3[esi], edx</code> 合法（一邊記憶體一邊暫存器），但 <code>mov arr3[esi], arr3[esi+4]</code> 不合法（兩邊都是記憶體）。</p>`},
+
+// ---------------- U3 旗標、迴圈、DOS ----------------
+{id:'c1',u:3,src:'orig',from:'10/5 第1題',title:'用命令列組譯、連結',
+q:'將 b2.asm 進行組譯、連結的 cmd 指令。',
+code:`(1) 組譯：[[0]] b2.asm /c /coff
+(2) 連結：[[1]] kernel32.lib /ENTRY:main`,
+a:[['ml','ml.exe'],['linkb2.obj','link.exeb2.obj']],prev:['（空白）','link'],
+hint:'組譯器叫 ml，連結器叫 link。連結的對象是組譯後的哪個檔？',
+ex:`<p>組譯器 = <b>ml</b>（Macro assembler），連結器 = <b>link</b>。</p>
+<p>連結要告訴它「連結哪個檔」：組譯後產生的 <b>b2.obj</b>，所以是 <code>link b2.obj</code>。你上次只寫 link，少了檔名。</p>
+<pre>ml b2.asm /c /coff
+link b2.obj kernel32.lib /ENTRY:main
+b2.exe</pre>`},
+
+{id:'c2',u:3,src:'new',from:'10/5 範例簡報',title:'ml / link 的參數',
+q:'填上參數。',
+code:`ml [[0]] [[1]] a1.asm        ; 只組譯不連結；輸出 COFF 格式
+link a1.obj kernel32.lib msvcrt.lib [[2]] [[3]]
+                              ; 主控台程式；起跑點是 main`,
+a:[['/c'],['/coff'],['/subsystem:console'],['/entry:main','/entry:_main']],
+hint:'c = compile only。subsystem 子系統、entry 入口。',
+ex:`<ul><li><b>/c</b>：只組譯，產生 .obj 就停，不要自動連結</li><li><b>/coff</b>：輸出 COFF 格式（現代 Windows 只認這個，舊的叫 OMF）</li><li><b>/subsystem:console</b>：主控台程式，會開黑視窗，printf/scanf 才能用</li><li><b>/ENTRY:main</b>：程式從 main 開始執行</li></ul>`},
+
+{id:'c3',u:3,src:'orig',from:'10/5 第2題',title:'WORD 陣列加總迴圈',
+q:'',
+code:`.data
+sc  word 22,66,33,99,31,77,44,70
+res word ?
+.code
+[[0]] eax, eax       ; 清空 EAX
+mov esi, [[1]]
+mov ecx, [[2]]       ; 元素個數
+L1: add ax, [[3]]    ; 加總目前的元素
+add [[4]]
+[[5]]
+mov res, ax`,
+a:[['sub','xor'],['offsetsc'],['8'],['[esi]'],['esi,2'],['loopl1']],prev:[null,null,'lengthof sc','esi',null,'（空白）'],
+soft:[[2,'lengthofsc','lengthof sc 值也是 8，觀念對，但上次老師判錯（標準答案是 8）。考試寫 8。']],
+hint:'加的是「esi 指到的那格裡的值」，要加中括號。迴圈靠哪個指令讓 ecx 減 1 並跳回？',
+ex:`<p><b>[esi] 和 esi 差在哪？</b></p>
+<ul><li><code>esi</code>：位址本身（櫃子號碼，例如 00404000h）</li><li><code>[esi]</code>：去那個位址<b>拿裡面的值</b>（22）</li></ul>
+<p>上次你寫 esi，會把位址加進去，答案變成很大的怪數字。</p>
+<p><b>loop L1</b>：ecx − 1，如果 ecx ≠ 0 就跳回 L1。上次這格空白。8 個元素 → ecx = 8 → 跑 8 次。</p>
+<p>WORD 每格 2 bytes，所以 <code>add esi, 2</code>。</p>`},
+
+{id:'c4',u:3,src:'var',from:'10/5 第2題 變化',title:'DWORD 陣列加總迴圈',
+q:'',
+code:`.data
+arr DWORD 10, 20, 30, 40, 50
+sum DWORD ?
+.code
+xor eax, eax
+mov esi, OFFSET arr
+mov ecx, [[0]] arr        ; 用運算子取得個數
+L1:
+  add eax, [[1]]
+  add esi, [[2]]          ; 用 TYPE 寫
+  loop L1
+mov sum, eax              ; sum = [[3]]`,
+a:[['lengthof'],['[esi]'],['typedword','typearr','4'],['150']],
+hint:'LENGTHOF = 幾個元素，SIZEOF = 幾個位元組，TYPE = 一格幾個位元組。',
+ex:`<p>這次用 DWORD，所以是 <code>add eax, [esi]</code>（32 位元）、每次 <code>add esi, 4</code>。</p>
+<p><code>TYPE DWORD</code> = 4，寫成這樣換型態時比較不會忘記改。</p>
+<p><b>LENGTHOF vs SIZEOF</b>（11/2 你錯過）：LENGTHOF arr = 5 個，SIZEOF arr = 20 bytes。迴圈次數要用 LENGTHOF。</p>`},
+
+{id:'c5',u:3,src:'orig',from:'10/5 第3題',title:'旗標暫存器進出堆疊',
+q:'',
+code:`將 flag register 資料壓入 stack：[[0]]
+將 stack 頂端的資料彈出放入 bx：[[1]]`,
+a:[['pushfd'],['popbx']],
+hint:'push flags doubleword。',
+ex:`<p><code>pushfd</code>：把 32 位元 EFLAGS 推進堆疊。<code>pop bx</code>：從堆疊頂端拿出來。</p>
+<p>為什麼要這樣？因為 <b>不能寫 <code>mov eax, eflags</code></b>，CPU 不允許直接 mov 旗標暫存器。所以只能「推進去再拿出來」：</p>
+<pre>pushfd
+pop eax
+and eax, 0800h   ; 只留 OF 那一位</pre>`},
+
+{id:'c6',u:3,src:'orig',from:'10/5 第4題',title:'追蹤 ZF、SF',
+q:'',
+code:`mov al, F0h
+and al, 0h     ; ZF = [[0]]
+
+mov ah, 1
+sub ah, 3      ; SF = [[1]]
+
+mov al, F0h
+xor al, al     ; ZF = [[2]]`,
+a:[['1'],['1'],['1']],prev:[null,null,'0'],
+hint:'ZF = 結果是不是 0。SF = 結果是不是負的。',
+ex:`<ul><li>and al, 0：任何數 and 0 = 0 → <b>ZF = 1</b></li><li>1 − 3 = −2（FEh）→ 負的 → <b>SF = 1</b></li><li>xor al, al：自己 xor 自己 = 0 → <b>ZF = 1</b></li></ul>
+<p>上次第三格寫 0。記住：<b>ZF=1 代表「結果是零」</b>（Zero 旗標舉起來），不是「結果是 0 所以旗標也是 0」。</p>`},
+
+{id:'c7',u:3,src:'orig',from:'10/5 第5題＋延伸',title:'旗標在第幾個 bit',
+q:'EFLAGS 從 bit 0 開始數。',
+code:`carry flag    第 [[0]] bit
+parity flag   第 [[1]] bit
+aux carry     第 [[2]] bit
+zero flag     第 [[3]] bit
+sign flag     第 [[4]] bit
+direction     第 [[5]] bit
+overflow flag 第 [[6]] bit`,
+a:[['0'],['2'],['4'],['6'],['7'],['10'],['11']],
+hint:'CF 0、PF 2、AF 4、ZF 6、SF 7 → 都隔一格；DF 10、OF 11。',
+ex:`<pre>bit: 11 10  9  8  7  6  5  4  3  2  1  0
+     OF DF IF TF SF ZF  - AF  - PF  - CF</pre>
+<p>記法：<b>C-P-A-Z-S</b>（0,2,4,6,7）讀成「C P A Z S」，前四個隔一格；然後 <b>DF 10、OF 11</b>。</p>
+<p>所以 OF 的遮罩是 bit 11 → 0000 1000 0000 0000 = <b>0800h</b>；ZF 是 0040h；SF 是 0080h。</p>`},
+
+{id:'c8',u:3,src:'new',from:'第4章簡報',title:'用 PUSHFD 檢查旗標',
+q:'檢查 OF 是 0 還是 1。',
+code:`[[0]]              ; EFLAGS 推進堆疊
+[[1]]              ; 彈出到 EAX
+and eax, [[2]]h    ; 只留 OF（bit 11）
+[[3]] OF_is_zero   ; 結果是 0 → OF 原本是 0
+jnz OF_is_one
+
+; 檢查 ZF 要 and eax, [[4]]h；SF 要 and eax, [[5]]h`,
+a:[['pushfd'],['popeax'],['0800','800'],['jz','je'],['0040','40'],['0080','80']],
+hint:'bit 11 → 二進位 1000 0000 0000。',
+ex:`<p>把 bit 號碼換成遮罩：bit 11 = 2<sup>11</sup> = 800h；bit 6 = 40h；bit 7 = 80h。</p>
+<p><code>and eax, 0800h</code> 會把其他位全部清成 0，只剩 OF。結果是 0 就代表 OF 本來是 0 → <code>jz</code>。</p>
+<p>也可以用 <code>test eax, 800h</code>：做一樣的 and，但不改 eax。</p>`},
+
+{id:'c9',u:3,src:'orig',from:'10/5 第6題＋延伸',title:'區段暫存器與 EIP',
+q:'x86 32 bits CPU。',
+code:`正在執行的指令位址放在：[[0]]
+.data（變數區段）位址放在：[[1]]
+.code（程式區段）位址放在：[[2]]
+堆疊區段：[[3]]，堆疊頂端位址：[[4]]`,
+a:[['eip'],['ds'],['cs'],['ss'],['esp']],prev:[null,'eax','ds',null,null],
+hint:'Data Segment、Code Segment、Stack Segment。',
+ex:`<ul><li><b>EIP</b>：Instruction Pointer，下一個要執行的指令位址</li><li><b>DS</b> = Data Segment → .data</li><li><b>CS</b> = Code Segment → .code</li><li><b>SS</b> = Stack Segment，<b>ESP</b> 指向堆疊頂端</li></ul>
+<p>上次你寫 eax / ds：eax 是一般運算用的暫存器，不是區段暫存器。名字直接對應就好：Data→DS、Code→CS。</p>`},
+
+{id:'c10',u:3,src:'orig',from:'10/5 第7題',title:'迴圈算 1+2+…+10',
+q:'',
+code:`mov [[0]]
+mov ax, 0
+mov bx, 1
+Lx:
+add ax, bx    ; 累積到 ax
+[[1]]         ; 最快
+[[2]]`,
+a:[['ecx,10'],['incbx'],['looplx']],prev:['cx, 10',null,null],
+hint:'32 位元程式裡，loop 用的是哪個計數暫存器？',
+ex:`<p><b>loop 在 32 位元模式用的是 ECX</b>，不是 CX。</p>
+<p>如果只寫 <code>mov cx, 10</code>，ECX 的高 16 位可能還有垃圾，例如 ECX = 12340000h，改完變 1234000Ah，迴圈就會跑幾億次。</p>
+<p>上次第一格寫 cx,10 被扣分，這題 10/5 的第 8 題也是同一個錯，要特別記住：<b>loop → ecx</b>。</p>`},
+
+{id:'c11',u:3,src:'orig',from:'10/5 第8題',title:'迴圈算 2+4+…+12',
+q:'',
+code:`mov [[0]]
+mov ax, 0
+mov bx, 0
+Ly:
+  [[1]]
+  add ax, bx
+  [[2]]`,
+a:[['ecx,6'],['addbx,2'],['looply']],prev:['cx, 6',null,null],
+hint:'2,4,6,8,10,12 共幾個？bx 每次要變多少？',
+ex:`<p>2 到 12 的偶數共 <b>6 個</b> → ecx = 6。bx 從 0 開始，每圈先 +2 再加進 ax：2, 4, …, 12。</p>
+<p>結果 ax = 42。</p>`},
+
+{id:'c12',u:3,src:'var',from:'10/5 第7、8題 變化',title:'迴圈算 1+3+5+…+19',
+q:'',
+code:`mov [[0]]        ; 共幾個奇數？
+mov ax, 0
+mov bx, [[1]]
+L1:
+  [[2]]
+  [[3]]
+  loop L1
+; 結束時 ax = [[4]]`,
+a:[['ecx,10'],['1'],['addax,bx'],['addbx,2'],['100']],
+hint:'1,3,5,…,19：(19−1)/2+1 = 10 個。先加再 +2。',
+ex:`<p>奇數個數 = (最後 − 第一) ÷ 間隔 + 1 = (19 − 1) ÷ 2 + 1 = 10。</p>
+<p>bx 從 1 開始，先 <code>add ax, bx</code> 再 <code>add bx, 2</code>。</p>
+<p>1+3+…+19 = 10² = 100（前 n 個奇數和 = n²）。</p>
+<p>注意：如果先 add bx,2 再加，bx 要從 −1 開始，所以順序很重要。</p>`},
+
+{id:'c13',u:3,src:'orig',from:'10/5 第9題',title:'追蹤 OF 溢位',
+q:'8 bits 有號範圍 −128 ~ 127。',
+code:`mov bl, -128d
+dec bl         ; OF = [[0]]
+mov bl, -127d
+sub bl, 1      ; OF = [[1]]
+mov bl, 12d
+inc bl         ; OF = [[2]]
+mov bl, 127d
+inc bl         ; OF = [[3]]`,
+a:[['1'],['0'],['0'],['1']],
+hint:'算出來的結果有沒有跑出 −128 ~ 127？',
+ex:`<ul><li>−128 − 1 = −129，<b>超出</b>範圍 → OF = 1（bl 變成 127）</li><li>−127 − 1 = −128，剛好在範圍內 → OF = 0</li><li>12 + 1 = 13 → OF = 0</li><li>127 + 1 = 128，<b>超出</b> → OF = 1（bl 變成 −128）</li></ul>
+<p><b>OF 管有號數</b>（會不會超出 −128~127），<b>CF 管無號數</b>（會不會超出 0~255）。</p>`},
+
+{id:'c14',u:3,src:'new',from:'第4章 Exercise',title:'一次追蹤四個旗標',
+q:'簡報的練習題，連續執行。',
+code:`mov ax, 7FF0h
+add al, 10h   ; CF=[[0]] SF=[[1]] ZF=[[2]] OF=[[3]]
+add ah, 1     ; CF=[[4]] SF=[[5]] ZF=[[6]] OF=[[7]]
+add ax, 2     ; CF=[[8]] SF=[[9]] ZF=[[10]] OF=[[11]]`,
+a:[['1'],['0'],['1'],['0'],['0'],['1'],['0'],['1'],['0'],['1'],['0'],['0']],
+hint:'AL = F0h，AH = 7Fh。每一行只看那一行的運算大小（8 位或 16 位）。',
+ex:`<p><b>a.</b> AL = F0h + 10h = 100h → 8 位放不下，AL = 00、進位掉出去 → <b>CF=1、ZF=1</b>、SF=0。有號：−16 + 16 = 0 沒超出 → OF=0。</p>
+<p><b>b.</b> AH = 7Fh + 1 = 80h：無號 127+1=128 沒超過 255 → CF=0；最高位變 1 → SF=1；有號 127+1 超出 → <b>OF=1</b>。</p>
+<p><b>c.</b> AX = 8000h + 2 = 8002h：16 位最高位是 1 → SF=1；有號 −32768+2 沒超出 → OF=0；CF=0、ZF=0。</p>
+<p>（以上用組譯器實際執行驗證過）</p>`},
+
+{id:'c15',u:3,src:'orig',from:'10/5 第10題',title:'MS-DOS 命令（1）',
+q:'',
+code:`列出目前資料夾的檔案與子資料夾：[[0]]
+刪除 aa.obj：[[1]]
+顯示 aa.asm 內容：[[2]]
+清除螢幕：[[3]]
+aa.asm 改名為 bb.asm：[[4]]`,
+a:[['dir'],['delaa.obj'],['typeaa.asm'],['cls'],['renameaa.asmbb.asm','renaa.asmbb.asm']],prev:[null,null,'ls aa.asm',null,null],
+hint:'Windows 不是 Linux：顯示檔案內容不是 cat 也不是 ls。',
+ex:`<table class="t"><tr><th>做什麼</th><th>Windows (cmd)</th><th>Linux（別寫這個）</th></tr>
+<tr><td>列出</td><td>dir</td><td>ls</td></tr><tr><td>顯示內容</td><td><b>type</b></td><td>cat</td></tr>
+<tr><td>刪除</td><td>del</td><td>rm</td></tr><tr><td>改名</td><td>rename / ren</td><td>mv</td></tr>
+<tr><td>清畫面</td><td>cls</td><td>clear</td></tr></table>
+<p>上次寫 ls，那是 Linux 指令。</p>`},
+];
+
+// ===== 單元 4–6 =====
+const BANK2 = [
+// ---------------- U4 程序與呼叫慣例（10/12，上次 13.1 分，最該補）----------------
+{id:'d1',u:4,src:'orig',from:'10/12 第1題',title:'呼叫系統 API 的四個步驟',
+q:'呼叫 ExitProcess：(1) 設定 standard call 呼叫慣例並引入函式庫 (2) 宣告函數雛型 (3) 在主程式呼叫。',
+code:`.386
+.model flat, [[0]]
+[[1]] kernel32.lib
+ExitProcess [[2]]
+.code
+[[3]] ExitProcess, 0`,
+a:[['stdcall'],['includelib'],['protostdcall:dword','proto:dword','proto','proto,dwexitcode:dword','proto:dword,'],['invoke']],prev:['proc','sdd','INVOKE',null],
+hint:'.model 第二個參數是呼叫慣例。引入函式庫的指示叫 include + lib。宣告雛型 = Prototype。',
+ex:`<p>四個關鍵字，對照 Java/C 理解：</p>
+<table class="t"><tr><th>組語</th><th>意思</th><th>像什麼</th></tr>
+<tr><td><code>.model flat, stdcall</code></td><td>平坦記憶體 + 預設 stdcall 慣例</td><td>專案設定</td></tr>
+<tr><td><code>includelib kernel32.lib</code></td><td>連結時把這個函式庫拉進來</td><td>Java 的 import</td></tr>
+<tr><td><code>ExitProcess PROTO :DWORD</code></td><td>告訴組譯器這個函式長怎樣、收一個 DWORD</td><td>C 的函式宣告</td></tr>
+<tr><td><code>INVOKE ExitProcess, 0</code></td><td>呼叫它</td><td>呼叫函式</td></tr></table>
+<p>上次你在第 1 格寫 proc、第 3 格寫 INVOKE：<b>PROC 是「自己寫函式」用的，PROTO 是「宣告別人的函式」用的</b>，只差一個字母，一定要分清楚。</p>`},
+
+{id:'d2',u:4,src:'orig',from:'10/12 第2題',title:'寫一個 stdcall 程序',
+q:'設計一個 procedure，standard call 慣例，一個參數 inp (DWORD)。',
+code:`sdd [[0]]       ; header
+  mov eax, inp
+  [[1]]         ; return, no return data
+sdd ENDP`,
+a:[['procstdcall,inp:dword','procstdcallinp:dword'],['ret']],prev:['DWORD inp','sdd inp'],
+hint:'格式：名字 PROC 慣例, 參數名:型態。結束程序回去的指令是？',
+ex:`<p><b>程序標頭格式</b>（背起來）：</p>
+<pre>名字 PROC 慣例, 參數名:型態
+sdd  PROC stdcall, inp:DWORD</pre>
+<p>注意順序：<b>參數名在前、型態在後</b>（inp:DWORD），跟 C 的 <code>int inp</code> 相反。上次你寫 <code>DWORD inp</code> 是 C 的順序。</p>
+<p>結束用 <b>RET</b>。stdcall 的 RET 會被 MASM 自動變成 <code>ret 4</code>（幫你把 4 bytes 的參數清掉）。</p>`},
+
+{id:'d3',u:4,src:'orig',from:'10/12 第3題',title:'C 慣例程序 + push/pop 順序',
+q:'設計 procedure，C 呼叫慣例，一參數 in2 (DWORD)。',
+code:`dd2 [[0]]     ; header
+push cx
+push ax
+  ...
+[[1]]         ; 彈出
+[[2]]         ; 彈出
+dd2 ENDP`,
+a:[['procc,in2:dword','proccin2:dword'],['popax'],['popcx']],prev:['DWORD in2','pop in2','pop in2'],
+hint:'堆疊像一疊盤子：最後放上去的，最先拿下來。',
+ex:`<p><b>堆疊 = 後進先出（LIFO）</b>，像疊盤子：</p>
+<pre>push cx   →  [cx]
+push ax   →  [ax] ← 最上面
+              [cx]
+pop ax    ←  先拿到最上面的 ax
+pop cx    ←  再拿 cx</pre>
+<p>所以 push 的順序是 cx, ax，pop 要<b>反過來</b>：ax, cx。</p>
+<p>上次你寫 pop in2：in2 是參數，不是你推進去保護的東西。<b>你 push 什麼，就要 pop 回什麼，順序相反。</b></p>`},
+
+{id:'d4',u:4,src:'orig',from:'10/12 第4題',title:'div 的商和餘數',
+q:'',
+code:`div ecx
+; 餘數放在 [[0]]
+; 商放在   [[1]]`,
+a:[['edx'],['eax']],prev:['eax','edx'],
+hint:'被除數是 EDX:EAX（所以除之前要清 EDX）。',
+ex:`<p>記法：<b>A 是 Answer（商），D 是 Dregs（剩下的渣 = 餘數）</b>。</p>
+<pre>xor edx, edx    ; 被除數高位清 0
+mov eax, 17
+mov ecx, 5
+div ecx         ; eax = 3（商）, edx = 2（餘數）</pre>
+<p>上次你兩格剛好寫反。所有「判斷倍數、取亂數範圍」的題都看 <b>EDX（餘數）</b>。</p>
+<p>有號除法用 <code>cdq</code> + <code>idiv</code>，結果放法一樣。</p>`},
+
+{id:'d5',u:4,src:'orig',from:'10/12 第5題',title:'呼叫 C 函式庫 printf',
+q:'(1) 設定 C 函數呼叫慣例及引入函式庫 (2) 宣告 (3) 呼叫。',
+code:`.386
+.model flat, [[0]]
+[[1]] vcr.lib
+printf proto c :vararg
+.code
+[[2]] printf, offset x1, x2`,
+a:[['c'],['includelib'],['invoke']],prev:['printf','printf',null],
+hint:'跟第 1 題一樣的結構，只是慣例換成 C。',
+ex:`<p>跟 ExitProcess 那題是<b>同一個模板</b>，只差在慣例：</p>
+<table class="t"><tr><th></th><th>Windows API</th><th>C 函式庫</th></tr>
+<tr><td>例子</td><td>ExitProcess</td><td>printf, scanf</td></tr>
+<tr><td>慣例</td><td>stdcall</td><td><b>c</b>（cdecl）</td></tr>
+<tr><td>參數</td><td>固定</td><td>:VARARG（不固定）</td></tr></table>
+<p>printf 參數數量不固定，只有 C 慣例（呼叫者清堆疊）能處理，所以一定是 c。</p>`},
+
+{id:'d6',u:4,src:'orig',from:'10/12 第6題',title:'MS-DOS 命令（2）cd',
+q:'',
+code:`列出目前資料夾所有 .obj 檔：[[0]]
+切換至上一層資料夾：[[1]]
+到根目錄：[[2]]
+切換至下一層子資料夾 sb2：[[3]]`,
+a:[['dir*.obj'],['cd..'],['cd\\'],['cdsb2','cd.\\sb2']],prev:[null,null,'cd ~','cd /sb2'],
+hint:'Windows 路徑用反斜線 \\。',
+ex:`<ul><li><code>dir *.obj</code>：* 是萬用字元，代表「任何名字」</li><li><code>cd ..</code>：兩個點 = 上一層</li><li><code>cd \\</code>：反斜線 = 根目錄（C:\\）</li><li><code>cd sb2</code> 或 <code>cd .\\sb2</code>：一個點 = 目前資料夾</li></ul>
+<p>上次寫 <code>cd ~</code>、<code>cd /sb2</code> 都是 Linux 寫法。Windows：<b>根目錄 \\，不是 ~ 也不是 /</b>。</p>`},
+
+{id:'d7',u:4,src:'orig',from:'10/12 第7題',title:'不用 INVOKE 呼叫 printf',
+q:'呼叫 printf 不用 invoke，改用另一種呼叫方式。',
+code:`.code
+[[0]] offset odd_msg
+[[1]] printf
+[[2]] esp, 4`,
+a:[['push'],['call'],['add']],prev:['printf','INVOKE','printf'],
+hint:'三步：把參數推進堆疊 → 呼叫 → 清堆疊。',
+ex:`<p><b>INVOKE 不是真的 CPU 指令</b>，組譯器會把它展開成三步：</p>
+<pre>INVOKE printf, offset odd_msg
+      ↓ 展開
+push offset odd_msg   ; 1. 參數推進堆疊
+call printf           ; 2. 呼叫
+add  esp, 4           ; 3. 清堆疊（1 個參數 × 4）</pre>
+<p>口訣：<b>push → call → add esp</b>。參數多個時<b>從右邊開始 push</b>。</p>`},
+
+{id:'d8',u:4,src:'new',from:'10/12 範例簡報',title:'cdecl vs stdcall 比較表',
+q:'填「呼叫者 / 被呼叫者」或指令。',
+code:`                cdecl (C)         stdcall
+誰清堆疊？      [[0]]            [[1]]
+用什麼清？      add esp, X        [[2]]
+支援 VARARG？   [[3]]（是/否）    否
+參數 push 順序  [[4]]（由右至左 / 由左至右）
+誰用這種？      printf, scanf     [[5]]（舉一個 Windows API）`,
+a:[['呼叫者','caller'],['被呼叫者','callee'],['retx','ret'],['是','yes'],['由右至左','右至左','righttoleft'],['exitprocess','messageboxa','messagebox']],
+hint:'stdcall 的函式最後一行是 ret 4、ret 8 這種。',
+ex:`<table class="t"><tr><th></th><th>cdecl（C）</th><th>stdcall</th></tr>
+<tr><td>清堆疊</td><td><b>呼叫者</b>：call 完自己 add esp, X</td><td><b>被呼叫者</b>：函式最後 ret X</td></tr>
+<tr><td>可變參數</td><td>可以（printf）</td><td>不行（ret 後面的數字寫死了）</td></tr>
+<tr><td>參數順序</td><td colspan="2">兩個都是<b>由右至左</b> push</td></tr>
+<tr><td>名字修飾</td><td>_printf</td><td>_ExitProcess@4（@後是參數 bytes）</td></tr>
+<tr><td>用途</td><td>C/C++ 預設</td><td>Windows API</td></tr></table>
+<p><b>最常考的結論</b>：呼叫 printf / scanf 後要 <code>add esp, X</code>；呼叫 ExitProcess 或自己寫的 stdcall 程序後<b>不要</b> add esp。</p>`},
+
+{id:'d9',u:4,src:'new',from:'10/12 範例簡報',title:'兩個參數時要清幾 bytes',
+q:'',
+code:`; cdecl 程序 f1(a, b) 用 call 呼叫
+push b
+push a
+call f1
+add esp, [[0]]
+
+; stdcall 程序 f2(a, b)，MASM 會把 f2 結尾的 ret 變成
+[[1]]
+; 呼叫 f2 之後，呼叫者還要 add esp 嗎？（要/不要）[[2]]
+
+; 呼叫 ExitProcess (stdcall)
+push 0
+call ExitProcess
+; 後面要 add esp, 4 嗎？（要/不要）[[3]]`,
+a:[['8'],['ret8'],['不要','不用','no'],['不要','不用','no']],
+hint:'每個參數 4 bytes。stdcall 是被呼叫者自己清。',
+ex:`<p>每個 DWORD 參數 4 bytes，兩個 = 8。</p>
+<ul><li>cdecl：呼叫者 <code>add esp, 8</code></li><li>stdcall：函式自己 <code>ret 8</code>，呼叫者什麼都不用做</li></ul>
+<p>如果 stdcall 呼叫完還 add esp，堆疊會被多清一次，程式會壞掉。</p>`},
+
+{id:'d10',u:4,src:'new',from:'10/5 範例簡報',title:'回傳值放在哪',
+q:'函式的回傳值放在哪個暫存器？',
+code:`32 位元（int、指標）  [[0]]
+16 位元              [[1]]
+8 位元               [[2]]
+64 位元              [[3]]:[[4]]`,
+a:[['eax'],['ax'],['al'],['edx'],['eax']],
+hint:'都跟 A 有關；64 位元拆兩半，高半在 D。',
+ex:`<p>不管 cdecl 還是 stdcall，<b>回傳值都放 EAX</b>（看大小用 EAX / AX / AL）。64 位元放不下，就用 EDX:EAX 兩個拼起來。</p>
+<p>所以 <code>call rand</code> 之後亂數在 eax、<code>INVOKE time, 0</code> 之後時間在 eax、<code>strlen</code> 之後長度在 eax。</p>
+<p>連帶的陷阱：<b>呼叫任何函式都會蓋掉 eax</b>（printf 也會），還有 ecx、edx。要保留的值放 ebx、esi、edi，或先 push 起來。</p>`},
+
+{id:'d11',u:4,src:'new',from:'10/5 範例簡報',title:'把 scanf 改成 push/call',
+q:'INVOKE scanf, OFFSET fmtIn, OFFSET A 改成低階寫法。',
+code:`push [[0]]       ; 右邊的參數先推
+push [[1]]
+call scanf
+add esp, [[2]]`,
+a:[['offseta'],['offsetfmtin'],['8']],
+hint:'由右至左 push。scanf 是 C 函式。',
+ex:`<p>參數由右至左：最右邊的 <code>OFFSET A</code> 先推，最左邊的格式字串最後推。</p>
+<p>scanf 是 cdecl → 呼叫者清：2 個 × 4 = 8。</p>
+<p>scanf 要的是<b>位址</b>（OFFSET A），因為它要把數字寫進 A 那格；printf 印數字傳的是<b>值</b>（push A）。</p>`},
+
+{id:'d12',u:4,src:'new',from:'10/5 範例簡報',title:'讓識別字區分大小寫',
+q:'',
+code:`.386
+.model flat, stdcall
+option [[0]]      ; 讓 myVar 和 MYVAR 變成兩個不同的變數`,
+a:[['casemap:none']],
+hint:'case map: none。',
+ex:`<p>MASM 預設<b>不分大小寫</b>（myVar = MYVAR）。加上 <code>option casemap:none</code> 之後就會區分，跟 C / Windows API 一致。</p>
+<p>開了之後要小心：<code>ExitProcess</code> 打成 <code>exitprocess</code> 會找不到。</p>`},
+
+{id:'d13',u:4,src:'new',from:'10/5 範例簡報',title:'階乘程序 N!',
+q:'範例開頭是 .model flat, cdecl，所以這個 PROC 是 C 慣例。',
+code:`Factorial PROC USES ECX, n:DWORD
+  mov ecx, n
+  mov eax, 1
+  cmp ecx, 1
+  jle L_Done
+L_Loop:
+  [[0]]          ; EAX = EAX × ECX
+  [[1]] L_Loop   ; ECX−1，不是 0 就跳回
+L_Done:
+  ret
+Factorial ENDP
+
+; 用 call 呼叫（cdecl）
+push 5
+call Factorial
+add esp, [[2]]
+; 這時 eax = [[3]]`,
+a:[['mulecx'],['loop'],['4'],['120']],
+hint:'mul 只寫一個運算元，另一個固定是 eax。',
+ex:`<p><code>mul ecx</code>：eax = eax × ecx（結果放 EDX:EAX）。乘法也像除法一樣固定用 eax。</p>
+<p>ecx = 5,4,3,2,1 → eax = 1×5×4×3×2×1 = 120。</p>
+<p><b>USES ECX</b>：組譯器自動在開頭 push ecx、結尾 pop ecx，保護呼叫者的 ecx。</p>`},
+
+{id:'d14',u:4,src:'new',from:'10/5 範例簡報',title:'stdcall 程序的幕後：Prologue',
+q:'IsOdd PROC stdcall, inputVal:DWORD，MASM 實際展開的樣子。',
+code:`IsOdd:
+  push ebp
+  [[0]]                    ; 建立基準點
+  mov eax, dword ptr [ebp + [[1]]]   ; inputVal
+  [[2]] eax, 1             ; 只留最低位：1=奇數 0=偶數
+  pop ebp
+  [[3]]                    ; 返回並清掉 4 bytes 參數`,
+a:[['movebp,esp'],['8'],['and'],['ret4']],
+hint:'[ebp+0] 舊 ebp、[ebp+4] 返回位址、[ebp+8] 第一個參數。',
+ex:`<pre>[ebp + 12]  第 2 個參數
+[ebp + 8]   第 1 個參數   ← inputVal
+[ebp + 4]   返回位址（call 推的）
+[ebp + 0]   舊的 ebp      ← ebp 指這裡</pre>
+<p>Prologue：<code>push ebp / mov ebp, esp</code>；Epilogue：<code>pop ebp</code>（有區域變數時先 <code>mov esp, ebp</code>）。</p>
+<p>判斷奇偶：<code>and eax, 1</code> 只留最低位，奇數最低位是 1。</p>`},
+
+// ---------------- U5 比較與陣列（10/19）----------------
+{id:'e1',u:5,src:'orig',from:'10/19 第1題',title:'有號數比大小：v1 > v2',
+q:'v1、v2 是有號整數，if v1 > v2 then goto BB，兩種方法。',
+code:`; 方法 1：比較指令
+mov ax, v1
+mov bx, v2
+[[0]] ax, bx
+[[1]] BB
+
+; 方法 2：運算指令
+mov ax, v1
+mov bx, v2
+[[2]] bx, ax      ; bx = v2 − v1
+[[3]] BB`,
+a:[['cmp'],['jg'],['sub'],['js']],prev:[null,null,'test','jg'],
+hint:'v2 − v1 是負的，代表誰比較大？負的看哪個旗標？',
+ex:`<p><b>cmp 其實就是偷偷做減法</b>（只設旗標，不存答案）。所以用 <code>sub</code> 也能比較，差別只是 sub 會改掉 bx。</p>
+<p>方法 2 算的是 <b>v2 − v1</b>：</p>
+<ul><li>結果負的 → v2 &lt; v1 → v1 &gt; v2 ✓ → 看 <b>SF（Sign）</b> → <code>js</code></li></ul>
+<p>上次你寫 test：test 做的是 and，不是減法，比不出大小。</p>`},
+
+{id:'e2',u:5,src:'orig',from:'10/19 第2題',title:'無號數比大小：v1 > v2',
+q:'v1、v2 是無號整數，if v1 > v2 then goto BB。',
+code:`; 方法 1
+mov ax, v1
+mov bx, v2
+cmp ax, bx
+[[0]] BB
+
+; 方法 2：運算指令
+mov ax, v1
+mov bx, v2
+[[1]] bx, ax      ; bx = v2 − v1
+[[2]] BB`,
+a:[['ja'],['sub'],['jc']],prev:[null,'test','ja'],
+soft:[[2,'jb','jb 和 jc 是同一個機器碼，但老師標準答案是 jc（看借位旗標）。']],
+hint:'無號數沒有負數。小減大會「不夠減、要借位」，看哪個旗標？',
+ex:`<p><b>無號數用 A/B（Above/Below）</b>，有號用 G/L。</p>
+<p>v2 − v1：如果 v2 &lt; v1，無號數「不夠減」，要向前借位 → <b>CF = 1</b> → <code>jc</code>。</p>
+<table class="t"><tr><th></th><th>有號</th><th>無號</th></tr><tr><td>cmp 後 &gt;</td><td>jg</td><td>ja</td></tr><tr><td>sub 後判斷</td><td>js（看正負）</td><td>jc（看借位）</td></tr></table>`},
+
+{id:'e3',u:5,src:'orig',from:'10/19 第3題',title:'相等：v1 == v2',
+q:'',
+code:`; 方法 1
+cmp ax, bx
+[[0]] BB
+
+; 方法 2：運算指令
+mov ax, v1
+mov bx, v2
+[[1]] ax, bx
+[[2]] BB`,
+a:[['je','jz'],['sub'],['jz']],prev:[null,'test','je'],
+soft:[[2,'je','je 和 jz 其實是同一個機器碼，但上次老師把 je 判錯（標準答案 jz）。運算指令之後考試寫 jz。']],
+hint:'相等的兩個數相減是多少？',
+ex:`<p>相等 → 相減 = 0 → <b>ZF = 1</b> → <code>jz</code>（jump if zero）。</p>
+<p><code>je</code> 和 <code>jz</code> 是同一個機器碼，只是名字不同：cmp 之後習慣寫 je，運算之後習慣寫 jz。老師標準答案方法 2 是 jz。</p>`},
+
+{id:'e4',u:5,src:'orig',from:'10/19 第4題',title:'相等：用 logic 指令',
+q:'solution 3：v1 == v2 then goto BB，採用 logic 指令。',
+code:`mov ax, v1
+mov bx, v2
+[[0]] bx, ax      ; 採用 logic 指令
+[[1]] BB`,
+a:[['xor'],['jz']],prev:[null,'jmp'],
+soft:[[1,'je','je = jz 同一個指令，但老師標準答案是 jz，logic/運算指令之後寫 jz。']],
+hint:'哪個邏輯運算「一樣 → 0」？',
+ex:`<p>xor：一樣的位元變 0。兩個數完全相同 → 每一位都一樣 → 結果 0 → ZF=1 → <code>jz</code>。</p>
+<p>上次第二格寫 jmp：jmp 是<b>無條件</b>跳，不管相不相等都會跳。</p>`},
+
+{id:'e5',u:5,src:'orig',from:'10/19 第5題',title:'eax = AA[3]（lea 寫法）',
+q:'AA is a dword array。',
+code:`xor esi, esi
+add esi, 3
+[[0]] ebx, AA            ; compute AA effective address
+mov eax, [[1]] [ebx + [[2]]]`,
+a:[['lea'],['dwordptr'],['12']],prev:['offset','ebx',null],
+hint:'第一格在「指令」的位置。第二格告訴 CPU 拿幾個位元組。',
+ex:`<p><b>lea</b> = Load Effective Address，「把位址算出來放進暫存器」，它是<b>指令</b>。offset 不是指令，不能放在行首。</p>
+<p><b>dword ptr</b>：中括號只說「在哪」，dword ptr 說「拿 4 個位元組」。</p>
+<p>AA[3]：3 × 4 = <b>12</b>。也可以寫 <code>[ebx + esi*4]</code>。</p>`},
+
+{id:'e6',u:5,src:'orig',from:'10/19 第6題',title:'eax = AA[3]（offset 寫法）',
+q:'',
+code:`mov ebx, [[0]] AA
+mov eax, [[1]] [ebx + [[2]]]`,
+a:[['offset'],['dwordptr'],['12']],prev:[null,'ebx',null],
+hint:'這次第一格在 mov 後面，不是指令的位置。',
+ex:`<p><code>mov ebx, offset AA</code> = <code>lea ebx, AA</code>，效果一樣。</p>
+<p>判斷法：<b>空格在行首（指令位置）→ lea；空格在 mov 後面 → offset</b>。</p>`},
+
+{id:'e7',u:5,src:'orig',from:'10/19 第7題',title:'INVOKE 改 push/call（2 參數）',
+q:'INVOKE printf, offset xx, yy 改用單純低階 call。',
+code:`push [[0]]
+push [[1]]
+[[2]] printf
+add esp, [[3]]`,
+a:[['yy'],['offsetxx'],['call'],['8']],prev:[null,'xx',null,null],
+hint:'由右至左；xx 原本是 offset xx。',
+ex:`<p>最右邊 yy 先推；第一個參數是 <b>offset xx</b>（位址），要保留 offset。上次寫成 xx 會推進字串內容的前 4 個位元組，printf 會壞掉。</p>`},
+
+{id:'e8',u:5,src:'orig',from:'10/19 第8題',title:'STDCALL 程序：是否為 5 的倍數',
+q:'',
+code:`p_div5 [[0]]      ; header
+  mov eax, nn
+  xor edx, edx
+  mov ecx, 5
+  [[1]] ecx
+  [[2]], 0           ; 比較餘數
+  [[3]] over1        ; 餘數不等於 0，goto over1
+  invoke printf, OFFSET fmt_stdcall, nn
+over1:
+  ret
+p_div5 ENDP`,
+a:[['procstdcallnn:dword','procstdcall,nn:dword'],['div'],['cmpedx'],['jne','jnz']],prev:['stdcall',null,'cmp',null],
+hint:'header 要寫完整：PROC 慣例 參數:型態。餘數在哪個暫存器？',
+ex:`<p>header 三件事都要寫：<b>PROC</b>、<b>STDCALL</b>、<b>nn:DWORD</b>。上次只寫 stdcall。</p>
+<p>div 後<b>餘數在 EDX</b>，所以 <code>cmp edx, 0</code>。上次只寫 cmp，少了 edx。</p>
+<p>變化題：偶數 → <code>mov ecx, 2</code>；3 的倍數 → <code>mov ecx, 3</code>。</p>`},
+
+{id:'e9',u:5,src:'orig',from:'10/19 第9題',title:'大寫強制轉小寫',
+q:'大寫（存在 al）強制轉小寫。',
+code:`cmp al, 'A'
+[[0]] skip_convert     ; 小於 'A' 則跳過
+cmp al, 'Z'
+[[1]] skip_convert     ; 大於 'Z' 則跳過
+[[2]] al, [[3]]h       ; 只有確定是大寫字母
+skip_convert:`,
+a:[['jb'],['ja'],['add','or'],['20']],prev:['jl','jg','sub',null],
+hint:'字元是無號數。大寫 41h、小寫 61h，小寫比較大。',
+ex:`<p><b>字元比較用無號</b>：小於 → jb、大於 → ja。</p>
+<p>大寫 → 小寫要「變大」20h：<code>add al, 20h</code> 或 <code>or al, 20h</code>（把 bit 5 打開）。</p>
+<p>口訣：<b>變小寫 = 加（or）、變大寫 = 減（and 0DFh）</b>。</p>`},
+
+{id:'e10',u:5,src:'orig',from:'10/19 第10題',title:'小寫強制轉大寫',
+q:'',
+code:`; solution 1：high speed，運用 logic 指令
+[[0]] al, 0DFh
+; solution 2
+[[1]] al, 20h`,
+a:[['and'],['sub','xor']],prev:['xor','add'],
+hint:'0DFh = 1101 1111，只有 bit 5 是 0。',
+ex:`<p><code>and al, 0DFh</code>：and 遇到 0 就變 0，所以強制把 bit 5 關掉 → 大寫。</p>
+<p><code>sub al, 20h</code>：61h − 20h = 41h。（老師這格也接受 xor，因為已確定是小寫時 xor 20h 會把 bit 5 翻掉。）</p>
+<table class="t"><tr><th>目的</th><th>算術</th><th>邏輯</th></tr><tr><td>大→小</td><td>add al,20h</td><td>or al,20h</td></tr><tr><td>小→大</td><td>sub al,20h</td><td>and al,0DFh</td></tr><tr><td>互換</td><td></td><td>xor al,20h</td></tr></table>`},
+
+{id:'e11',u:5,src:'var',from:'10/19 第1題 變化',title:'有號：v1 < v2 與 v1 >= v2',
+q:'有號整數。',
+code:`; if v1 < v2 goto BB
+cmp ax, bx       ; ax=v1, bx=v2
+[[0]] BB
+; 運算指令版
+sub ax, bx       ; ax = v1 − v2
+[[1]] BB
+
+; if v1 >= v2 goto CC
+cmp ax, bx
+[[2]] CC`,
+a:[['jl'],['js'],['jge']],
+hint:'v1 − v2 是負的，代表 v1 比較小。',
+ex:`<p>v1 − v2 &lt; 0 → v1 &lt; v2 → SF=1 → <code>js</code>。</p>
+<p>注意這題是 <b>ax − bx</b>（v1 − v2），原題是 bx − ax。<b>先看清楚誰減誰</b>，再決定用哪個。</p>
+<p>有號完整表：jg（&gt;）jge（≥）jl（&lt;）jle（≤）。</p>`},
+
+{id:'e12',u:5,src:'var',from:'10/19 第2題 變化',title:'無號：v1 < v2 與 v1 <= v2',
+q:'無號整數，ax=v1, bx=v2。',
+code:`cmp ax, bx
+[[0]] BB          ; v1 < v2
+sub ax, bx        ; ax = v1 − v2
+[[1]] BB          ; 用旗標判斷 v1 < v2
+
+cmp ax, bx
+[[2]] CC          ; v1 <= v2`,
+a:[['jb','jc'],['jc','jb'],['jbe']],
+hint:'v1 − v2 不夠減就會借位。',
+ex:`<p>無號完整表：<b>ja（&gt;）jae（≥）jb（&lt;）jbe（≤）</b>。</p>
+<p>v1 − v2 不夠減 → CF=1 → <code>jc</code>（其實 jb 和 jc 是同一個機器碼）。</p>`},
+
+{id:'e13',u:5,src:'var',from:'10/19 第3、4題 變化',title:'不相等：v1 != v2',
+q:'',
+code:`; 比較指令
+cmp ax, bx
+[[0]] BB
+; 運算指令
+sub ax, bx
+[[1]] BB
+; logic 指令
+[[2]] bx, ax
+jnz BB`,
+a:[['jne','jnz'],['jnz','jne'],['xor']],
+hint:'不相等 → 相減不是 0。',
+ex:`<p>不相等就是「結果不是 0」→ ZF=0 → <code>jnz</code> / <code>jne</code>。三種方法：cmp、sub、xor，跳躍都看 ZF。</p>`},
+
+{id:'e14',u:5,src:'var',from:'10/19 第5題 變化',title:'不同型態的陣列取值',
+q:'',
+code:`; eax = AA[5]，AA 是 DWORD 陣列
+lea ebx, AA
+mov eax, dword ptr [ebx + [[0]]]
+
+; ax = BB[3]，BB 是 WORD 陣列
+mov ebx, offset BB
+mov ax, [[1]] [ebx + [[2]]]
+
+; al = CC[7]，CC 是 BYTE 陣列
+mov al, [[3]] [ebx + [[4]]]   ; 假設 ebx 已指向 CC`,
+a:[['20'],['wordptr'],['6'],['byteptr'],['7']],
+hint:'位移 = index × 一格大小。ptr 跟著型態走。',
+ex:`<table class="t"><tr><th>陣列</th><th>一格</th><th>index</th><th>位移</th><th>ptr</th></tr>
+<tr><td>DWORD AA[5]</td><td>4</td><td>5</td><td>20</td><td>dword ptr</td></tr>
+<tr><td>WORD BB[3]</td><td>2</td><td>3</td><td>6</td><td>word ptr</td></tr>
+<tr><td>BYTE CC[7]</td><td>1</td><td>7</td><td>7</td><td>byte ptr</td></tr></table>
+<p>暫存器大小也要對上：dword → eax、word → ax、byte → al。</p>`},
+
+{id:'e15',u:5,src:'var',from:'10/19 第7題 變化',title:'INVOKE 改 push/call（3 參數）',
+q:'INVOKE printf, OFFSET fmt, a, b',
+code:`push [[0]]
+push [[1]]
+push [[2]]
+call printf
+add esp, [[3]]`,
+a:[['b'],['a'],['offsetfmt'],['12']],
+hint:'由右至左，3 個參數。',
+ex:`<p>順序：b → a → offset fmt。3 × 4 = 12。</p>
+<p>11/2 第 1 題也是 3 個參數（edx, ecx, offset msgsum），答案 12，上次你寫 8，這種題目先數參數個數。</p>`},
+
+{id:'e16',u:5,src:'var',from:'10/19 第8題 變化',title:'STDCALL：判斷偶數',
+q:'',
+code:`p_even PROC STDCALL nn:DWORD
+  mov eax, nn
+  [[0]]            ; 除法前清高位
+  mov ecx, [[1]]
+  div ecx
+  cmp [[2]], 0
+  [[3]] not_even   ; 餘數不是 0 → 不是偶數
+  invoke printf, OFFSET fmt_even, nn
+not_even:
+  ret
+p_even ENDP
+
+; 主程式用 call 呼叫
+push n
+call p_even
+; stdcall，這裡要寫 add esp, 4 嗎？[[4]]`,
+a:[['xoredx,edx','movedx,0','subedx,edx'],['2'],['edx'],['jne','jnz'],['不要','不用','no']],
+hint:'除法被除數是 EDX:EAX。',
+ex:`<p>結構跟 p_div5 一模一樣，只換除數。</p>
+<p>更快的寫法：<code>test eax, 1</code> + <code>jnz not_even</code>（最低位是 1 就是奇數）。</p>
+<p>stdcall → 程序自己 ret 4 → 呼叫者<b>不要</b> add esp。</p>`},
+
+{id:'e17',u:5,src:'var',from:'10/19 第9題 變化',title:'只處理小寫字母',
+q:'al 如果是小寫就轉大寫，其他字元不動。',
+code:`cmp al, [[0]]
+jb skip
+cmp al, [[1]]
+[[2]] skip
+[[3]] al, 0DFh
+skip:`,
+a:[["'a'",'61h','"a"'],["'z'",'7ah','"z"'],['ja'],['and']],
+hint:'範圍是 a ~ z。',
+ex:`<p>檢查範圍 'a'(61h) ~ 'z'(7Ah)，跳躍用無號的 jb / ja。</p>
+<p>如果不先檢查範圍就 and 0DFh，數字或符號也會被改壞（例如 '1' = 31h 會變成 11h）。</p>`},
+
+// ---------------- U6 亂數、子程序、定址（11/2）----------------
+{id:'f1',u:6,src:'orig',from:'11/2 第1題',title:'INVOKE 改 call（3 參數）',
+q:'"INVOKE printf, OFFSET msgsum, ecx, edx" replaced with "call"。',
+code:`push [[0]]
+push [[1]]
+push [[2]]
+call printf
+add [[3]]        ; 平衡堆疊`,
+a:[['edx'],['ecx'],['offsetmsgsum'],['esp,12']],prev:[null,null,null,'8'],
+hint:'數一數 push 了幾次。這格要寫完整的「暫存器, 數字」。',
+ex:`<p>3 個參數 × 4 = <b>12</b>。而且空格在 add 後面，要寫完整 <code>esp, 12</code>。</p>
+<p>上次寫 8，是把 10/19 的答案背起來直接套。<b>每次都要重新數 push 幾次</b>。</p>`},
+
+{id:'f2',u:6,src:'orig',from:'11/2 第2題',title:'產生 3~98 的亂數',
+q:'產生 3 到 98 之間的隨機整數，存在 EDX。',
+code:`push 0
+call time
+add esp, 4
+push eax
+call [[0]]
+add esp, 4
+call [[1]]        ; 隨機數結果儲存在 EAX
+; 限制在 3 到 98
+mov ecx, [[2]]
+mov edx, 0
+div ecx           ; 取餘數
+add edx, [[3]]    ; 加上最小值`,
+a:[['srand'],['rand'],['96'],['3']],prev:['time()','rand()',null,null],
+soft:[[1,'rand()','意思對，但組語不能加括號，會組譯錯誤。']],
+hint:'time 的結果拿去做什麼？區間長度 = 最大 − 最小 + 1。',
+ex:`<p>三個函式的角色：</p>
+<ul><li><code>time</code>：取得現在時間（放在 eax）</li><li><code>srand</code>：用那個時間當「洗牌種子」</li><li><code>rand</code>：抽一個亂數（放在 eax）</li></ul>
+<p>上次你寫 <code>time()</code>，又呼叫了一次 time，沒有洗牌；而且<b>組語不能寫括號</b>。</p>
+<p><b>範圍公式：(rand % 長度) + 最小值，長度 = 最大 − 最小 + 1</b><br>98 − 3 + 1 = 96 → 餘數 0~95 → +3 → 3~98。</p>`},
+
+{id:'f3',u:6,src:'orig',from:'11/2 第3題',title:'ArraySum 程序',
+q:'',
+code:`.data
+array2 DWORD 10000h,20000h,3000h,400000h,50000h
+theSum DWORD ?
+.code
+main PROC
+  mov esi, [[0]] array2      ; ESI points to array
+  mov ecx, [[1]] array2      ; ECX = array count
+  call ArraySum
+  mov theSum, eax
+  [[2]] ExitProcess, 0
+main ENDP
+
+ArraySum PROC
+  push esi
+  push ecx
+  mov eax, 0
+L1:
+  add eax, [ [[3]] ]
+  add esi, [[4]] DWORD
+  [[5]] L1
+  pop [[6]]
+  pop esi
+  [[7]]
+ArraySum ENDP`,
+a:[['offset'],['lengthof'],['invoke'],['esi'],['type'],['loop'],['ecx'],['ret']],prev:['DWORD ptr','sizeof',null,'esi*4',null,null,null,null],
+hint:'esi 每圈已經 +4 了，[ ] 裡還要再乘嗎？要的是「個數」還是「位元組數」？',
+ex:`<p><b>OFFSET</b>：要的是陣列的「位址」。<code>DWORD ptr array2</code> 會拿到第一個元素的值 10000h。</p>
+<p><b>LENGTHOF</b> = 5 個元素；<b>SIZEOF</b> = 20 位元組。迴圈要跑 5 次，所以 LENGTHOF。用 sizeof 會跑 20 次，讀到陣列外面。</p>
+<p><b>[esi]</b>：esi 本身就是位址，每圈 <code>add esi, TYPE DWORD</code>（+4）已經往下走了。上次寫 esi*4，等於把位址再乘 4，會跑到很遠的記憶體。</p>
+<table class="t"><tr><th>寫法</th><th>esi 是什麼</th></tr><tr><td>[esi] + add esi,4</td><td>位址（指標）</td></tr><tr><td>arr[esi*4] + inc esi</td><td>索引（第幾個）</td></tr></table>
+<p>pop 順序跟 push 相反：push esi, ecx → pop ecx, esi。</p>`},
+
+{id:'f4',u:6,src:'orig',from:'11/2 第4題',title:'定址模式（英文）',
+q:'addressing modes，用英文回答。',
+code:`add ax, bx         ; [[0]] addressing mode
+add ax, 11h        ; [[1]] addressing mode
+mov ax, themax     ; [[2]] addressing mode
+mov ax, [dx]       ; [[3]] addressing mode
+MOV EAX, [EBX + 8] ; [[4]] addressing mode
+MOV AL, [EBX + EDI]; [[5]] addressing mode`,
+a:[['register'],['immediate'],['direct'],['registerindirect'],['based/indexedwithdisplacement','basedwithdisplacement','indexedwithdisplacement','basedindexedwithdisplacement','based/indexed'],['based-indexed','basedindexed']],prev:[null,'register','register','pointer','pointer','pointer'],
+hint:'看來源（右邊）：數字、變數名、中括號裡幾個暫存器。',
+ex:`<table class="t"><tr><th>長相</th><th>名稱</th></tr>
+<tr><td>暫存器 bx</td><td>register</td></tr><tr><td>數字 11h</td><td><b>immediate</b>（立即）</td></tr>
+<tr><td>變數名 themax</td><td><b>direct</b>（直接）</td></tr><tr><td>[一個暫存器]</td><td><b>register indirect</b>（暫存器間接）</td></tr>
+<tr><td>[暫存器 + 數字]</td><td><b>based/indexed with displacement</b></td></tr><tr><td>[暫存器 + 暫存器]</td><td><b>based-indexed</b></td></tr>
+<tr><td>[暫存器 + 暫存器*4]</td><td>based-indexed with scaling</td></tr><tr><td>沒有運算元（clc, ret）</td><td>implied（隱含）</td></tr></table>
+<p>上次填 pointer：pointer 不是模式名稱。<b>這題 6 格只對 1 格，考試很可能再考，名字要會拼。</b></p>`},
+
+{id:'f5',u:6,src:'orig',from:'11/2 第5題',title:'三數最大值放到 ax',
+q:'將 ax, bx, cx 中最大值放入（交換至）ax。',
+code:`cmp ax, bx
+jg pp1
+mov dx, ax
+mov ax, [[0]]
+mov bx, [[1]]
+pp1:
+cmp [[2]]
+jg pp2
+mov dx, ax
+mov ax, [[3]]
+mov bx, [[4]]
+pp2:`,
+a:[['bx'],['dx'],['ax,cx'],['cx'],['dx']],
+hint:'ax 已經比較大就跳過交換；不然透過 dx 交換。',
+ex:`<p>邏輯：ax &gt; bx 就不用動（跳到 pp1），否則把 bx 換進 ax。第二輪再跟 cx 比。</p>
+<p>這題你上次全對 👍。注意第二次交換老師寫的是 <code>mov bx, dx</code>（不是 cx），照老師的寫法填。</p>`},
+
+{id:'f6',u:6,src:'var',from:'11/2 第2題 變化',title:'亂數範圍換數字',
+q:'',
+code:`; 擲骰子 1~6
+call rand
+mov ecx, [[0]]
+xor edx, edx
+div ecx
+[[1]]               ; 讓範圍變 1~6
+
+; 10~50
+call rand
+mov ecx, [[2]]
+xor edx, edx
+div ecx
+add edx, [[3]]
+
+; 0~100
+mov ecx, [[4]]`,
+a:[['6'],['incedx','addedx,1'],['41'],['10'],['101']],
+hint:'長度 = 最大 − 最小 + 1。',
+ex:`<table class="t"><tr><th>範圍</th><th>除以</th><th>再加</th></tr><tr><td>1~6</td><td>6</td><td>1</td></tr><tr><td>10~50</td><td>41</td><td>10</td></tr><tr><td>0~100</td><td>101</td><td>0</td></tr><tr><td>2~99</td><td>98</td><td>2</td></tr></table>
+<p>常見錯誤：10~50 寫成除以 40。10 到 50 包含頭尾，共 41 個數。</p>`},
+
+{id:'f7',u:6,src:'var',from:'11/2 第5題 變化',title:'三數最小值放到 ax',
+q:'',
+code:`cmp ax, bx
+[[0]] pp1        ; ax 已經比較小就跳過
+xchg ax, bx
+pp1:
+cmp ax, cx
+[[1]] pp2
+[[2]]
+pp2:`,
+a:[['jl','jle'],['jl','jle'],['xchgax,cx','xchgcx,ax']],
+hint:'找最小 → 比較小才保留。',
+ex:`<p>最大值用 jg，最小值就換成 <b>jl</b>。xchg 一行就能交換。</p>
+<p>簡報還有一種不用跳躍的寫法：<code>cmp ax, bx / cmovg ax, bx</code>（ax 比較大就把 bx 搬進來）。</p>`},
+
+{id:'f8',u:6,src:'var',from:'11/2 第3題 變化',title:'ArraySum 改成 WORD 陣列',
+q:'',
+code:`.data
+arrW WORD 100h, 200h, 300h
+.code
+  mov esi, OFFSET arrW
+  mov ecx, LENGTHOF arrW     ; ecx = [[0]]
+  mov ax, 0
+L1:
+  add [[1]], [esi]
+  add esi, TYPE [[2]]        ; 每次 +2
+  loop L1                    ; 結束時 ax = [[3]]h`,
+a:[['3'],['ax'],['word'],['600']],
+hint:'WORD 是 16 位元，配 ax。',
+ex:`<p>WORD → 用 <b>ax</b>（16 位），TYPE WORD = 2。100h + 200h + 300h = 600h。</p>
+<p>如果寫 <code>add eax, [esi]</code>，會一次拿 4 bytes（兩個 WORD），結果錯。</p>`},
+
+{id:'f9',u:6,src:'var',from:'11/2 第4題 變化',title:'定址模式（更多種）',
+q:'用英文回答。',
+code:`mov eax, 95                ; [[0]]
+mov eax, [edx]             ; [[1]]
+mov eax, [edx + esi*4]     ; based-indexed with [[2]]
+mov eax, AB[esi*4]         ; [[3]] addressing
+clc                        ; [[4]] addressing
+mov res1, eax              ; [[5]] addressing（目的地 res1 是變數）`,
+a:[['immediate'],['registerindirect'],['scaling','scale','scaledindexing'],['indexed'],['implied','inherent'],['direct']],
+hint:'clc 後面沒有任何運算元。',
+ex:`<p>判斷順序：</p>
+<ol><li>沒有運算元 → <b>implied</b></li><li>數字 → <b>immediate</b>；變數名 → <b>direct</b>；暫存器 → register</li><li>有中括號 → 數裡面幾個暫存器：1 個 → register indirect；1 個 + 數字 → with displacement；2 個 → based-indexed；有 ×4 → with scaling</li><li>變數名[暫存器] → indexed</li></ol>`},
+];
+
+// ===== 單元 7–11：課本／簡報有教、小考還沒考 =====
+const BANK3 = [
+// ---------------- U7 資料定義與運算子 ----------------
+{id:'g1',u:7,src:'new',from:'第4章 運算子',title:'TYPE / LENGTHOF / SIZEOF',
+q:'',
+code:`arrW     WORD  10 DUP(?)
+arrD     DWORD 1, 2, 3, 4
+digitStr BYTE  "12345678", 0
+
+TYPE arrW = [[0]]   LENGTHOF arrW = [[1]]   SIZEOF arrW = [[2]]
+TYPE arrD = [[3]]   LENGTHOF arrD = [[4]]   SIZEOF arrD = [[5]]
+LENGTHOF digitStr = [[6]]   SIZEOF digitStr = [[7]]`,
+a:[['2'],['10'],['20'],['4'],['4'],['16'],['9'],['9']],
+hint:'TYPE 一格幾 bytes、LENGTHOF 幾格、SIZEOF 總 bytes = TYPE × LENGTHOF。',
+ex:`<p>三個一起記：<b>SIZEOF = TYPE × LENGTHOF</b>。</p>
+<ul><li>arrW：一格 2 bytes、10 格 → 20 bytes</li><li>arrD：一格 4、4 格 → 16</li><li>digitStr：8 個字元 + 結尾的 0 = <b>9</b> 個 BYTE（那個 0 也算！）</li></ul>
+<p>迴圈次數用 LENGTHOF，算位元組用 SIZEOF。（以上都用組譯器跑過確認）</p>`},
+
+{id:'g2',u:7,src:'new',from:'第4章 OFFSET',title:'OFFSET 算位址',
+q:'bVal 位在 00404000h，變數緊接著排列。',
+code:`bVal  BYTE  ?     ; 00404000h
+wVal  WORD  ?     ; [[0]]h
+dVal  DWORD ?     ; [[1]]h
+dVal2 DWORD ?     ; [[2]]h`,
+a:[['00404001','404001'],['00404003','404003'],['00404007','404007']],
+hint:'下一個變數的位址 = 上一個位址 + 上一個的大小。',
+ex:`<pre>bVal  00404000  +1 (BYTE)
+wVal  00404001  +2 (WORD)
+dVal  00404003  +4 (DWORD)
+dVal2 00404007</pre>
+<p>OFFSET 就是「這個變數離 .data 開頭有多遠」。</p>
+<p>簡報延伸：加 <code>ALIGN 4</code> 會把下一個變數推到 4 的倍數位址（例如 00404005 → 00404008），讓 CPU 讀得比較快。</p>`},
+
+{id:'g3',u:7,src:'new',from:'第4章 PTR',title:'PTR 改變存取大小',
+q:'x86 是 little endian。',
+code:`myDouble DWORD 12345678h
+wordList WORD  5678h, 1234h
+
+mov ax, WORD PTR myDouble        ; ax  = [[0]]h
+mov ax, WORD PTR [myDouble+2]    ; ax  = [[1]]h
+mov bl, BYTE PTR myDouble        ; bl  = [[2]]h
+mov eax, DWORD PTR wordList      ; eax = [[3]]h
+mov ax, myDouble                 ; 結果？（填「錯誤」或數字）[[4]]`,
+a:[['5678'],['1234'],['78'],['12345678'],['錯誤','error','組譯錯誤']],
+hint:'記憶體裡 myDouble 依序是 78 56 34 12。',
+ex:`<pre>位址 +0  +1  +2  +3
+     78  56  34  12   ← myDouble（little endian）</pre>
+<ul><li>WORD PTR myDouble：從 +0 拿 2 bytes → 78 56 → 讀成 <b>5678h</b></li><li>[myDouble+2]：從 +2 拿 → 34 12 → <b>1234h</b></li><li>BYTE PTR：只拿 1 byte → <b>78h</b></li><li>wordList 依序是 78 56 34 12，DWORD PTR 一次拿 4 bytes → <b>12345678h</b></li></ul>
+<p><code>mov ax, myDouble</code>：ax 是 16 位、myDouble 是 32 位，大小不同 → <b>組譯錯誤</b>。這就是需要 PTR 的原因。</p>`},
+
+{id:'g4',u:7,src:'new',from:'第4章 例題',title:'MOV 對 EAX 的影響',
+q:'oneByte BYTE 78h、oneWord WORD 1234h、oneDword DWORD 12345678h。',
+code:`mov eax, 0           ; EAX = 00000000h
+mov al, oneByte      ; EAX = [[0]]h
+mov ax, oneWord      ; EAX = [[1]]h
+mov eax, oneDword    ; EAX = [[2]]h
+mov ax, 0            ; EAX = [[3]]h`,
+a:[['00000078','78'],['00001234','1234'],['12345678'],['12340000']],
+hint:'改 al 只動最右邊 2 個 16 進位數字；改 ax 只動最右邊 4 個。',
+ex:`<pre>EAX = [ 高16位 | AH | AL ]
+              └── AX ──┘</pre>
+<p>寫進 AL 或 AX <b>不會清掉</b>上面的部分。最後一行 <code>mov ax, 0</code> 只清掉低 16 位，高位的 1234 還在 → <b>12340000h</b>。</p>
+<p>這就是為什麼 4-1 作業要先 <code>xor edx, edx</code>，也是 MOVZX 存在的原因。</p>`},
+
+{id:'g5',u:7,src:'new',from:'第4章 MOV 規則',title:'MOV 的限制',
+q:'',
+code:`; var1、var2 都是 WORD 變數，想做 var2 = var1
+; mov var2, var1   ← 不合法，原因：兩邊不能都是 [[0]]
+mov ax, var1
+mov [[1]], ax
+
+; mov eax, bx      ← 不合法，原因：兩邊 [[2]] 必須一樣
+; mov eip, eax     ← 不合法，原因：[[3]] 不能當目的地`,
+a:[['記憶體','memory','mem'],['var2'],['大小','size','位元數'],['eip']],
+hint:'CPU 一次只能碰一個記憶體位置。',
+ex:`<p>MOV 三規則（簡報）：</p>
+<ol><li><b>兩邊不能都是記憶體</b>：要先搬進暫存器中轉</li><li><b>兩邊大小一樣</b>：mov eax, bx 不行（要用 movzx/movsx）</li><li><b>EIP 不能是目的地</b>：要改 EIP 只能用 jmp / call / ret</li></ol>`},
+
+{id:'g6',u:7,src:'new',from:'第4、5章 MOVZX/MOVSX',title:'零擴展與符號擴展',
+q:'bx = A69Bh（bl = 9Bh）。',
+code:`movzx eax, bx   ; eax = [[0]]h
+movzx edx, bl   ; edx = [[1]]h
+movsx eax, bx   ; eax = [[2]]h
+movsx edx, bl   ; edx = [[3]]h
+movsx cx, bl    ; cx  = [[4]]h`,
+a:[['0000a69b','a69b'],['0000009b','9b'],['ffffa69b'],['ffffff9b'],['ff9b']],
+hint:'zx 補 0；sx 看最高位：9Bh = 1001 1011，最高位是 1。',
+ex:`<ul><li><b>MOVZX</b>（zero-extend）：上面全部補 <b>0</b> → 給無號數、字元用</li><li><b>MOVSX</b>（sign-extend）：上面補「最高位的值」→ 給有號數用</li></ul>
+<p>9Bh 最高位是 1（負數）→ movsx 上面全補 1 → FF…</p>
+<p>A69Bh 最高位：A = 1010，也是 1 → FFFFA69Bh。</p>
+<p>範例程式 <code>movzx eax, aName[esi]</code> 就是把一個字元安全地放進 eax 再 push。</p>`},
+
+{id:'g7',u:7,src:'new',from:'第4章',title:'小搬大的陷阱',
+q:'signedVal SWORD −16（= FFF0h）。',
+code:`mov ecx, 0
+mov cx, signedVal     ; ecx = [[0]]h，十進位 +65520，錯了！
+
+; 正確寫法一行：
+[[1]] ecx, signedVal  ; ecx = FFFFFFF0h = −16`,
+a:[['0000fff0','fff0'],['movsx']],
+hint:'有號數要保留正負號。',
+ex:`<p>只寫進 cx，高 16 位還是 0 → 0000FFF0h = 65520，正負號不見了。</p>
+<p>用 <code>movsx ecx, signedVal</code>：最高位是 1，上面全補 1 → FFFFFFF0h = −16。</p>`},
+
+{id:'g8',u:7,src:'new',from:'第3章、10/19 簡報',title:'$ 算長度、= 與 EQU',
+q:'',
+code:`list  BYTE 10, 20, 30, 40
+ListSize = ($ - list)                 ; = [[0]]
+
+AB DWORD 10, 20, 30, 40, 50
+LENGTHOF_AB = ($ - AB) / TYPE DWORD   ; = [[1]]
+
+aName BYTE "Taipei UT", 0
+nameSize = ($ - aName) - 1            ; = [[2]]
+
+COUNT = 5
+COUNT = 10        ; 合法嗎？[[3]]
+NUM EQU 5
+NUM EQU 10        ; 合法嗎？[[4]]`,
+a:[['4'],['5'],['9'],['合法','是','yes','可以'],['不合法','否','no','不可以','錯誤']],
+hint:'$ = 目前位置（這行的位址）。$ − 開頭 = 中間佔幾個 bytes。',
+ex:`<p><b>$</b> 是「現在的位置」。寫在陣列下一行，<code>$ - list</code> 就是陣列佔幾個位元組。</p>
+<ul><li>list：4 bytes → 4</li><li>AB：20 bytes ÷ 4 = 5 個</li><li>"Taipei UT" 9 個字 + 0 = 10 bytes，−1 去掉結尾 0 → 9</li></ul>
+<p><b>= 可以重新定義，EQU 不行</b>（會出現 Symbol redefinition）。算陣列長度用 =。兩者都是給組譯器看的，<b>不佔記憶體</b>。</p>`},
+
+{id:'g9',u:7,src:'new',from:'第3章 DUP',title:'DUP 佔多少空間',
+q:'填位元組數。',
+code:`BYTE  20 DUP(0)         ; [[0]] bytes
+BYTE  4 DUP("STACK")    ; [[1]] bytes
+DWORD 10 DUP(0)         ; [[2]] bytes
+DWORD 5000 DUP(?)       ; [[3]] bytes`,
+a:[['20'],['20'],['40'],['20000']],
+hint:'"STACK" 有 5 個字。DWORD 一個 4 bytes。',
+ex:`<p>DUP = duplicate（重複）。總大小 = 次數 × 每份大小。</p>
+<ul><li>4 DUP("STACK") → "STACKSTACKSTACKSTACK" = 20</li><li>10 個 DWORD = 40</li><li>5000 個 DWORD = 20000</li></ul>
+<p><code>.data?</code> 區段放未初始化的大陣列，可以讓 exe 檔變小。</p>`},
+
+{id:'g10',u:7,src:'new',from:'第3章 整數常數',title:'數字的進位制寫法',
+q:'填後綴字母。',
+code:`26  十進位 → 26[[0]]
+二進位 11010011 → 11010011[[1]]
+八進位 42 → 42[[2]]
+十六進位 1A → 1A[[3]]
+十六進位 A3 要寫成 → [[4]]`,
+a:[['d'],['b'],['q','o'],['h'],['0a3h']],
+hint:'A3h 開頭是字母，組譯器會以為是變數名。',
+ex:`<p>d 十進位、b 二進位、q 或 o 八進位、h 十六進位。</p>
+<p><b>16 進位如果開頭是字母，前面要補 0</b>：<code>0A3h</code>、<code>0FFh</code>、<code>0DFh</code>。不然 A3h 會被當成一個叫「A3h」的變數。</p>`},
+
+{id:'g11',u:7,src:'new',from:'第3章 directive',title:'directive 和 instruction',
+q:'',
+code:`myVar DWORD 26    ; DWORD 是 [[0]]：組譯時保留空間
+mov eax, myVar    ; mov 是 [[1]]：執行時才做
+.stack 4096       ; 保留 [[2]] bytes 給堆疊
+END main          ; 程式從 [[3]] 開始執行`,
+a:[['directive','虛擬指令','指示','組譯器指令'],['instruction','指令'],['4096'],['main']],
+hint:'directive 是給組譯器看的，instruction 是給 CPU 執行的。',
+ex:`<p><b>directive（指示）</b>：.data .code DWORD PROC PROTO INVOKE EQU…，組譯器處理，<b>不會變成 CPU 指令</b>。</p>
+<p><b>instruction（指令）</b>：mov add jmp call…，CPU 執行。</p>
+<p>INVOKE 也是 directive，所以它會被展開成 push + call。</p>
+<p>END 後面的名字決定起跑點，跟 PROC 名字要一致（不一定要叫 main）。</p>`},
+
+{id:'g12',u:7,src:'new',from:'第4章 LABEL',title:'LABEL 不佔空間的別名',
+q:'',
+code:`val16 LABEL WORD
+val32 DWORD 12345678h
+
+mov ax, val16         ; ax = [[0]]h
+mov dx, [val16+2]     ; dx = [[1]]h`,
+a:[['5678'],['1234']],
+hint:'val16 跟 val32 是同一個位址，只是當成 WORD 來讀。',
+ex:`<p>LABEL 只是給同一個位址取另一個名字並指定大小，不佔記憶體。效果跟 <code>WORD PTR val32</code> 一樣。</p>`},
+
+// ---------------- U8 旗標進階 ----------------
+{id:'h1',u:8,src:'new',from:'第4章 status flags',title:'CF 進位旗標',
+q:'',
+code:`mov al, 0FFh
+add al, 1       ; AL = [[0]]h，CF = [[1]]，ZF = [[2]]
+mov ax, 00FFh
+add ax, 1       ; AX = [[3]]h，CF = [[4]]
+mov al, 1
+sub al, 2       ; AL = [[5]]h，CF = [[6]]，SF = [[7]]`,
+a:[['00','0'],['1'],['1'],['0100','100'],['0'],['ff'],['1'],['1']],
+hint:'CF = 無號數「放不下」或「不夠減要借位」。',
+ex:`<ul><li>FFh + 1 = 100h，AL 只有 8 位 → 00，進位掉出 → CF=1，結果 0 → ZF=1</li><li>00FFh + 1 = 0100h，AX 有 16 位放得下 → CF=0</li><li>1 − 2 不夠減 → 借位 → CF=1，AL = FFh（−1）→ SF=1</li></ul>
+<p>同一個運算，暫存器大小不同，CF 就不同。</p>`},
+
+{id:'h2',u:8,src:'new',from:'第4章 INC/DEC',title:'INC/DEC 不動 CF',
+q:'',
+code:`stc              ; 先把 CF 設成 1
+mov al, 0FFh
+inc al           ; AL = [[0]]h，ZF = [[1]]，CF = [[2]]
+; INC 和 DEC 不會影響的旗標是 [[3]]`,
+a:[['00','0'],['1'],['1'],['cf']],
+hint:'CF 原本是 1，inc 不會碰它。',
+ex:`<p>inc / dec 會改 OF、SF、ZF、AF、PF，<b>唯獨不改 CF</b>。所以 CF 保持 stc 設的 1。</p>
+<p>如果換成 <code>add al, 1</code>，CF 會被設成 1（因為進位），結果一樣是 1 但原因不同。</p>`},
+
+{id:'h3',u:8,src:'new',from:'第4章 NEG',title:'NEG 取負號',
+q:'',
+code:`mov al, -128
+neg al          ; AL = [[0]]h，OF = [[1]]
+mov al, +127
+neg al          ; AL = [[2]]h（= −127），OF = [[3]]
+; 對非 0 的數做 neg，CF 一定 = [[4]]`,
+a:[['80'],['1'],['81'],['0'],['1']],
+hint:'8 位有號數沒有 +128。',
+ex:`<p>NEG = 取 2 的補數。−128 的相反是 +128，但 8 位最大只到 127 → 放不下 → 還是 80h，<b>OF=1</b>。</p>
+<p>+127 → −127 = 81h，在範圍內 → OF=0。</p>`},
+
+{id:'h4',u:8,src:'new',from:'第4章 例題',title:'算式 Rval = −Xval + (Yval − Zval)',
+q:'Xval=26, Yval=30, Zval=40（SDWORD）。',
+code:`mov eax, Xval
+[[0]]              ; eax = −26
+mov ebx, Yval
+[[1]]              ; ebx = −10
+add eax, ebx
+mov Rval, eax      ; Rval = [[2]]`,
+a:[['negeax'],['subebx,zval'],['-36']],
+hint:'取負號用一個指令。',
+ex:`<p>拆成兩項各自算，最後相加：−26 + (−10) = −36。</p>
+<p>這種「高階算式轉組語」是作業 1 的題型，期中很可能出：<b>先算括號裡、再處理負號、最後合併</b>。</p>`},
+
+{id:'h5',u:8,src:'new',from:'第4章 AC/PF',title:'AC 與 PF',
+q:'',
+code:`mov al, 0Fh
+add al, 1            ; AC = [[0]]（bit 3 進位到 bit 4）
+mov al, 10001100b
+add al, 00000010b    ; AL = 10001110，PF = [[1]]
+sub al, 10000000b    ; AL = 00001110，PF = [[2]]`,
+a:[['1'],['1'],['0']],
+hint:'PF：數最低 8 位有幾個 1，偶數個 → PF=1。',
+ex:`<p>0Fh + 1 = 10h：低 4 位 1111 + 1 進位到第 5 位 → AC=1。</p>
+<p>10001110 有 4 個 1（偶數）→ PF=1；00001110 有 3 個 1（奇數）→ PF=0。</p>`},
+
+{id:'h6',u:8,src:'new',from:'第4章 OF 硬體',title:'硬體怎麼判斷 OF',
+q:'OF = CF xor（進到最高位的進位 carryIn）。8 位有號。',
+code:`-128 + (-1)：CF = 1，carryIn(bit7) = 0 → OF = [[0]]
++127 + (+1)：CF = 0，carryIn(bit7) = 1 → OF = [[1]]
+-127 + (-1)：CF = 1，carryIn(bit7) = 1 → OF = [[2]]
++126 + (+1)：CF = 0，carryIn(bit7) = 0 → OF = [[3]]`,
+a:[['1'],['1'],['0'],['0']],
+hint:'xor：不一樣才是 1。',
+ex:`<p>直接套 xor：1⊕0=1、0⊕1=1、1⊕1=0、0⊕0=0。</p>
+<p>更直觀的記法：<b>正 + 正 = 負，或 負 + 負 = 正 → 溢位</b>。正負相加永遠不會溢位。</p>`},
+
+{id:'h7',u:8,src:'new',from:'第4章 LOOP',title:'LOOP 的陷阱',
+q:'',
+code:`mov ax, 0
+mov ecx, 0
+L1:
+  inc ax
+  loop L1      ; 會跑 [[0]] 次
+
+; 巢狀迴圈：內圈要用 ecx，外圈的值要先存起來
+mov ecx, 100
+outer:
+  [[1]]        ; 存外圈 ecx（用堆疊）
+  mov ecx, 20
+inner:
+  ...
+  loop inner
+  [[2]]        ; 還原外圈 ecx
+  loop outer`,
+a:[['4294967296'],['pushecx'],['popecx']],
+hint:'loop 是「先減 1 再檢查是不是 0」。0 − 1 = ?',
+ex:`<p>ecx = 0 時，loop 先減 1 → FFFFFFFFh，不是 0 → 繼續跑……總共 2<sup>32</sup> = <b>4,294,967,296</b> 次。所以 ecx 一開始不能是 0。</p>
+<p>巢狀迴圈兩層都用 ecx，要用 <code>push ecx / pop ecx</code>（或 <code>mov count, ecx</code>）保存外圈。作業 3 的 1²+2²+…+n² 就是這樣寫。</p>`},
+
+// ---------------- U9 堆疊與程序 ----------------
+{id:'i1',u:9,src:'new',from:'第5章 stack',title:'PUSH / POP 與 ESP',
+q:'一開始 ESP = 1000h，EAX = 11h，EBX = 22h。',
+code:`push eax      ; ESP = [[0]]h
+push ebx      ; ESP = [[1]]h
+pop ecx       ; ESP = [[2]]h，ECX = [[3]]h`,
+a:[['0ffc','ffc'],['0ff8','ff8'],['0ffc','ffc'],['22']],
+hint:'堆疊往下長：push 時 ESP −4。',
+ex:`<p>32 位元 push 一次放 4 bytes，<b>ESP 減 4</b>（堆疊往低位址長）；pop 時 ESP 加 4。</p>
+<p>最後推進去的是 ebx(22h)，所以第一個 pop 拿到 22h。</p>`},
+
+{id:'i2',u:9,src:'new',from:'第5章 PUSHAD',title:'PUSHAD 的順序',
+q:'PUSHAD 一次推 8 個通用暫存器，依先後填。',
+code:`第1個 [[0]]  第2個 [[1]]  第3個 [[2]]  第4個 [[3]]
+第5個 ESP    第6個 [[4]]  第7個 [[5]]  第8個 [[6]]
+ESP 總共減少 [[7]] bytes`,
+a:[['eax'],['ecx'],['edx'],['ebx'],['ebp'],['esi'],['edi'],['32']],
+hint:'順序是 A C D B（不是 A B C D）。',
+ex:`<p>順序：<b>EAX, ECX, EDX, EBX, ESP, EBP, ESI, EDI</b>。記法：「A C D B，S P 指標，S D 字串」。</p>
+<p>8 個 × 4 = 32 bytes。POPAD 反過來拿，存 ESP 的那格會被讀掉但丟棄。</p>`},
+
+{id:'i3',u:9,src:'new',from:'第5章 範例',title:'用堆疊反轉字串',
+q:'aName BYTE "Taipei UT",0',
+code:`mov ecx, nameSize
+mov esi, 0
+L1:
+  [[0]] eax, aName[esi]   ; 取字元並擴展成 32 位
+  [[1]]                   ; 推進堆疊
+  inc esi
+  loop L1
+mov ecx, nameSize
+mov esi, 0
+L2:
+  [[2]]                   ; 從堆疊拿回（反序）
+  mov aName[esi], [[3]]   ; 只存 1 個 byte
+  inc esi
+  loop L2`,
+a:[['movzx'],['pusheax'],['popeax'],['al']],
+hint:'push 只能推 16 或 32 位，字元只有 8 位。',
+ex:`<p>push 不能推 8 位，所以先用 movzx 把字元擴展到 eax 再推。後進先出 → 拿出來的順序剛好相反 → 字串反轉。</p>
+<p>存回陣列時只需要 1 byte，所以用 al。</p>`},
+
+{id:'i4',u:9,src:'new',from:'第5章、10/19 簡報',title:'堆疊框架位置表',
+q:'cdecl/stdcall 程序做完 push ebp / mov ebp, esp 之後。',
+code:`[ebp + 12]  → [[0]]
+[ebp + 8]   → [[1]]
+[ebp + 4]   → [[2]]
+[ebp + 0]   → 舊的 ebp
+[ebp - 4]   → [[3]]`,
+a:[['第2個參數','第二個參數','參數2'],['第1個參數','第一個參數','參數1'],['返回位址','return address','返回地址'],['區域變數','local','第1個區域變數','local變數']],
+hint:'往上（+）是呼叫者給的，往下（−）是自己的。',
+ex:`<pre>高位址
+[ebp+12]  第 2 個參數
+[ebp+8]   第 1 個參數
+[ebp+4]   返回位址（call 自動推）
+[ebp+0]   舊 ebp      ← ebp
+[ebp-4]   區域變數（LOCAL x）
+低位址</pre>
+<p>口訣：<b>+ 是參數（從 8 開始），− 是區域變數（從 −4 開始）</b>。</p>`},
+
+{id:'i5',u:9,src:'new',from:'第5章 LOCAL',title:'LOCAL 區域變數給 scanf',
+q:'',
+code:`main PROC
+  LOCAL inputVal:DWORD     ; 必須放在 PROC 的第 [[0]] 行
+  [[1]] eax, inputVal      ; 算出區域變數的位址
+  push eax
+  push OFFSET input_fmt
+  call scanf
+  add esp, [[2]]
+  ; 為什麼不能寫 OFFSET inputVal？因為它的位址要到 [[3]] 才知道`,
+a:[['1','一'],['lea'],['8'],['執行時','執行','runtime','執行期']],
+hint:'LOCAL 變數其實是 [ebp−4]。',
+ex:`<p>LOCAL 三規則：</p>
+<ol><li>一定要寫在 PROC 的<b>第一行</b></li><li>初始值是<b>垃圾</b>，要自己設 0</li><li>要取位址只能用 <b>lea</b>，不能用 OFFSET / ADDR 傳給 printf</li></ol>
+<p>OFFSET 是<b>組譯時</b>算好的常數，只適合 .data 的全域變數。LOCAL 在堆疊上，ebp 每次呼叫都不同，<b>執行時</b>才算得出來 → lea。</p>`},
+
+{id:'i6',u:9,src:'new',from:'第5章 Prologue',title:'Prologue 與 Epilogue',
+q:'LOCAL x:DWORD 背後組譯器做的事。',
+code:`my_function PROC
+  ; Prologue
+  push ebp
+  [[0]]
+  sub esp, [[1]]               ; 挖 x 的空間
+  mov dword ptr [ebp - 4], 100 ; x = 100
+  ; Epilogue
+  [[2]]                        ; 一瞬間銷毀區域變數
+  [[3]]
+  ret
+my_function ENDP`,
+a:[['movebp,esp'],['4'],['movesp,ebp'],['popebp']],
+hint:'結尾就是開頭倒過來做。',
+ex:`<p>開頭：保存舊 ebp → ebp 對準現在的頂端 → 往下挖空間。</p>
+<p>結尾倒過來：esp 拉回 ebp（區域變數就不見了）→ 還原舊 ebp → ret。</p>`},
+
+{id:'i7',u:9,src:'new',from:'第5章 CALL/RET',title:'CALL 和 RET 做了什麼',
+q:'',
+code:`call ArraySum
+; 1. 把 [[0]] 推進堆疊
+; 2. 把 ArraySum 的位址放進 [[1]]，開始執行
+ret
+; 從堆疊彈出返回位址放進 [[2]]，ESP 加 [[3]]`,
+a:[['返回位址','returnaddress','下一個指令的位址','下一行位址'],['eip'],['eip'],['4']],
+hint:'EIP 決定下一個要執行哪裡。',
+ex:`<p>call = 「記住回來的路（push 返回位址）+ 跳過去（改 EIP）」。ret = 「拿出回來的路，放回 EIP」。</p>
+<p>所以程序裡 push 了東西一定要 pop 乾淨，不然 ret 會拿到錯的位址，程式就飛走了。</p>`},
+
+// ---------------- U10 條件處理與字串 ----------------
+{id:'j1',u:10,src:'new',from:'第6章 AND/OR/NOT',title:'位元運算結果',
+q:'',
+code:`mov al, 10101110b
+and al, 11110110b    ; AL = [[0]]b
+mov al, 11100011b
+or  al, 00000100b    ; AL = [[1]]b
+mov al, 11110000b
+not al               ; AL = [[2]]b`,
+a:[['10100110'],['11100111'],['00001111']],
+hint:'and 遇 0 清掉；or 遇 1 打開；not 全部反轉。',
+ex:`<ul><li><b>and</b> 用來「清掉」某些位（遮罩上 0 的位置變 0）</li><li><b>or</b> 用來「打開」某些位</li><li><b>xor</b> 用來「翻轉」某些位</li><li><b>not</b> = 1 的補數，<b>不影響任何旗標</b></li></ul>`},
+
+{id:'j2',u:10,src:'new',from:'第6章',title:'單獨設定旗標',
+q:'用一個指令（al 可以被改）。',
+code:`讓 ZF = 1：[[0]]
+讓 ZF = 0：[[1]]
+讓 SF = 1：[[2]]
+讓 SF = 0：[[3]]
+讓 CF = 1：[[4]]
+讓 CF = 0：[[5]]`,
+a:[['andal,0','testal,0','xoral,al','subal,al'],['oral,1'],['oral,80h'],['andal,7fh'],['stc'],['clc']],
+hint:'80h = 1000 0000（最高位）。',
+ex:`<p>and al,0 → 結果 0 → ZF=1。or al,1 → 一定不是 0 → ZF=0。</p>
+<p>or al,80h 把最高位打開 → 負的 → SF=1；and al,7Fh 把最高位關掉 → SF=0。</p>
+<p>stc = set carry、clc = clear carry（隱含定址）。</p>`},
+
+{id:'j3',u:10,src:'new',from:'第6章 TEST',title:'TEST 指令',
+q:'TEST 做 and 但不改目的地。',
+code:`mov al, 00100101b
+test al, 00001001b   ; ZF = [[0]]
+mov al, 00100100b
+test al, 00001001b   ; ZF = [[1]]
+
+; 判斷奇偶數
+mov eax, user_input
+test eax, [[2]]
+[[3]] is_even        ; 最低位是 0 → 偶數`,
+a:[['0'],['1'],['1'],['jz','je']],
+hint:'00100101 and 00001001：bit 0 兩個都是 1。',
+ex:`<p>第一個：bit 0 都是 1 → 結果不是 0 → ZF=0。第二個：00100100 and 00001001 = 0 → ZF=1。</p>
+<p>奇偶數：test eax, 1 只看最低位；結果 0 → 偶數 → jz。這是 10/5 範例 9-24-call-for-even.asm 的寫法。</p>`},
+
+{id:'j4',u:10,src:'new',from:'第6章、10/12 範例',title:'有號除法與無號除法',
+q:'',
+code:`; 無號：eax ÷ ecx
+[[0]]           ; 清高位
+div ecx
+
+; 有號：eax ÷ ecx（eax 可能是負數）
+[[1]]           ; 把 eax 的正負號擴展到 edx
+[[2]] ecx`,
+a:[['xoredx,edx','movedx,0','subedx,edx'],['cdq'],['idiv']],
+hint:'有號版本的指令都多一個 i。',
+ex:`<p>被除數是 EDX:EAX 兩個拼起來。無號直接清 0；有號要用 <b>cdq</b>（負數高位補 F、正數補 0），再 <b>idiv</b>。</p>
+<p>範例算陣列平均（陣列有負數 −5）就是用 cdq + idiv。</p>`},
+
+{id:'j5',u:10,src:'new',from:'第6章 cmov/xchg',title:'條件搬移與交換',
+q:'把 ax、bx、cx 的最大值放到 ax，不用跳躍。',
+code:`cmp ax, bx
+[[0]] ax, bx      ; 如果 ax < bx（有號），把 bx 搬進 ax
+cmp ax, cx
+[[1]] ax, cx
+
+xchg ax, bx       ; 合法嗎？[[2]]
+xchg var1, var2   ; 合法嗎？[[3]]（兩個都是記憶體變數）
+xchg al, bx       ; 合法嗎？[[4]]`,
+a:[['cmovl'],['cmovl'],['合法','是','yes'],['不合法','否','no'],['不合法','否','no']],
+hint:'cmov + 條件（l = less）。',
+ex:`<p><b>cmovl</b>：Conditional MOVe if Less，條件成立才搬，不用跳躍。無號版是 cmovb。</p>
+<p>注意 cmov 是「蓋掉」，ax 原本的值不會跑到 bx；xchg 才是真的交換。</p>
+<p>xchg 規則跟 mov 一樣：不能兩邊都是記憶體、大小要一樣。</p>`},
+
+{id:'j6',u:10,src:'new',from:'第6章',title:'條件跳躍總表',
+q:'',
+code:`         無號(字元、位址)   有號
+>        [[0]]              [[4]]
+>=       [[1]]              [[5]]
+<        [[2]]              [[6]]
+<=       [[3]]              [[7]]
+==       je / jz（兩種都一樣）`,
+a:[['ja'],['jae','jnc'],['jb','jc'],['jbe'],['jg'],['jge'],['jl'],['jle']],
+hint:'無號 Above/Below，有號 Greater/Less，等於加 e。',
+ex:`<p><b>有號比「好壞」G/L，無號比「上下」A/B</b>，加 e 就是「或等於」。</p>
+<p>字元、陣列位址、無號整數 → A/B。題目寫「有號整數」→ G/L。</p>`},
+
+{id:'j7',u:10,src:'new',from:'10/19 簡報',title:'repe cmpsb 字串比對',
+q:'',
+code:`mov esi, OFFSET str1
+mov edi, OFFSET str2
+mov ecx, str_len
+[[0]]                 ; DF = 0，指標自動往後
+[[1]]                 ; 相等就一直比
+[[2]] Strings_AreEqual
+
+; 只寫 cmpsb（比一次）時，要自己補：
+Compare_Loop:
+  cmpsb
+  [[3]] Strings_NotEqual
+  [[4]] Compare_Loop`,
+a:[['cld'],['repecmpsb','repzcmpsb'],['je','jz'],['jne','jnz'],['loop']],
+hint:'cld = clear direction flag。',
+ex:`<p><b>cld</b> 讓 DF=0 → ESI、EDI 自動 +1（由左往右）。std 是反方向。</p>
+<p><b>repe cmpsb</b>：一直比，直到不一樣或 ECX=0。比完 ZF=1 代表全部一樣。</p>
+<p>單位：cmpsb 1 byte、cmpsw 2 bytes、cmpsd 4 bytes。</p>`},
+
+{id:'j8',u:10,src:'new',from:'10/5 範例 input_lowercase',title:'字串轉小寫迴圈',
+q:'buffer 是 scanf 讀進來的字串（以 0 結尾）。',
+code:`mov esi, OFFSET buffer
+loop_start:
+  mov al, [[0]]           ; 讀一個字元
+  test al, al
+  [[1]] print_result      ; 遇到結尾 0 就結束
+  cmp al, 'A'
+  jb next_char
+  cmp al, 'Z'
+  ja next_char
+  or al, 20h
+  mov [[2]], al           ; 寫回原位置
+next_char:
+  [[3]]
+  jmp loop_start`,
+a:[['[esi]','byteptr[esi]'],['jz','je'],['[esi]','byteptr[esi]'],['incesi']],
+hint:'test al, al 是在檢查 al 是不是 0。',
+ex:`<p>這個迴圈沒用 ecx，而是看到字串結尾的 <b>0</b> 才停：<code>test al, al</code> → 是 0 → ZF=1 → jz。</p>
+<p>每圈 inc esi 移到下一個字元（BYTE 一格 1）。作業 3 第 4 題（大小寫互換）把 or 20h 改成 xor 20h、範圍判斷做兩次就好。</p>`},
+
+{id:'j9',u:10,src:'new',from:'10/19 簡報',title:'jmp 的定址方式',
+q:'用中文或英文都可以。',
+code:`jmp starta              ; [[0]] 定址（最常用）
+jmp eax                 ; 暫存器 [[1]] 定址
+jmp dword ptr [ebx]     ; 記憶體 [[2]] 定址`,
+a:[['相對','relative'],['間接','indirect'],['間接','indirect']],
+hint:'標籤會被翻成「往前/往後跳幾 bytes」。',
+ex:`<p>jmp 標籤 → 組譯器算出距離 → <b>相對定址</b>。jmp eax → 跳到 eax 裡的位址 → 暫存器間接。jmp [ebx] → 跳到記憶體裡存的位址 → 記憶體間接。</p>`},
+
+{id:'j10',u:10,src:'new',from:'10/19 簡報',title:'sqrt 與 FPU',
+q:'',
+code:`sqrt PROTO C :QWORD
+my_val   REAL8 25.0       ; REAL8 佔 [[0]] bytes
+sqrt_res REAL8 0.0
+
+INVOKE sqrt, my_val       ; 結果放在 [[1]]，不是 eax
+[[2]] sqrt_res            ; 存到變數並彈出`,
+a:[['8'],['st(0)','st0','st'],['fstp']],
+hint:'FPU 有 8 個浮點暫存器 ST(0)~ST(7)，排成堆疊。',
+ex:`<p>浮點數結果放在 FPU 堆疊頂端 <b>ST(0)</b>。<code>fstp</code> = store + pop。<code>fld</code> 是推進去。</p>
+<p>FPU 暫存器每個 80 位元。</p>`},
+
+// ---------------- U11 電腦結構與浮點數 ----------------
+{id:'k1',u:11,src:'new',from:'第2、3章',title:'暫存器的特殊用途',
+q:'填暫存器名稱（32 位元）。',
+code:`乘法、除法自動使用        [[0]]
+loop 指令的計數器        [[1]]
+堆疊頂端指標             [[2]]
+存取參數、區域變數的基準 [[3]]
+字串指令的來源 / 目的     [[4]] / [[5]]
+下一個要執行的指令位址    [[6]]`,
+a:[['eax'],['ecx'],['esp'],['ebp'],['esi'],['edi'],['eip']],
+hint:'Accumulator、Counter、Stack Pointer、Base Pointer、Source Index、Destination Index。',
+ex:`<table class="t"><tr><th>暫存器</th><th>全名</th><th>用途</th></tr>
+<tr><td>EAX</td><td>Accumulator</td><td>mul/div、回傳值</td></tr><tr><td>ECX</td><td>Counter</td><td>loop、rep</td></tr>
+<tr><td>ESP</td><td>Stack Pointer</td><td>堆疊頂端</td></tr><tr><td>EBP</td><td>Base(Frame) Pointer</td><td>[ebp+8] 參數</td></tr>
+<tr><td>ESI/EDI</td><td>Source/Destination Index</td><td>cmpsb、字串</td></tr><tr><td>EIP</td><td>Instruction Pointer</td><td>下一個指令</td></tr></table>`},
+
+{id:'k2',u:11,src:'new',from:'第2章',title:'指令執行週期與匯流排',
+q:'',
+code:`指令執行三步驟：[[0]] → [[1]] → [[2]]（英文）
+傳資料、指令，雙向：[[3]] bus
+指定記憶體位置，單向（只有 CPU 發出）：[[4]] bus
+32 位元位址匯流排最多定址 [[5]] GB`,
+a:[['fetch'],['decode'],['execute'],['data'],['address'],['4']],
+hint:'取指令 → 解碼 → 執行。2^32 bytes = ?',
+ex:`<p><b>Fetch（取）→ Decode（解碼）→ Execute（執行）</b>。</p>
+<p>三種匯流排：data bus（資料，雙向）、address bus（位址，單向）、control bus（讀/寫/中斷等控制訊號）。</p>
+<p>位址匯流排寬度決定最大記憶體：2<sup>32</sup> = 4G → <b>4GB</b>。</p>`},
+
+{id:'k3',u:11,src:'new',from:'第2章',title:'五大單元與記憶體階層',
+q:'',
+code:`CPU = 控制單元 [[0]] + 算術邏輯單元 [[1]]（英文縮寫）
+速度由快到慢：register > [[2]] > 主記憶體 > 硬碟
+CPU 在 cache 找到資料叫 cache [[3]]，找不到叫 cache [[4]]`,
+a:[['cu'],['alu'],['cache','快取'],['hit'],['miss']],
+hint:'Control Unit、Arithmetic Logic Unit。',
+ex:`<p>五大單元：輸入、輸出、記憶、控制（CU）、算術邏輯（ALU），CU + ALU = CPU。</p>
+<p>容量剛好反過來：register 最小、硬碟最大。L1 cache 在 CPU 裡，L2 稍慢。</p>`},
+
+{id:'k4',u:11,src:'new',from:'資料表示簡報',title:'IEEE 754：17.25 轉單精度',
+q:'',
+code:`17.25 = 二進位 [[0]]
+正規化 = 1.000101 × 2^[[1]]
+指數用超 127 表示 = [[2]]（8 位二進位）
+sign = [[3]]，mantissa 前 6 位 = [[4]]`,
+a:[['10001.01'],['4'],['10000011'],['0'],['000101']],
+hint:'0.25 = 0.01（二進位）。指數 4 + 127 = 131。',
+ex:`<p>步驟：</p>
+<ol><li>17 = 10001，0.25 = .01 → 10001.01</li><li>小數點往左移 4 位 → 1.000101 × 2<sup>4</sup></li><li>指數 4 + 127 = 131 = 10000011</li><li>正數 sign=0；mantissa 去掉開頭的「1.」（隱藏位元）→ 000101 後面補 0 到 23 位</li></ol>
+<pre>0 10000011 00010100000000000000000  = 418A0000h</pre>
+<p>單精度：1 + 8 + 23 位、bias 127；倍精度：1 + 11 + 52 位、bias 1023。（用程式驗證過）</p>`},
+
+{id:'k5',u:11,src:'new',from:'資料表示簡報',title:'IEEE 754：負數與解碼',
+q:'',
+code:`-0.75 = -0.11(二進位) = -1.1 × 2^[[0]]
+指數(超127) = [[1]]，整個 32 位元 = [[2]]h
+
+解碼 1 10000001 0100000…0：
+指數 = 129 − 127 = [[3]]，值 = −1.01 × 2^2 = [[4]]（十進位）`,
+a:[['-1'],['01111110'],['bf400000'],['2'],['-5','-5.0']],
+hint:'0.75 = 0.5 + 0.25 = 0.11（二進位）。',
+ex:`<p>−0.75：sign=1，指數 −1+127 = 126 = 01111110，mantissa = 1000…</p>
+<pre>1 01111110 10000000000000000000000
+1011 1111 0100 0000 … = BF400000h</pre>
+<p>解碼：1.01（二進位）= 1.25，× 4 = 5，sign=1 → −5.0。</p>`},
+
+{id:'k6',u:11,src:'new',from:'資料表示簡報',title:'4 位元的各種表示法',
+q:'',
+code:`1010 當 1 的補數表示 = [[0]]（十進位）
+1010 當 2 的補數表示 = [[1]]
+1010 當 sign-magnitude = [[2]]
+−7 用 2 的補數 = [[3]]
+−8 用 2 的補數 = [[4]]
+excess-7（超 7）表示 0 = [[5]]`,
+a:[['-5'],['-6'],['-2'],['1001'],['1000'],['0111']],
+hint:'1 的補數：負數全部反轉得到大小；2 的補數：反轉 +1。',
+ex:`<ul><li>1's：1010 反轉 = 0101 = 5 → −5</li><li>2's：0101 + 1 = 0110 = 6 → −6</li><li>sign-magnitude：最左邊是符號，010 = 2 → −2</li><li>−7：0111 → 1000 + 1 = <b>1001</b></li><li>−8 = 1000（4 位 2 的補數最小值）</li><li>超 7：真實值 + 7，0 → 7 = 0111</li></ul>
+<p>為什麼用 2 的補數？只有一個 0，加減法用同一個加法器就能做。</p>`},
+];
+
+// ===== 上機實作 =====
+const SETUP = [
+ {t:'建立空白專案',d:'開 Visual Studio →「建立新的專案」→ 選 C++ 的「空白專案」→ 下一步。'},
+ {t:'名稱和位置全英文',d:'專案名稱和位置都用英文、不要空格，例如 <code>C:\\asm\\mid1</code>。路徑有中文，組譯器會出現 <b>A1000 cannot open file</b>（你 4-1 遇過）。'},
+ {t:'開啟 MASM',d:'方案總管裡，在<b>專案名稱</b>上按右鍵 →「建置相依性」→「建置自訂…」→ 勾選 <b>masm(.targets, .props)</b> → 確定。這步沒做，.asm 不會被組譯。'},
+ {t:'平台選 x86',d:'上方工具列的平台下拉選單選 <b>x86</b>，不要選 x64。x64 不支援 <code>.386</code>、<code>.model flat</code>。'},
+ {t:'新增 .asm 檔',d:'在「來源檔案」上按右鍵 →「加入」→「新增項目」→ 選「C++ 檔 (.cpp)」，名稱改成 <code>main.asm</code>（副檔名一定要 .asm）→ 新增。'},
+ {t:'確認是主控台程式',d:'專案 → 屬性 → 連結器 → 系統 →「子系統」要是<b>主控台 (/SUBSYSTEM:CONSOLE)</b>。空白專案通常已經是了，看一眼就好。'},
+ {t:'貼上模板、寫程式',d:'把下面的「萬用模板」貼進 main.asm，在 <code>.data</code> 宣告變數、在 <code>main PROC</code> 裡寫程式。'},
+ {t:'建置',d:'「建置」→「建置方案」（Ctrl+Shift+B）。看下方「輸出」視窗：<b>1 成功</b> 才往下。失敗就看「錯誤清單」的代碼，對照下面的錯誤表。'},
+ {t:'執行',d:'「偵錯」→「啟動但不偵錯」（Ctrl+F5）。用這個執行，視窗會停在「請按任意鍵繼續」，不會一閃就關。'},
+ {t:'追蹤暫存器（作業學習單要截圖）',d:'在行號左邊點一下設中斷點 → F5 開始偵錯 → F10 一行一行執行 →「偵錯」→「視窗」→ 打開<b>暫存器</b>、<b>記憶體</b>、<b>監看式</b>。'},
+ {t:'找到 exe',d:'建置成功後，exe 在專案資料夾的 <code>Debug</code> 裡，檔名 = 專案名稱.exe。'}
+];
+
+const TEMPLATE = `.386
+.model flat, stdcall
+option casemap:none
+includelib kernel32.lib
+includelib msvcrt.lib
+includelib legacy_stdio_definitions.lib
+includelib ucrt.lib
+
+ExitProcess PROTO :DWORD          ; Windows API：stdcall
+printf      PROTO C :VARARG       ; C 函式：cdecl
+scanf       PROTO C :VARARG
+
+.data
+fmtIn   BYTE "%d", 0
+fmtOut  BYTE "result = %d", 10, 0
+n       DWORD ?
+
+.code
+main PROC
+    INVOKE scanf, OFFSET fmtIn, OFFSET n   ; 讀：給位址
+    mov eax, n
+    ; ……在這裡寫程式……
+    INVOKE printf, OFFSET fmtOut, eax      ; 印：給值
+    INVOKE ExitProcess, 0
+main ENDP
+END main`;
+
+const CMDLINE = `; 開始選單打開「x86 Native Tools Command Prompt for VS 2022」
+cd C:\\asm
+ml /c /coff a.asm
+link a.obj kernel32.lib msvcrt.lib legacy_stdio_definitions.lib ucrt.lib /subsystem:console /entry:main
+a.exe`;
+
+const ERRORS = [
+ ['A1000 cannot open file','路徑有中文或空格；檔名打錯','專案搬到全英文路徑，例如 C:\\asm'],
+ ['LNK2019 _printf / _scanf 無法解析','少了 C 函式庫','加 includelib legacy_stdio_definitions.lib'],
+ ['LNK2019 __stdio_common_vfprintf','printf 的「本體」找不到','再加 includelib ucrt.lib'],
+ ['A2006 undefined symbol','名字拼錯、大小寫不一致（有 casemap:none）、忘了寫 PROTO 或宣告變數','對照 .data 和 PROTO 的拼法'],
+ ['A2008 syntax error','用了保留字當名字（name、size、type…）、少逗號、寫了 rand() 括號','改名字；INVOKE 後面要逗號；組語不加括號'],
+ ['A2070 invalid instruction operands','mov 兩邊都是記憶體；或兩邊大小不同','先搬進暫存器；大小對齊或用 movzx/movsx'],
+ ['A2022 operands must be the same size','例如 mov ax, myDword','用 WORD PTR，或換成對的暫存器'],
+ ['A2111 conflicting parameter definition','PROTO 和 PROC 一個寫 stdcall 一個沒寫','兩邊寫法要一致'],
+ ['.model / .386 相關錯誤','平台選到 x64','工具列改成 x86'],
+ ['視窗一閃就關','用 F5 執行、或雙擊 exe','用 Ctrl+F5；交 exe 前加 system("pause")'],
+ ['中文變亂碼','主控台編碼不同','字串用英文，或呼叫 SetConsoleOutputCP, 65001'],
+ ['執行到一半當掉','少了 ExitProcess/ret；push/pop 沒成對；stdcall 又多 add esp；[esi*4] 位址算錯','逐行 F10 追蹤，看 ESP 和 ESI'],
+ ['迴圈停不下來','ecx 一開始是 0、只設了 cx、分支忘了 jmp 往下掉','loop 一律用 ecx；每個分支結尾檢查要跳去哪']
+];
+
+const LABS = [
+ {id:'L1',title:'第 1 關：A 與 B 的加減乘',
+  goal:'讀入兩個整數 A、B，印出 A+B、A−B、A×B。',
+  concepts:['scanf 給位址','printf 給值','add / sub / imul','一個 printf 印多個值'],
+  run:'Enter A: 7\nEnter B: 3\nA + B = 10\nA - B = 4\nA * B = 21',
+  hints:['scanf 的第二個參數要寫 OFFSET A（它要知道把數字放到哪）。','每個運算都先 mov eax, A，算完存到 sum / diff / prod。','imul eax, B 是兩個運算元的有號乘法：eax = eax × B。'],
+  check:['輸入 7、3 得到 10、4、21','輸入負數（例如 −5、2）結果也對','建置沒有警告']},
+ {id:'L2',title:'第 2 關：奇數偶數（不准用 INVOKE）',
+  goal:'讀入整數，判斷奇偶。全部用 push / call / add esp。',
+  concepts:['push 由右至左','cdecl 要 add esp','stdcall 不用 add esp','test eax, 1','分支結尾 jmp'],
+  run:'Enter an integer: 7\n7 is ODD',
+  hints:['scanf 有兩個參數：先 push OFFSET num，再 push OFFSET fmtIn，呼叫完 add esp, 8。','test eax, 1 會讓偶數的 ZF = 1，所以用 jz 跳到偶數。','奇數區塊印完要 jmp done，不然會往下掉進偶數區塊。','ExitProcess 是 stdcall：push 0 / call ExitProcess，後面不要 add esp。'],
+  check:['7 印 ODD、10 印 EVEN','0 印 EVEN','把 jmp done 拿掉，看看會發生什麼（理解往下掉）']},
+ {id:'L3',title:'第 3 關：1 + 2 + … + n',
+  goal:'讀入 n，用 loop 算 1 到 n 的總和。n < 1 時印錯誤訊息。',
+  concepts:['loop 用 ecx','ecx = 0 的陷阱','cmp + jl 擋錯誤輸入'],
+  run:'Enter n: 10\n1 + 2 + ... + 10 = 55',
+  hints:['先 cmp n, 1 / jl bad_input，避免 ecx = 0 讓 loop 跑 42 億次。','eax 存總和、ebx 存目前要加的數、ecx 當次數。','迴圈內：add eax, ebx → inc ebx → loop L1。'],
+  check:['n=10 → 55','n=1 → 1','n=0 印錯誤訊息','改成只加奇數 1+3+…（變化題）']},
+ {id:'L4',title:'第 4 關：陣列最大值、總和、平均',
+  goal:'陣列 arr DWORD 45,12,89,3,27,66,14,90,55,8，用一個迴圈算出最大值、總和，再算平均。',
+  concepts:['OFFSET / LENGTHOF / TYPE','[esi] 取值','cmp + jle','div：商在 eax'],
+  run:'max = 90, sum = 409, average = 40',
+  hints:['esi 放位址（OFFSET arr），每圈 add esi, TYPE DWORD；這時用 [esi] 取值，不要再 ×4。','最大值：先把第一個元素當成 maxVal，之後 cmp edx, maxVal / jle 跳過。','平均：xor edx, edx → mov ecx, LENGTHOF arr → div ecx，商在 eax。','mov maxVal, [esi] 不合法（兩邊都是記憶體），要先搬到暫存器。'],
+  check:['結果 90、409、40','把陣列改成有負數，最大值還對嗎？（有號用 jle、無號用 jbe）','改成用 arr[esi*4] + inc esi 的寫法再做一次']},
+ {id:'L5',title:'第 5 關：字串大小寫互換',
+  goal:'讀入一串英文（例如 abCD），大小寫互換後印出（ABcd）。其他字元不動。作業 3 第 4 題。',
+  concepts:['scanf %s','以 0 結尾的字串','jb / ja 判斷字元範圍','xor al, 20h'],
+  run:'Enter letters: abCD9z\nResult: ABcd9Z',
+  hints:['buffer BYTE 100 DUP(0)；scanf 和 printf 的 %s 都傳 OFFSET buffer。','mov al, [esi] / test al, al / jz finish：遇到結尾 0 就停。','A~Z 或 a~z 才轉：字元是無號，用 jb、ja、jbe。','xor al, 20h 會把 bit 5 翻轉，大寫變小寫、小寫變大寫，一行搞定。'],
+  check:['abCD → ABcd','數字和符號不變','改成「全部轉大寫」（and al, 0DFh）']},
+ {id:'L6',title:'第 6 關：STDCALL 子程序判斷 3 的倍數',
+  goal:'寫一個 IsMul3 PROC STDCALL num:DWORD，回傳 eax = 1 或 0。主程式用 push / call 呼叫。',
+  concepts:['PROC STDCALL 參數:型態','div 餘數在 edx','回傳值放 eax','stdcall 自己 ret 4'],
+  run:'Enter n: 12\n12 is a multiple of 3',
+  hints:['標頭：IsMul3 PROC STDCALL num:DWORD，結尾 IsMul3 ENDP。','程序裡：mov eax, num → xor edx, edx → mov ecx, 3 → div ecx → cmp edx, 0。','主程式：push n / call IsMul3，stdcall 呼叫完不要 add esp。','寫在 main ENDP 之後、END main 之前。'],
+  check:['12 → 是、14 → 不是、0 → 是','改成判斷 5 的倍數（10/19 小考原題）','改成 C 慣例：PROC C，主程式就要 add esp, 4']},
+ {id:'L7',title:'第 7 關：質數判斷',
+  goal:'讀入 n，判斷是不是質數。作業 3 第 3 題。',
+  concepts:['div 求餘數','用 ebx 當除數（不怕被 printf 改掉）','cmp + jl / je / jge'],
+  run:'Enter n: 97\n97 is prime',
+  hints:['n < 2 不是質數；n = 2 是質數。','除數 ebx 從 2 開始，試到 n−1：每次 mov eax, n → xor edx, edx → div ebx。','餘數 0 → 整除 → 不是質數。','除數用 ebx：printf / scanf 會改掉 eax、ecx、edx，但不會改 ebx。'],
+  check:['1 不是、2 是、9 不是、97 是','輸入 1000003 試試看速度','進階：除數只試到 √n（ebx×ebx > n 就停）']},
+ {id:'L8',title:'第 8 關：猜數字 1~100',
+  goal:'產生 1~100 的亂數，讓使用者猜，提示太大或太小，猜對印出次數；輸入 0 結束。作業 4-1 的精簡版。',
+  concepts:['time → srand → rand','(rand % 長度) + 最小值','je / jg 三路分支','每個分支 jmp 回去'],
+  run:'Guess (1-100, 0 to quit): 50\nToo big\nGuess (1-100, 0 to quit): 25\nToo small\n…\nCorrect! You guessed 6 times',
+  hints:['time、srand、rand 也要寫 PROTO：time PROTO C :DWORD、srand PROTO C :DWORD、rand PROTO C。','洗牌只做一次：INVOKE time, 0 → INVOKE srand, eax。','範圍：xor edx, edx → mov ecx, 100 → div ecx → inc edx。','比較：cmp eax, target → je correct → jg too_big → 剩下的就是太小。'],
+  check:['猜對時次數正確','輸入 0 能結束','改成 1~6 的骰子（變化題）']}
+];
+
+LABS[0].ref=".386\n.model flat, stdcall\noption casemap:none\nincludelib kernel32.lib\nincludelib msvcrt.lib\nincludelib legacy_stdio_definitions.lib\nincludelib ucrt.lib\n\nExitProcess PROTO :DWORD\nprintf      PROTO C :VARARG\nscanf       PROTO C :VARARG\n\n.data\npromptA BYTE \"Enter A: \", 0\npromptB BYTE \"Enter B: \", 0\nfmtIn   BYTE \"%d\", 0\nfmtOut  BYTE \"A + B = %d\", 10, \"A - B = %d\", 10, \"A * B = %d\", 10, 0\nA       DWORD ?\nB       DWORD ?\nsum     DWORD ?\ndiff    DWORD ?\nprod    DWORD ?\n\n.code\nmain PROC\n    INVOKE printf, OFFSET promptA\n    INVOKE scanf, OFFSET fmtIn, OFFSET A      ; scanf \u8981\u7d66\u4f4d\u5740\n    INVOKE printf, OFFSET promptB\n    INVOKE scanf, OFFSET fmtIn, OFFSET B\n\n    mov eax, A\n    add eax, B\n    mov sum, eax          ; sum = A + B\n\n    mov eax, A\n    sub eax, B\n    mov diff, eax         ; diff = A - B\n\n    mov eax, A\n    imul eax, B           ; eax = eax * B\uff08\u6709\u865f\u4e58\u6cd5\uff09\n    mov prod, eax\n\n    INVOKE printf, OFFSET fmtOut, sum, diff, prod   ; \u5370\u6578\u5b57\u50b3\u503c\n    INVOKE ExitProcess, 0\nmain ENDP\nEND main\n";LABS[0].skel=".386\n.model flat, stdcall\noption casemap:none\nincludelib kernel32.lib\nincludelib msvcrt.lib\nincludelib legacy_stdio_definitions.lib\nincludelib ucrt.lib\n\nExitProcess PROTO :DWORD\nprintf      PROTO C :VARARG\nscanf       PROTO C :VARARG\n\n.data\npromptA BYTE \"Enter A: \", 0\npromptB BYTE \"Enter B: \", 0\nfmtIn   BYTE \"%d\", 0\nfmtOut  BYTE \"A + B = %d\", 10, \"A - B = %d\", 10, \"A * B = %d\", 10, 0\nA       DWORD ?\nB       DWORD ?\nsum     DWORD ?\ndiff    DWORD ?\nprod    DWORD ?\n\n.code\nmain PROC\n    INVOKE printf, OFFSET promptA\n    ; TODO\uff1a\u8b80\u5165 A\uff08scanf \u8981\u7d66\u4f4d\u5740\uff09\n    INVOKE printf, OFFSET promptB\n    ; TODO\uff1a\u8b80\u5165 B\n\n    mov eax, A\n    ; TODO\uff1aeax = A + B\n    mov sum, eax          ; sum = A + B\n\n    mov eax, A\n    ; TODO\uff1aeax = A - B\n    mov diff, eax         ; diff = A - B\n\n    mov eax, A\n    ; TODO\uff1aeax = A * B\uff08\u6709\u865f\u4e58\u6cd5 imul\uff09\n    mov prod, eax\n\n    ; TODO\uff1a\u4e00\u884c\u5370\u51fa\u4e09\u500b\u7d50\u679c\uff08\u5370\u6578\u5b57\u50b3\u503c\uff09\n    INVOKE ExitProcess, 0\nmain ENDP\nEND main\n";
+LABS[1].ref=".386\n.model flat, stdcall\noption casemap:none\nincludelib kernel32.lib\nincludelib msvcrt.lib\nincludelib legacy_stdio_definitions.lib\nincludelib ucrt.lib\n\nExitProcess PROTO :DWORD\nprintf      PROTO C :VARARG\nscanf       PROTO C :VARARG\n\n.data\nprompt   BYTE \"Enter an integer: \", 0\nfmtIn    BYTE \"%d\", 0\nevenMsg  BYTE \"%d is EVEN\", 10, 0\noddMsg   BYTE \"%d is ODD\", 10, 0\nnum      DWORD ?\n\n.code\nmain PROC\n    ; \u4e0d\u7528 INVOKE\uff1apush / call / add esp\n    push OFFSET prompt\n    call printf\n    add esp, 4                ; 1 \u500b\u53c3\u6578\n\n    push OFFSET num           ; \u53f3\u908a\u7684\u53c3\u6578\u5148\u63a8\n    push OFFSET fmtIn\n    call scanf\n    add esp, 8                ; 2 \u500b\u53c3\u6578\n\n    mov eax, num\n    test eax, 1               ; \u53ea\u770b\u6700\u4f4e\u4f4d\n    jz is_even                ; \u6700\u4f4e\u4f4d 0 \u2192 \u5076\u6578\n\n    push num\n    push OFFSET oddMsg\n    call printf\n    add esp, 8\n    jmp done                  ; \u8df3\u904e\u5076\u6578\u5340\u584a\uff0c\u4e0d\u7136\u6703\u5f80\u4e0b\u6389\n\nis_even:\n    push num\n    push OFFSET evenMsg\n    call printf\n    add esp, 8\n\ndone:\n    push 0\n    call ExitProcess          ; stdcall\uff1a\u4e0d\u7528 add esp\nmain ENDP\nEND main\n";LABS[1].skel=".386\n.model flat, stdcall\noption casemap:none\nincludelib kernel32.lib\nincludelib msvcrt.lib\nincludelib legacy_stdio_definitions.lib\nincludelib ucrt.lib\n\nExitProcess PROTO :DWORD\nprintf      PROTO C :VARARG\nscanf       PROTO C :VARARG\n\n.data\nprompt   BYTE \"Enter an integer: \", 0\nfmtIn    BYTE \"%d\", 0\nevenMsg  BYTE \"%d is EVEN\", 10, 0\noddMsg   BYTE \"%d is ODD\", 10, 0\nnum      DWORD ?\n\n.code\nmain PROC\n    ; \u4e0d\u7528 INVOKE\uff1apush / call / add esp\n    push OFFSET prompt\n    call printf\n    add esp, 4                ; 1 \u500b\u53c3\u6578\n\n    ; TODO\uff1ascanf \u7684\u7b2c 2 \u500b\u53c3\u6578\u5148\u63a8\uff08\u4f4d\u5740\uff09\n    push OFFSET fmtIn\n    call scanf\n    ; TODO\uff1ascanf \u547c\u53eb\u5b8c\u6e05\u5806\u758a\n\n    mov eax, num\n    ; TODO\uff1a\u53ea\u770b\u6700\u4f4e\u4f4d\n    ; TODO\uff1a\u6700\u4f4e\u4f4d 0 \u2192 \u8df3\u5230 is_even\n\n    push num\n    push OFFSET oddMsg\n    call printf\n    add esp, 8\n    ; TODO\uff1a\u8df3\u904e\u5076\u6578\u5340\u584a\n\nis_even:\n    push num\n    push OFFSET evenMsg\n    call printf\n    add esp, 8\n\ndone:\n    push 0\n    ; TODO\uff1a\u547c\u53eb ExitProcess\uff08stdcall\uff0c\u4e4b\u5f8c\u4e0d\u7528 add esp\uff09\nmain ENDP\nEND main\n";
+LABS[2].ref=".386\n.model flat, stdcall\noption casemap:none\nincludelib kernel32.lib\nincludelib msvcrt.lib\nincludelib legacy_stdio_definitions.lib\nincludelib ucrt.lib\n\nExitProcess PROTO :DWORD\nprintf      PROTO C :VARARG\nscanf       PROTO C :VARARG\n\n.data\nprompt BYTE \"Enter n: \", 0\nfmtIn  BYTE \"%d\", 0\nfmtOut BYTE \"1 + 2 + ... + %d = %d\", 10, 0\nerrMsg BYTE \"n must be >= 1\", 10, 0\nn      DWORD ?\n\n.code\nmain PROC\n    INVOKE printf, OFFSET prompt\n    INVOKE scanf, OFFSET fmtIn, OFFSET n\n\n    cmp n, 1\n    jl bad_input              ; n < 1\uff1aloop \u6703\u8dd1 4294967296 \u6b21\uff0c\u5148\u64cb\u6389\n\n    xor eax, eax              ; eax = \u7e3d\u548c\n    mov ebx, 1                ; ebx = \u76ee\u524d\u8981\u52a0\u7684\u6578\n    mov ecx, n                ; loop \u7528 ecx \u7576\u8a08\u6578\u5668\nL1:\n    add eax, ebx\n    inc ebx\n    loop L1\n\n    INVOKE printf, OFFSET fmtOut, n, eax\n    jmp done\n\nbad_input:\n    INVOKE printf, OFFSET errMsg\ndone:\n    INVOKE ExitProcess, 0\nmain ENDP\nEND main\n";LABS[2].skel=".386\n.model flat, stdcall\noption casemap:none\nincludelib kernel32.lib\nincludelib msvcrt.lib\nincludelib legacy_stdio_definitions.lib\nincludelib ucrt.lib\n\nExitProcess PROTO :DWORD\nprintf      PROTO C :VARARG\nscanf       PROTO C :VARARG\n\n.data\nprompt BYTE \"Enter n: \", 0\nfmtIn  BYTE \"%d\", 0\nfmtOut BYTE \"1 + 2 + ... + %d = %d\", 10, 0\nerrMsg BYTE \"n must be >= 1\", 10, 0\nn      DWORD ?\n\n.code\nmain PROC\n    INVOKE printf, OFFSET prompt\n    INVOKE scanf, OFFSET fmtIn, OFFSET n\n\n    cmp n, 1\n    ; TODO\uff1an < 1 \u5c31\u8df3\u5230 bad_input\n\n    xor eax, eax              ; eax = \u7e3d\u548c\n    mov ebx, 1                ; ebx = \u76ee\u524d\u8981\u52a0\u7684\u6578\n    ; TODO\uff1a\u8a2d\u5b9a loop \u8a08\u6578\u5668\nL1:\n    ; TODO\uff1a\u7d2f\u52a0\n    ; TODO\uff1a\u4e0b\u4e00\u500b\u6578\n    ; TODO\uff1a\u56de\u5230 L1\n\n    INVOKE printf, OFFSET fmtOut, n, eax\n    jmp done\n\nbad_input:\n    INVOKE printf, OFFSET errMsg\ndone:\n    INVOKE ExitProcess, 0\nmain ENDP\nEND main\n";
+LABS[3].ref=".386\n.model flat, stdcall\noption casemap:none\nincludelib kernel32.lib\nincludelib msvcrt.lib\nincludelib legacy_stdio_definitions.lib\nincludelib ucrt.lib\n\nExitProcess PROTO :DWORD\nprintf      PROTO C :VARARG\nscanf       PROTO C :VARARG\n\n.data\narr    DWORD 45, 12, 89, 3, 27, 66, 14, 90, 55, 8\nmaxVal DWORD ?\ntotal  DWORD ?\nfmtOut BYTE \"max = %d, sum = %d, average = %d\", 10, 0\n\n.code\nmain PROC\n    mov esi, OFFSET arr       ; esi \u6307\u5411\u9663\u5217\u958b\u982d\uff08\u4f4d\u5740\uff09\n    mov ecx, LENGTHOF arr     ; 10 \u500b\u5143\u7d20\n    mov eax, [esi]            ; \u5148\u5047\u8a2d\u7b2c\u4e00\u500b\u6700\u5927\n    mov maxVal, eax\n    xor eax, eax              ; eax = \u7e3d\u548c\nL1:\n    mov edx, [esi]            ; \u53d6\u51fa\u76ee\u524d\u5143\u7d20\n    add eax, edx              ; \u52a0\u5230\u7e3d\u548c\n    cmp edx, maxVal\n    jle not_bigger            ; \u6709\u865f\uff1a\u4e0d\u6bd4\u8f03\u5927\u5c31\u8df3\u904e\n    mov maxVal, edx\nnot_bigger:\n    add esi, TYPE DWORD       ; \u4e0b\u4e00\u683c +4\n    loop L1\n    mov total, eax\n\n    ; \u5e73\u5747 = total / 10\uff08\u7121\u865f\u9664\u6cd5\uff09\n    xor edx, edx\n    mov ecx, LENGTHOF arr\n    div ecx                   ; \u5546\u5728 eax\n\n    INVOKE printf, OFFSET fmtOut, maxVal, total, eax\n    INVOKE ExitProcess, 0\nmain ENDP\nEND main\n";LABS[3].skel=".386\n.model flat, stdcall\noption casemap:none\nincludelib kernel32.lib\nincludelib msvcrt.lib\nincludelib legacy_stdio_definitions.lib\nincludelib ucrt.lib\n\nExitProcess PROTO :DWORD\nprintf      PROTO C :VARARG\nscanf       PROTO C :VARARG\n\n.data\narr    DWORD 45, 12, 89, 3, 27, 66, 14, 90, 55, 8\nmaxVal DWORD ?\ntotal  DWORD ?\nfmtOut BYTE \"max = %d, sum = %d, average = %d\", 10, 0\n\n.code\nmain PROC\n    ; TODO\uff1aesi \u6307\u5411\u9663\u5217\u958b\u982d\n    ; TODO\uff1a\u8a2d\u5b9a\u6b21\u6578\uff08\u7528\u904b\u7b97\u5b50\uff09\n    mov eax, [esi]            ; \u5148\u5047\u8a2d\u7b2c\u4e00\u500b\u6700\u5927\n    mov maxVal, eax\n    xor eax, eax              ; eax = \u7e3d\u548c\nL1:\n    ; TODO\uff1a\u53d6\u51fa\u76ee\u524d\u5143\u7d20\u5230 edx\n    add eax, edx              ; \u52a0\u5230\u7e3d\u548c\n    cmp edx, maxVal\n    ; TODO\uff1a\u4e0d\u6bd4 maxVal \u5927\u5c31\u8df3\u904e\n    mov maxVal, edx\nnot_bigger:\n    ; TODO\uff1a\u79fb\u5230\u4e0b\u4e00\u683c\n    loop L1\n    mov total, eax\n\n    ; \u5e73\u5747 = total / 10\uff08\u7121\u865f\u9664\u6cd5\uff09\n    xor edx, edx\n    mov ecx, LENGTHOF arr\n    ; TODO\uff1a\u9664\u6cd5\uff08\u5546\u5728 eax\uff09\n\n    INVOKE printf, OFFSET fmtOut, maxVal, total, eax\n    INVOKE ExitProcess, 0\nmain ENDP\nEND main\n";
+LABS[4].ref=".386\n.model flat, stdcall\noption casemap:none\nincludelib kernel32.lib\nincludelib msvcrt.lib\nincludelib legacy_stdio_definitions.lib\nincludelib ucrt.lib\n\nExitProcess PROTO :DWORD\nprintf      PROTO C :VARARG\nscanf       PROTO C :VARARG\n\n.data\nprompt BYTE \"Enter letters: \", 0\nfmtIn  BYTE \"%s\", 0\nfmtOut BYTE \"Result: %s\", 10, 0\nbuffer BYTE 100 DUP(0)\n\n.code\nmain PROC\n    INVOKE printf, OFFSET prompt\n    INVOKE scanf, OFFSET fmtIn, OFFSET buffer\n\n    mov esi, OFFSET buffer\nnext:\n    mov al, [esi]             ; \u8b80\u4e00\u500b\u5b57\u5143\n    test al, al\n    jz finish                 ; \u9047\u5230\u7d50\u5c3e 0 \u5c31\u7d50\u675f\n\n    cmp al, 'A'\n    jb skip                   ; \u5b57\u5143\u662f\u7121\u865f\uff1a\u7528 jb/ja\n    cmp al, 'Z'\n    jbe toggle                ; A~Z\uff1a\u8981\u8f49\n    cmp al, 'a'\n    jb skip\n    cmp al, 'z'\n    ja skip\ntoggle:\n    xor al, 20h               ; bit 5 \u7ffb\u8f49\uff1a\u5927\u5c0f\u5beb\u4e92\u63db\n    mov [esi], al             ; \u5beb\u56de\u53bb\nskip:\n    inc esi                   ; BYTE\uff1a\u4e0b\u4e00\u683c +1\n    jmp next\n\nfinish:\n    INVOKE printf, OFFSET fmtOut, OFFSET buffer   ; %s \u50b3\u4f4d\u5740\n    INVOKE ExitProcess, 0\nmain ENDP\nEND main\n";LABS[4].skel=".386\n.model flat, stdcall\noption casemap:none\nincludelib kernel32.lib\nincludelib msvcrt.lib\nincludelib legacy_stdio_definitions.lib\nincludelib ucrt.lib\n\nExitProcess PROTO :DWORD\nprintf      PROTO C :VARARG\nscanf       PROTO C :VARARG\n\n.data\nprompt BYTE \"Enter letters: \", 0\nfmtIn  BYTE \"%s\", 0\nfmtOut BYTE \"Result: %s\", 10, 0\nbuffer BYTE 100 DUP(0)\n\n.code\nmain PROC\n    INVOKE printf, OFFSET prompt\n    ; TODO\uff1a\u8b80\u5165\u5b57\u4e32\u5230 buffer\n\n    mov esi, OFFSET buffer\nnext:\n    ; TODO\uff1a\u8b80\u4e00\u500b\u5b57\u5143\u5230 al\n    test al, al\n    ; TODO\uff1a\u9047\u5230 0 \u5c31\u7d50\u675f\n\n    cmp al, 'A'\n    ; TODO\uff1a\u5c0f\u65bc A \u8df3\u904e\uff08\u5b57\u5143\u7528\u7121\u865f\uff09\n    cmp al, 'Z'\n    jbe toggle                ; A~Z\uff1a\u8981\u8f49\n    cmp al, 'a'\n    jb skip\n    cmp al, 'z'\n    ja skip\ntoggle:\n    ; TODO\uff1a\u5927\u5c0f\u5beb\u4e92\u63db\n    ; TODO\uff1a\u5beb\u56de\u53bb\nskip:\n    ; TODO\uff1a\u4e0b\u4e00\u500b\u5b57\u5143\n    jmp next\n\nfinish:\n    INVOKE printf, OFFSET fmtOut, OFFSET buffer   ; %s \u50b3\u4f4d\u5740\n    INVOKE ExitProcess, 0\nmain ENDP\nEND main\n";
+LABS[5].ref=".386\n.model flat, stdcall\noption casemap:none\nincludelib kernel32.lib\nincludelib msvcrt.lib\nincludelib legacy_stdio_definitions.lib\nincludelib ucrt.lib\n\nExitProcess PROTO :DWORD\nprintf      PROTO C :VARARG\nscanf       PROTO C :VARARG\n\n.data\nprompt BYTE \"Enter n: \", 0\nfmtIn  BYTE \"%d\", 0\nyesMsg BYTE \"%d is a multiple of 3\", 10, 0\nnoMsg  BYTE \"%d is NOT a multiple of 3\", 10, 0\nn      DWORD ?\n\n.code\nmain PROC\n    INVOKE printf, OFFSET prompt\n    INVOKE scanf, OFFSET fmtIn, OFFSET n\n\n    push n                    ; \u53c3\u6578\n    call IsMul3               ; \u7d50\u679c\u5728 eax\uff081 = \u662f\uff09\n                              ; stdcall\uff1aIsMul3 \u81ea\u5df1 ret 4\uff0c\u9019\u88e1\u4e0d\u7528 add esp\n    cmp eax, 1\n    je yes\n    INVOKE printf, OFFSET noMsg, n\n    jmp done\nyes:\n    INVOKE printf, OFFSET yesMsg, n\ndone:\n    INVOKE ExitProcess, 0\nmain ENDP\n\n; ------------------------------------------------\n; IsMul3\uff1a\u5224\u65b7 num \u662f\u5426\u70ba 3 \u7684\u500d\u6578\n; \u56de\u50b3 eax = 1\uff08\u662f\uff09\u6216 0\uff08\u4e0d\u662f\uff09\n; ------------------------------------------------\nIsMul3 PROC STDCALL num:DWORD\n    mov eax, num              ; \u5e95\u5c64\u5176\u5be6\u662f [ebp+8]\n    xor edx, edx              ; \u88ab\u9664\u6578 EDX:EAX\uff0c\u5148\u6e05\u9ad8\u4f4d\n    mov ecx, 3\n    div ecx                   ; \u5546 eax\u3001\u9918\u6578 edx\n    cmp edx, 0\n    jne not_mul\n    mov eax, 1\n    ret                       ; MASM \u81ea\u52d5\u8b8a\u6210 ret 4\nnot_mul:\n    mov eax, 0\n    ret\nIsMul3 ENDP\nEND main\n";LABS[5].skel=".386\n.model flat, stdcall\noption casemap:none\nincludelib kernel32.lib\nincludelib msvcrt.lib\nincludelib legacy_stdio_definitions.lib\nincludelib ucrt.lib\n\nExitProcess PROTO :DWORD\nprintf      PROTO C :VARARG\nscanf       PROTO C :VARARG\n\n.data\nprompt BYTE \"Enter n: \", 0\nfmtIn  BYTE \"%d\", 0\nyesMsg BYTE \"%d is a multiple of 3\", 10, 0\nnoMsg  BYTE \"%d is NOT a multiple of 3\", 10, 0\nn      DWORD ?\n\n.code\nmain PROC\n    INVOKE printf, OFFSET prompt\n    INVOKE scanf, OFFSET fmtIn, OFFSET n\n\n    ; TODO\uff1a\u628a\u53c3\u6578 n \u63a8\u9032\u5806\u758a\n    ; TODO\uff1a\u547c\u53eb IsMul3\n                              ; stdcall\uff1aIsMul3 \u81ea\u5df1 ret 4\uff0c\u9019\u88e1\u4e0d\u7528 add esp\n    cmp eax, 1\n    je yes\n    INVOKE printf, OFFSET noMsg, n\n    jmp done\nyes:\n    INVOKE printf, OFFSET yesMsg, n\ndone:\n    INVOKE ExitProcess, 0\nmain ENDP\n\n; ------------------------------------------------\n; IsMul3\uff1a\u5224\u65b7 num \u662f\u5426\u70ba 3 \u7684\u500d\u6578\n; \u56de\u50b3 eax = 1\uff08\u662f\uff09\u6216 0\uff08\u4e0d\u662f\uff09\n; ------------------------------------------------\n; TODO\uff1a\u7a0b\u5e8f\u6a19\u982d\uff1astdcall\u3001\u4e00\u500b\u53c3\u6578 num\n    mov eax, num              ; \u5e95\u5c64\u5176\u5be6\u662f [ebp+8]\n    ; TODO\uff1a\u9664\u6cd5\u524d\u6e05\u9ad8\u4f4d\n    mov ecx, 3\n    ; TODO\uff1a\u9664\u4ee5 3\n    ; TODO\uff1a\u6aa2\u67e5\u9918\u6578\n    ; TODO\uff1a\u9918\u6578\u4e0d\u662f 0 \u2192 not_mul\n    mov eax, 1\n    ret                       ; MASM \u81ea\u52d5\u8b8a\u6210 ret 4\nnot_mul:\n    mov eax, 0\n    ret\nIsMul3 ENDP\nEND main\n";
+LABS[6].ref=".386\n.model flat, stdcall\noption casemap:none\nincludelib kernel32.lib\nincludelib msvcrt.lib\nincludelib legacy_stdio_definitions.lib\nincludelib ucrt.lib\n\nExitProcess PROTO :DWORD\nprintf      PROTO C :VARARG\nscanf       PROTO C :VARARG\n\n.data\nprompt   BYTE \"Enter n: \", 0\nfmtIn    BYTE \"%d\", 0\nprimeMsg BYTE \"%d is prime\", 10, 0\nnotMsg   BYTE \"%d is not prime\", 10, 0\nn        DWORD ?\n\n.code\nmain PROC\n    INVOKE printf, OFFSET prompt\n    INVOKE scanf, OFFSET fmtIn, OFFSET n\n\n    cmp n, 2\n    jl not_prime              ; n < 2 \u4e0d\u662f\u8cea\u6578\n    je is_prime               ; n = 2 \u662f\u8cea\u6578\n\n    mov ebx, 2                ; \u9664\u6578\u5f9e 2 \u958b\u59cb\uff08ebx \u4e0d\u6703\u88ab printf \u6539\u6389\uff09\ncheck:\n    cmp ebx, n\n    jge is_prime              ; \u9664\u6578\u8a66\u5230 n-1 \u90fd\u4e0d\u6574\u9664 \u2192 \u8cea\u6578\n    mov eax, n\n    xor edx, edx\n    div ebx\n    cmp edx, 0                ; \u9918\u6578 0 \u2192 \u6574\u9664\n    je not_prime\n    inc ebx\n    jmp check\n\nis_prime:\n    INVOKE printf, OFFSET primeMsg, n\n    jmp done\nnot_prime:\n    INVOKE printf, OFFSET notMsg, n\ndone:\n    INVOKE ExitProcess, 0\nmain ENDP\nEND main\n";LABS[6].skel=".386\n.model flat, stdcall\noption casemap:none\nincludelib kernel32.lib\nincludelib msvcrt.lib\nincludelib legacy_stdio_definitions.lib\nincludelib ucrt.lib\n\nExitProcess PROTO :DWORD\nprintf      PROTO C :VARARG\nscanf       PROTO C :VARARG\n\n.data\nprompt   BYTE \"Enter n: \", 0\nfmtIn    BYTE \"%d\", 0\nprimeMsg BYTE \"%d is prime\", 10, 0\nnotMsg   BYTE \"%d is not prime\", 10, 0\nn        DWORD ?\n\n.code\nmain PROC\n    INVOKE printf, OFFSET prompt\n    INVOKE scanf, OFFSET fmtIn, OFFSET n\n\n    cmp n, 2\n    ; TODO\uff1an < 2\n    ; TODO\uff1an = 2\n\n    mov ebx, 2                ; \u9664\u6578\u5f9e 2 \u958b\u59cb\uff08ebx \u4e0d\u6703\u88ab printf \u6539\u6389\uff09\ncheck:\n    cmp ebx, n\n    ; TODO\uff1a\u9664\u6578\u5df2\u8a66\u5230 n\n    mov eax, n\n    xor edx, edx\n    ; TODO\uff1an \u00f7 ebx\n    cmp edx, 0                ; \u9918\u6578 0 \u2192 \u6574\u9664\n    ; TODO\uff1a\u6574\u9664 \u2192 \u4e0d\u662f\u8cea\u6578\n    ; TODO\uff1a\u4e0b\u4e00\u500b\u9664\u6578\n    jmp check\n\nis_prime:\n    INVOKE printf, OFFSET primeMsg, n\n    jmp done\nnot_prime:\n    INVOKE printf, OFFSET notMsg, n\ndone:\n    INVOKE ExitProcess, 0\nmain ENDP\nEND main\n";
+LABS[7].ref=".386\n.model flat, stdcall\noption casemap:none\nincludelib kernel32.lib\nincludelib msvcrt.lib\nincludelib legacy_stdio_definitions.lib\nincludelib ucrt.lib\n\nExitProcess PROTO :DWORD\nprintf      PROTO C :VARARG\nscanf       PROTO C :VARARG\ntime  PROTO C :DWORD\nsrand PROTO C :DWORD\nrand  PROTO C\n\n.data\nprompt  BYTE \"Guess (1-100, 0 to quit): \", 0\nfmtIn   BYTE \"%d\", 0\nbigMsg  BYTE \"Too big\", 10, 0\nsmlMsg  BYTE \"Too small\", 10, 0\nokMsg   BYTE \"Correct! You guessed %d times\", 10, 0\nbyeMsg  BYTE \"Bye\", 10, 0\ntarget  DWORD ?\nguess   DWORD ?\ncnt     DWORD 0\n\n.code\nmain PROC\n    INVOKE time, 0\n    INVOKE srand, eax         ; \u6d17\u724c\u4e00\u6b21\n    INVOKE rand               ; \u4e82\u6578\u5728 eax\n    xor edx, edx\n    mov ecx, 100              ; 1~100\uff1a\u9577\u5ea6 100\n    div ecx\n    inc edx                   ; 0~99 \u2192 1~100\n    mov target, edx\n\nagain:\n    INVOKE printf, OFFSET prompt\n    INVOKE scanf, OFFSET fmtIn, OFFSET guess\n    mov eax, guess\n    cmp eax, 0\n    je quit\n    inc cnt\n    cmp eax, target           ; \u731c\u7684 vs \u7b54\u6848\uff08\u6709\u865f\uff09\n    je correct\n    jg too_big\n    INVOKE printf, OFFSET smlMsg\n    jmp again\ntoo_big:\n    INVOKE printf, OFFSET bigMsg\n    jmp again\ncorrect:\n    INVOKE printf, OFFSET okMsg, cnt\n    jmp done\nquit:\n    INVOKE printf, OFFSET byeMsg\ndone:\n    INVOKE ExitProcess, 0\nmain ENDP\nEND main\n";LABS[7].skel=".386\n.model flat, stdcall\noption casemap:none\nincludelib kernel32.lib\nincludelib msvcrt.lib\nincludelib legacy_stdio_definitions.lib\nincludelib ucrt.lib\n\nExitProcess PROTO :DWORD\nprintf      PROTO C :VARARG\nscanf       PROTO C :VARARG\ntime  PROTO C :DWORD\nsrand PROTO C :DWORD\nrand  PROTO C\n\n.data\nprompt  BYTE \"Guess (1-100, 0 to quit): \", 0\nfmtIn   BYTE \"%d\", 0\nbigMsg  BYTE \"Too big\", 10, 0\nsmlMsg  BYTE \"Too small\", 10, 0\nokMsg   BYTE \"Correct! You guessed %d times\", 10, 0\nbyeMsg  BYTE \"Bye\", 10, 0\ntarget  DWORD ?\nguess   DWORD ?\ncnt     DWORD 0\n\n.code\nmain PROC\n    INVOKE time, 0\n    ; TODO\uff1a\u7528\u6642\u9593\u6d17\u724c\n    INVOKE rand               ; \u4e82\u6578\u5728 eax\n    xor edx, edx\n    ; TODO\uff1a\u8a2d\u5b9a\u7bc4\u570d\u9577\u5ea6\n    div ecx\n    ; TODO\uff1a\u9918\u6578 0~99 \u8b8a 1~100\n    mov target, edx\n\nagain:\n    INVOKE printf, OFFSET prompt\n    INVOKE scanf, OFFSET fmtIn, OFFSET guess\n    mov eax, guess\n    cmp eax, 0\n    ; TODO\uff1a\u8f38\u5165 0 \u2192 \u7d50\u675f\n    ; TODO\uff1a\u6b21\u6578 +1\n    cmp eax, target           ; \u731c\u7684 vs \u7b54\u6848\uff08\u6709\u865f\uff09\n    je correct\n    ; TODO\uff1a\u731c\u592a\u5927\n    INVOKE printf, OFFSET smlMsg\n    ; TODO\uff1a\u56de\u53bb\u518d\u731c\ntoo_big:\n    INVOKE printf, OFFSET bigMsg\n    jmp again\ncorrect:\n    INVOKE printf, OFFSET okMsg, cnt\n    jmp done\nquit:\n    INVOKE printf, OFFSET byeMsg\ndone:\n    INVOKE ExitProcess, 0\nmain ENDP\nEND main\n";
+
+const UNITS = {
+  1:{n:'資料表示',s:'9/7 · 9/21',tag:''},
+  2:{n:'指令轉換與記憶體',s:'9/21（45 分）',tag:'9/21 小考 45 分'},
+  3:{n:'旗標、迴圈、DOS',s:'10/5',tag:''},
+  4:{n:'程序與呼叫慣例',s:'10/12（13.1 分）',tag:'10/12 小考 13.1 分，最該補'},
+  5:{n:'比較跳躍、陣列、大小寫',s:'10/19（45 分）',tag:'10/19 小考 45 分'},
+  6:{n:'亂數、子程序、定址模式',s:'11/2',tag:''},
+  7:{n:'資料定義與運算子',s:'課本 ch3–4',tag:''},
+  8:{n:'旗標進階',s:'課本 ch4',tag:''},
+  9:{n:'堆疊與程序',s:'課本 ch5',tag:''},
+  10:{n:'條件處理與字串',s:'ch6 · 10/19 簡報',tag:''},
+  11:{n:'電腦結構與浮點數',s:'ch1–2 · 資料表示',tag:''}
+};
+const SRC = {orig:'原題',var:'變化題',new:'課本新題'};
+const HEXQ = new Set(['a12','a15','c8','g2','g3','g4','g6','g7','h1','h3','i1','k5','f8']);
+const BANK = [...BANK1, ...BANK2, ...BANK3];
+
+// ---------- 儲存 ----------
+const KEY='asm-mid-v1';
+let store={q:{},steps:{},labs:{},labchk:{}};
+try{const raw=localStorage.getItem(KEY); if(raw){const p=JSON.parse(raw); store=Object.assign(store,p);}}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(store));}catch(e){}}
+
+// ---------- 比對答案 ----------
+function norm(s){return String(s).replace(/('[^']*'|"[^"]*")|([^'"]+)/g,(m,qt,o)=>qt?qt:o.toLowerCase()).replace(/[\s　]+/g,'').replace(/，/g,',').replace(/；/g,';').replace(/[“”]/g,'"').replace(/[‘’]/g,"'").replace(/;$/,'');}
+function variants(s,hex){
+  const out=new Set([s]);
+  if(/^-?\d+d$/.test(s)) out.add(s.slice(0,-1));
+  if(hex){
+    let t=s.replace(/^0x/,''); if(/^[0-9a-f]+h$/.test(t)) t=t.slice(0,-1);
+    out.add(t); const z=t.replace(/^0+(?=.)/,''); out.add(z);
+  }
+  return [...out];
+}
+function judge(q,i,raw){
+  const hex=HEXQ.has(q.id); const v=variants(norm(raw),hex);
+  const acc=q.a[i].map(x=>norm(x));
+  const accAll=new Set(); acc.forEach(a=>variants(a,hex).forEach(x=>accAll.add(x)));
+  if(v.some(x=>accAll.has(x))) return {r:'ok'};
+  if(q.soft){ for(const [bi,ans,msg] of q.soft){ if(bi===i && v.includes(norm(ans))) return {r:'part',msg}; } }
+  return {r:'bad'};
+}
+
+// ---------- 狀態 ----------
+let view={unit:'all',filter:'all',idx:0,exam:null};
+try{const u=JSON.parse(localStorage.getItem(KEY+'-view')||'null'); if(u&&(UNITS[u.unit]||u.unit==='all')) {view.unit=u.unit;view.filter=u.filter||'all';}}catch(e){}
+function saveView(){try{localStorage.setItem(KEY+'-view',JSON.stringify({unit:view.unit,filter:view.filter}));}catch(e){}}
+const st=id=>(store.q[id]||{}).s;
+
+function listFor(unit,filter){
+  return BANK.filter(q=>(unit==='all'||q.u===unit)&&(
+    filter==='all'||(filter==='wrong'&&(st(q.id)==='bad'||st(q.id)==='part'))||
+    (filter==='missed'&&q.prev&&q.prev.some(p=>p))||(filter==='todo'&&!st(q.id))||q.src===filter));
+}
+function curList(){ return view.exam ? view.exam.ids.map(id=>BANK.find(q=>q.id===id)) : listFor(view.unit,view.filter); }
+
+// ---------- 頁首暫存器 ----------
+function hx(n){return '0x'+n.toString(16).toUpperCase().padStart(2,'0');}
+function renderRegs(){
+  let ok=0,bad=0; BANK.forEach(q=>{const s=st(q.id); if(s==='ok')ok++; else if(s) bad++;});
+  const todo=BANK.length-ok-bad;
+  document.getElementById('regs').innerHTML=
+   `<div class="reg ok"><b>答對</b><span class="h">${hx(ok)}</span><span>${ok}</span></div>`+
+   `<div class="reg bad"><b>錯題本</b><span class="h">${hx(bad)}</span><span>${bad}</span></div>`+
+   `<div class="reg"><b>未做</b><span class="h">${hx(todo)}</span><span>${todo}</span></div>`+
+   `<div class="reg"><b>總題數</b><span class="h">${hx(BANK.length)}</span><span>${BANK.length}</span></div>`;
+}
+
+// ---------- 單元清單 ----------
+function renderUnits(){
+  const box=document.getElementById('unitlist'); box.innerHTML='';
+  const mk=(key,label,sub,tag,qs)=>{
+    const ok=qs.filter(q=>st(q.id)==='ok').length, bad=qs.filter(q=>st(q.id)&&st(q.id)!=='ok').length;
+    const b=document.createElement('button'); b.className='unit'; b.setAttribute('aria-current',String(!view.exam&&view.unit===key));
+    b.innerHTML=`<span class="seg">${key==='all'?'ALL':'U'+String(key).padStart(2,'0')}</span><span class="nm">${label}<br><span style="color:var(--muted);font-size:.78rem;font-weight:400">${sub}</span></span><span class="ct">${ok}/${qs.length}</span>`+
+      `<span class="bar"><i class="o" style="width:${qs.length?ok/qs.length*100:0}%"></i><i class="x" style="width:${qs.length?bad/qs.length*100:0}%"></i></span>`+(tag?`<span class="tag">${tag}</span>`:'');
+    b.onclick=()=>{view.exam=null;view.unit=key;view.idx=0;saveView();renderAll();};
+    box.appendChild(b);
+  };
+  mk('all','全部單元','依序全練',null,BANK);
+  Object.entries(UNITS).forEach(([k,u])=>mk(+k,u.n,u.s,u.tag,BANK.filter(q=>q.u===+k)));
+}
+
+// ---------- 篩選 ----------
+function renderFilters(){
+  const box=document.getElementById('filters'); box.innerHTML='';
+  const opts=[['all','全部'],['orig','原題'],['var','變化題'],['new','課本新題'],['missed','小考錯過的'],['wrong','錯題本'],['todo','還沒做']];
+  opts.forEach(([k,l])=>{
+    const n=listFor(view.unit,k).length;
+    const c=document.createElement('button'); c.className='chip'; c.setAttribute('aria-pressed',String(!view.exam&&view.filter===k));
+    c.innerHTML=`${l}<span class="n">${n}</span>`; c.onclick=()=>{view.exam=null;view.filter=k;view.idx=0;saveView();renderAll();};
+    box.appendChild(c);
+  });
+  const sp=document.createElement('span'); sp.className='spacer'; box.appendChild(sp);
+  const ex=document.createElement('button'); ex.className='btn primary'; ex.textContent='隨機 10 題模擬考';
+  ex.onclick=startExam; box.appendChild(ex);
+}
+function startExam(){
+  const pool=BANK.slice();
+  // 小考錯過的、錯題本的題目權重高
+  const w=q=>1+(q.prev&&q.prev.some(p=>p)?2:0)+((st(q.id)==='bad'||st(q.id)==='part')?3:0)+(q.src==='orig'?1:0);
+  const picked=[];
+  while(picked.length<10&&pool.length){
+    const tot=pool.reduce((s,q)=>s+w(q),0); let r=Math.random()*tot;
+    let i=0; for(;i<pool.length;i++){r-=w(pool[i]); if(r<=0)break;}
+    picked.push(pool.splice(Math.min(i,pool.length-1),1)[0].id);
+  }
+  view.exam={ids:picked,res:{}}; view.idx=0; renderAll();
+}
+function renderExamBar(){
+  const box=document.getElementById('exambar');
+  if(!view.exam){box.innerHTML='';return;}
+  const done=Object.keys(view.exam.res).length, ok=Object.values(view.exam.res).filter(r=>r==='ok').length;
+  box.innerHTML=`<div class="exam-bar"><span>模擬考進行中：已作答 <b>${done}/10</b>，全對 <b>${ok}</b> 題</span>${done===10?`<span>成績 <b>${ok*10}</b> 分 · 錯的題目已放進錯題本</span>`:''}<span class="spacer"></span><button class="btn ghost" id="exitExam">結束模擬考</button></div>`;
+  document.getElementById('exitExam').onclick=()=>{view.exam=null;view.idx=0;renderAll();};
+}
+
+// ---------- 題目卡 ----------
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function blankWidth(q,i){const m=Math.max(...q.a[i].map(x=>x.length),3); return Math.min(Math.max(m+2,4),26);}
+function withBlanks(text,q){
+  return text.split(/(\[\[\d+\]\])/).map(p=>{
+    const m=p.match(/^\[\[(\d+)\]\]$/);
+    if(!m) return esc(p);
+    const i=+m[1];
+    return `<input class="blank" data-i="${i}" id="b-${q.id}-${i}" size="${blankWidth(q,i)}" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="第 ${i+1} 格">`;
+  }).join('');
+}
+function renderCard(){
+  const slot=document.getElementById('cardslot'); const list=curList();
+  if(!list.length){
+    slot.innerHTML=`<div class="empty">${view.filter==='wrong'?'錯題本是空的。去做幾題，答錯的會自動收進來。':view.filter==='todo'?'這個單元全部做過了。切到「錯題本」把錯的再寫一次。':'這個篩選沒有題目。'}</div>`; return;
+  }
+  if(view.idx>=list.length) view.idx=list.length-1;
+  const q=list[view.idx]; const s=store.q[q.id]||{};
+  const u=UNITS[q.u];
+  const addr=`0x${String(q.u).padStart(2,'0')}:${q.id.toUpperCase()}`;
+  slot.innerHTML=`<article class="card" id="card">
+    <div class="meta"><span class="addr">${addr}</span><span class="src ${q.src}">${SRC[q.src]}</span><span>${q.from}</span><span>· ${u.n}</span>
+      <span class="state ${s.s||''}">${s.s==='ok'?'✓ 答對過':s.s==='bad'?'✗ 在錯題本':s.s==='part'?'△ 觀念對、寫法要改':'未作答'}${s.n?` · 第 ${s.n} 次`:''}</span></div>
+    <h2>${esc(q.title)}</h2>
+    ${q.q?`<p class="q">${esc(q.q)}</p>`:''}
+    <pre class="codebox">${withBlanks(q.code,q)}</pre>
+    <div class="actions">
+      <button class="btn primary" id="check">對答案</button>
+      <button class="btn" id="hintbtn">提示</button>
+      <button class="btn ghost" id="reset">清空重寫</button>
+      <span class="spacer"></span>
+      <button class="btn" id="prev" ${view.idx===0?'disabled':''}>← 上一題</button>
+      <button class="btn" id="next" ${view.idx>=list.length-1?'disabled':''}>下一題 →</button>
+    </div>
+    <div class="hint" id="hint" hidden>${esc(q.hint||'')}</div>
+    <div id="result"></div>
+    <div class="nav"><div class="dots" id="dots"></div><span class="mono" style="font-size:.8rem;color:var(--muted)">${view.idx+1} / ${list.length}</span></div>
+  </article>`;
+  const dots=document.getElementById('dots');
+  list.forEach((qq,i)=>{const d=document.createElement('button'); d.className='dot '+(st(qq.id)||'')+(i===view.idx?' cur':''); d.title=qq.title; d.setAttribute('aria-label',`第 ${i+1} 題：${qq.title}`); d.onclick=()=>{view.idx=i;renderCard();}; dots.appendChild(d);});
+  const inputs=[...slot.querySelectorAll('.blank')];
+  inputs.forEach((inp,k)=>inp.addEventListener('keydown',e=>{
+    if(e.key==='Enter'){e.preventDefault(); if(k<inputs.length-1 && !inputs[k+1].value) inputs[k+1].focus(); else check(q);}
+  }));
+  document.getElementById('check').onclick=()=>check(q);
+  document.getElementById('hintbtn').onclick=()=>{const h=document.getElementById('hint'); h.hidden=!h.hidden;};
+  document.getElementById('reset').onclick=()=>{inputs.forEach(i=>{i.value='';i.className='blank';}); slot.querySelectorAll('.fix').forEach(f=>f.remove()); document.getElementById('result').innerHTML=''; inputs[0]&&inputs[0].focus();};
+  document.getElementById('prev').onclick=()=>{view.idx--;renderCard();window.scrollTo({top:document.getElementById('cardslot').offsetTop-20});};
+  document.getElementById('next').onclick=()=>{view.idx++;renderCard();window.scrollTo({top:document.getElementById('cardslot').offsetTop-20});};
+}
+function check(q){
+  const slot=document.getElementById('cardslot');
+  const inputs=[...slot.querySelectorAll('.blank')];
+  slot.querySelectorAll('.fix').forEach(f=>f.remove());
+  let nOk=0,nBad=0,nPart=0; const notes=[];
+  inputs.forEach(inp=>{
+    const i=+inp.dataset.i; const v=inp.value.trim();
+    const r=v?judge(q,i,v):{r:'bad'};
+    inp.className='blank '+r.r;
+    if(r.r==='ok') nOk++;
+    else{
+      const f=document.createElement('span'); f.className='fix'; f.textContent=q.a[i][0];
+      inp.after(f);
+      if(r.r==='part'){nPart++; notes.push(`第 ${i+1} 格：${esc(r.msg)}`);} else nBad++;
+    }
+    if(q.prev&&q.prev[i]) notes.push(`第 ${i+1} 格 上次小考你寫 <b>${esc(q.prev[i])}</b>，正確是 <b>${esc(q.a[i][0])}</b>${r.r==='ok'?'，這次寫對了 ✓':''}`);
+  });
+  const res=nBad?'bad':nPart?'part':'ok';
+  const rec=store.q[q.id]||{n:0}; rec.n=(rec.n||0)+1; rec.s=res; rec.t=Date.now(); store.q[q.id]=rec; save();
+  if(view.exam) view.exam.res[q.id]=res;
+  const total=inputs.length;
+  const msg=res==='ok'?(rec.n>1?`全對！第 ${rec.n} 次作答，這題已經是你的了。`:'全對！看一下詳解確認觀念，再去下一題。')
+           :res==='part'?`${nOk}/${total} 格完全正確，${nPart} 格觀念對但寫法要照老師的。`
+           :`${nOk}/${total} 格正確。綠色小字是正確答案，先讀詳解，再按「清空重寫」不看答案寫一次。`;
+  document.getElementById('result').innerHTML=
+    `<div class="verdict ${res}">${msg}</div>`+
+    (notes.length?`<div class="notes">${notes.map(n=>`<div class="note">${n}</div>`).join('')}</div>`:'')+
+    `<div class="explain"><h3>詳解</h3><div class="tw">${q.ex}</div></div>`+
+    (res!=='ok'?`<p class="retry">讀完詳解後：按「清空重寫」，不看上面的答案自己再寫一次，全對才算真的會。</p>`:'');
+  renderRegs(); renderUnits(); renderFilters(); renderExamBar();
+  const dots=document.getElementById('dots'); const list=curList();
+  if(dots){[...dots.children].forEach((d,i)=>{d.className='dot '+(st(list[i].id)||'')+(i===view.idx?' cur':'');});}
+  const st2=document.querySelector('#card .state'); if(st2){st2.className='state '+res; st2.textContent=(res==='ok'?'✓ 答對過':res==='bad'?'✗ 在錯題本':'△ 觀念對、寫法要改')+` · 第 ${rec.n} 次`;}
+}
+
+// ---------- 上機 ----------
+function copyBtn(text){
+  const b=document.createElement('button'); b.className='btn copy'; b.textContent='複製';
+  b.onclick=()=>{
+    const done=()=>{b.textContent='已複製'; setTimeout(()=>b.textContent='複製',1500);};
+    const fallback=()=>{const pre=b.parentNode.querySelector('pre'); const r=document.createRange(); r.selectNodeContents(pre); const s=getSelection(); s.removeAllRanges(); s.addRange(r); b.textContent='已選取，按 Ctrl+C';};
+    try{navigator.clipboard.writeText(text).then(done,fallback);}catch(e){fallback();}
+  };
+  return b;
+}
+function codeBlock(text){
+  const w=document.createElement('div'); w.className='codewrap';
+  const p=document.createElement('pre'); p.textContent=text; w.appendChild(p); w.appendChild(copyBtn(text)); return w;
+}
+function renderLab(){
+  const root=document.getElementById('labroot'); root.innerHTML='';
+  // 1. 建專案
+  const p1=document.createElement('div'); p1.className='panel';
+  p1.innerHTML=`<h2>步驟一：從零建立 MASM 專案</h2><p class="sub">考上機時照這個順序做，做完一步勾一步。</p><ol class="steps" id="steps"></ol>`;
+  root.appendChild(p1);
+  const ol=p1.querySelector('#steps');
+  SETUP.forEach((s,i)=>{
+    const li=document.createElement('li'); const on=!!store.steps[i]; if(on) li.classList.add('done');
+    li.innerHTML=`<input type="checkbox" id="step-${i}" ${on?'checked':''}><label for="step-${i}"><div class="st">${s.t}</div><div class="sd">${s.d}</div></label>`;
+    li.querySelector('input').onchange=e=>{store.steps[i]=e.target.checked; li.classList.toggle('done',e.target.checked); save();};
+    ol.appendChild(li);
+  });
+  // 2. 模板
+  const p2=document.createElement('div'); p2.className='panel';
+  p2.innerHTML=`<h2>步驟二：萬用模板</h2><p class="sub">這幾行 includelib 就是你 4-1 一路修錯修出來的組合，每次都直接貼。ExitProcess 是 stdcall、printf/scanf 是 C，所以宣告寫法不一樣。</p>`;
+  p2.appendChild(codeBlock(TEMPLATE));
+  const p2b=document.createElement('p'); p2b.className='callout'; p2b.style.marginTop='12px';
+  p2b.innerHTML='想用命令列做（10/5 小考考過指令）：';
+  p2.appendChild(p2b); p2.appendChild(codeBlock(CMDLINE));
+  root.appendChild(p2);
+  // 3. 錯誤表
+  const p3=document.createElement('div'); p3.className='panel';
+  p3.innerHTML=`<h2>建置失敗時：錯誤代碼對照</h2><p class="sub">看「錯誤清單」最左邊的代碼，在這裡找。</p><div class="errtable"><table><thead><tr><th>錯誤</th><th>通常是因為</th><th>怎麼修</th></tr></thead><tbody>${ERRORS.map(r=>`<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td><td>${esc(r[2])}</td></tr>`).join('')}</tbody></table></div>`;
+  root.appendChild(p3);
+  // 4. 關卡
+  const p4=document.createElement('div'); p4.className='panel';
+  p4.innerHTML=`<h2>步驟三：八個上機關卡</h2><p class="sub">由簡單到難。每關先用骨架自己把 TODO 補完、建置、執行，對照範例輸出；卡住再一個一個開提示；寫完才看參考答案。寫好的程式可以貼給 Claude 幫你檢查。</p>`;
+  const lg=document.createElement('div'); lg.style.display='flex'; lg.style.flexDirection='column'; lg.style.gap='10px';
+  LABS.forEach((L,li)=>{
+    const card=document.createElement('div'); card.className='labcard';
+    const lstate=store.labs[L.id]||{};
+    const head=document.createElement('button'); head.className='labhead'; head.setAttribute('aria-expanded','false');
+    head.innerHTML=`<h3>${L.title}</h3><span class="lstat ${lstate.done?'done':''}">${lstate.done?'✓ 完成':'未完成'}</span>`;
+    const body=document.createElement('div'); body.className='labbody'; body.hidden=true;
+    head.onclick=()=>{body.hidden=!body.hidden; head.setAttribute('aria-expanded',String(!body.hidden));};
+    body.innerHTML=`<p style="margin:0">${esc(L.goal)}</p>
+      <div class="cpts">${L.concepts.map(c=>`<span class="cpt">${esc(c)}</span>`).join('')}</div>
+      <div><div class="lbl">範例執行</div><div class="term">${esc(L.run)}</div></div>
+      <div><div class="lbl">骨架（把 TODO 補完）</div><div class="sk"></div></div>
+      <div><div class="lbl">提示（一個一個開）</div><div class="hintlist"></div></div>
+      <div><div class="lbl">自我檢查</div><div class="chk"></div></div>
+      <div class="ans"><button class="btn">我寫完了，看參考答案</button></div>`;
+    body.querySelector('.sk').appendChild(codeBlock(L.skel));
+    const hl=body.querySelector('.hintlist'); let shown=0;
+    const hb=document.createElement('button'); hb.className='btn'; hb.textContent=`看提示 1 / ${L.hints.length}`;
+    hb.onclick=()=>{ if(shown<L.hints.length){const d=document.createElement('div'); d.className='hint'; d.textContent=L.hints[shown]; hl.insertBefore(d,hb); shown++; hb.textContent= shown<L.hints.length?`看提示 ${shown+1} / ${L.hints.length}`:'提示都看完了'; if(shown>=L.hints.length) hb.disabled=true;} };
+    hl.appendChild(hb);
+    const ck=body.querySelector('.chk');
+    L.check.forEach((c,ci)=>{
+      const key=L.id+'-'+ci; const lab=document.createElement('label');
+      lab.innerHTML=`<input type="checkbox" id="chk-${key}" ${store.labchk[key]?'checked':''}><span>${esc(c)}</span>`;
+      lab.querySelector('input').onchange=e=>{store.labchk[key]=e.target.checked; const all=L.check.every((_,j)=>store.labchk[L.id+'-'+j]); store.labs[L.id]={done:all}; save(); const ls=head.querySelector('.lstat'); ls.textContent=all?'✓ 完成':'未完成'; ls.className='lstat '+(all?'done':'');};
+      ck.appendChild(lab);
+    });
+    const ans=body.querySelector('.ans'); const ab=ans.querySelector('button');
+    ab.onclick=()=>{ab.remove(); const l=document.createElement('div'); l.className='lbl'; l.textContent='參考答案（已在組譯器上實際執行過）'; ans.appendChild(l); ans.appendChild(codeBlock(L.ref));};
+    card.appendChild(head); card.appendChild(body); lg.appendChild(card);
+  });
+  p4.appendChild(lg); root.appendChild(p4);
+}
+
+// ---------- 分頁 ----------
+const TABS=['drill','lab','sheet'];
+function showTab(which){
+  TABS.forEach(k=>{document.getElementById('tab-'+k).setAttribute('aria-selected',String(k===which)); document.getElementById('view-'+k).hidden=k!==which;});
+  try{localStorage.setItem(KEY+'-tab',which);}catch(e){}
+  if(which==='sheet') fitSheets();
+}
+TABS.forEach(k=>document.getElementById('tab-'+k).onclick=()=>showTab(k));
+
+// ---------- A4 大抄 ----------
+const SHEET_ORIG={};
+function setupSheets(){
+  const root=document.getElementById('sheetroot');
+  [...root.querySelectorAll('.a4')].forEach(pg=>{
+    const n=pg.dataset.page; const ed=pg.querySelector('.a4in'); SHEET_ORIG[n]=ed.innerHTML;
+    try{const sv=localStorage.getItem(KEY+'-sheet-'+n); if(sv) ed.innerHTML=sv;}catch(e){}
+    const wrap=document.createElement('div'); wrap.className='a4wrap';
+    const lab=document.createElement('div'); lab.className='pagelabel'; lab.innerHTML=`<b>第 ${n} 頁（${n==='1'?'正面':'背面'}）</b><span class="st"></span>`;
+    pg.parentNode.insertBefore(lab,pg); pg.parentNode.insertBefore(wrap,pg); wrap.appendChild(pg);
+    let tm; ed.addEventListener('input',()=>{clearTimeout(tm); tm=setTimeout(()=>{try{localStorage.setItem(KEY+'-sheet-'+n,ed.innerHTML);}catch(e){} checkOverflow();},300);});
+  });
+  document.getElementById('sheetReset').onclick=()=>{
+    const b=document.getElementById('sheetReset');
+    if(b.dataset.arm!=='1'){b.dataset.arm='1'; b.textContent='再按一次確認還原（修改會消失）'; setTimeout(()=>{b.dataset.arm=''; b.textContent='還原成原始版本';},3000); return;}
+    root.querySelectorAll('.a4').forEach(pg=>{const n=pg.dataset.page; pg.querySelector('.a4in').innerHTML=SHEET_ORIG[n]; try{localStorage.removeItem(KEY+'-sheet-'+n);}catch(e){}});
+    b.dataset.arm=''; b.textContent='已還原'; setTimeout(()=>b.textContent='還原成原始版本',1500); checkOverflow();
+  };
+  document.getElementById('sheetCopy').onclick=()=>{
+    const b=document.getElementById('sheetCopy');
+    const txt=[...root.querySelectorAll('.a4in')].map((e,i)=>`<!-- 第${i+1}頁 -->\n`+e.innerHTML).join('\n');
+    const ok=()=>{b.textContent='已複製，貼回對話即可'; setTimeout(()=>b.textContent='複製內容給 Claude',2000);};
+    try{navigator.clipboard.writeText(txt).then(ok,()=>{b.textContent='這個環境不能複製，請手動選取紙面文字';});}catch(e){b.textContent='這個環境不能複製，請手動選取紙面文字';}
+  };
+  window.addEventListener('resize',fitSheets);
+}
+function fitSheets(){
+  const root=document.getElementById('sheetroot'); const avail=root.clientWidth; if(!avail) return;
+  root.querySelectorAll('.a4wrap').forEach(w=>{
+    const pg=w.querySelector('.a4'); pg.style.transform='none';
+    const pw=pg.offsetWidth, ph=pg.offsetHeight; const s=Math.min(1,avail/pw);
+    pg.style.transform=`scale(${s})`; w.style.height=(ph*s)+'px'; w.style.width=(pw*s)+'px';
+  });
+  checkOverflow();
+}
+function checkOverflow(){
+  document.querySelectorAll('#sheetroot .a4').forEach(pg=>{
+    const ed=pg.querySelector('.a4in'); const lab=pg.closest('.a4wrap').previousElementSibling.querySelector('.st');
+    const over=ed.scrollWidth>ed.clientWidth+2;
+    lab.className='st '+(over?'warn':'fit'); lab.textContent=over?'內容超出這一頁了，刪掉一些或把字改小':'剛好放得下';
+  });
+}
+
+function renderAll(){renderRegs();renderUnits();renderFilters();renderExamBar();renderCard();}
+renderAll(); renderLab(); setupSheets();
+try{ const tb=localStorage.getItem(KEY+'-tab'); if(TABS.includes(tb)) showTab(tb); }catch(e){}
+</script>
+
+</body></html>
