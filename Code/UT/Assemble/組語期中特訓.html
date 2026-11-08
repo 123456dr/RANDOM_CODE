@@ -177,23 +177,70 @@ ol.steps li.done .st{text-decoration:line-through;color:var(--muted)}
 .a4wrap{overflow:hidden}
 .a4{width:210mm;height:297mm;background:#FFFFFF;color:#111111;box-shadow:0 1px 3px rgba(0,0,0,.18),0 8px 24px rgba(0,0,0,.08);transform-origin:top left;padding:6mm 6mm}
 .a4in{height:100%;overflow:hidden;column-count:3;column-gap:3.5mm;column-fill:auto;column-rule:.2mm solid #D7D7D7;font-family:"Noto Sans TC","Noto Sans CJK TC",system-ui,sans-serif;font-size:6.6pt;line-height:1.28;outline:none;color:#111}
-.a4in:focus{box-shadow:inset 0 0 0 .3mm #2348C2}
-.a4in .sh-title{column-span:all;display:flex;justify-content:space-between;align-items:baseline;gap:4mm;background:#1E2A44;color:#FFFFFF;padding:1.2mm 2.5mm;border-radius:1mm;margin-bottom:2mm;font-family:"IBM Plex Sans","Noto Sans TC","Noto Sans CJK TC",sans-serif}
+.a4in:focus{box-shadow:inset 0 0 0 .3mm #000000}
+.a4in .sh-title{column-span:all;display:flex;justify-content:space-between;align-items:baseline;gap:4mm;background:#000000;color:#FFFFFF;padding:1.2mm 2.5mm;border-radius:1mm;margin-bottom:2mm;font-family:"IBM Plex Sans","Noto Sans TC","Noto Sans CJK TC",sans-serif}
 .a4in .sh-title span:first-child{font-weight:700;font-size:10pt;letter-spacing:.04em}
 .a4in .sh-sub{font-size:7pt;opacity:.85}
-.a4in .blk{border:.25mm solid #9AA3B2;border-radius:1mm;margin:0 0 1.6mm;-webkit-box-decoration-break:clone;box-decoration-break:clone;background:#FFFFFF}
-.a4in .bh{background:#2B3A5C;color:#FFFFFF;font-family:"IBM Plex Sans","Noto Sans TC","Noto Sans CJK TC",sans-serif;font-weight:700;font-size:6.8pt;padding:.45mm 1.4mm;break-after:avoid;line-height:1.3;border-radius:.7mm .7mm 0 0}
-.a4in .tg{display:inline-block;background:#FFFFFF;color:#2B3A5C;border-radius:.6mm;padding:0 1mm;margin-right:1.4mm;font-size:6pt;line-height:1.35}
-.a4in pre{font-family:"IBM Plex Mono","DejaVu Sans Mono",Consolas,"Noto Sans CJK TC",monospace;font-size:6pt;line-height:1.16;margin:0;padding:.7mm 1.4mm;white-space:pre-wrap;border:0;color:#111;break-inside:auto;background:#FFFFFF}
-.a4in pre.d{background:#EEF1F6;border-bottom:.2mm dashed #B7BECC}
-.a4in .pl{font-size:5.8pt;color:#5B6674;background:#F7F8FA;padding:.2mm 1.4mm;border-top:.2mm dashed #B7BECC}
-.a4in .cm{color:#6B7280}
-.a4in .lb{color:#123E9C;font-weight:700}
+.a4in .blk{border:.25mm solid #888888;border-radius:1mm;margin:0 0 1.6mm;-webkit-box-decoration-break:clone;box-decoration-break:clone;background:#FFFFFF}
+.a4in .bh{background:#111111;color:#FFFFFF;font-family:"IBM Plex Sans","Noto Sans TC","Noto Sans CJK TC",sans-serif;font-weight:700;font-size:6.8pt;padding:.45mm 1.4mm;break-after:avoid;line-height:1.3;border-radius:.7mm .7mm 0 0}
+.a4in .tg{display:inline-block;background:#FFFFFF;color:#111111;border-radius:.6mm;padding:0 1mm;margin-right:1.4mm;font-size:6pt;line-height:1.35}
+.a4in pre{tab-size:4;font-family:"IBM Plex Mono","DejaVu Sans Mono",Consolas,"Noto Sans CJK TC",monospace;font-size:6.5pt;line-height:1.15;margin:0;padding:.6mm 1.4mm;white-space:pre-wrap;border:0;color:#111;break-inside:auto;background:#FFFFFF}
+.a4in pre.d{background:#EFEFEF;border-bottom:.2mm dashed #AAAAAA}
+.a4in .pl{font-size:5.8pt;color:#444444;background:#F5F5F5;padding:.2mm 1.4mm;border-top:.2mm dashed #AAAAAA}
+.a4in .cm{color:#555555}
+.a4in .lb{color:#000000;font-weight:700}
 .a4in .note p{margin:0;padding:.6mm 1.4mm;font-size:6.3pt;line-height:1.3}
-.a4in .note p+p{border-top:.2mm dashed #C9CFDA}
-.a4in .warn .bh{background:#9B2C2C}
-.a4in .warn{border-color:#C9837F;background:#FFF5F4}
+.a4in .note p+p{border-top:.2mm dashed #BBBBBB}
+.a4in .warn .bh{background:#111111}
+.a4in .warn{border-color:#777777;background:#FFFFFF}
 .a4in b{font-weight:700}
+.a4in .cat{margin:0 0 1.8mm;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+.a4in .ch{background:var(--c);color:#FFFFFF;font-family:"IBM Plex Sans","Noto Sans TC","Noto Sans CJK TC",sans-serif;font-weight:700;font-size:8.2pt;padding:.6mm 1.6mm;border-radius:.8mm;break-after:avoid;display:flex;align-items:center;gap:1.4mm;margin-bottom:.8mm}
+.a4in .cn{display:inline-flex;align-items:center;justify-content:center;width:3.6mm;height:3.6mm;border-radius:50%;background:#FFFFFF;color:var(--c);font-size:6.4pt}
+.a4in .fi{border-left:.7mm solid var(--c);padding:0 0 0 1.4mm;margin:0 0 1.1mm .3mm;break-inside:avoid}
+.a4in .fi.big{break-inside:auto}
+.a4in .ft{font-family:"IBM Plex Sans","Noto Sans TC","Noto Sans CJK TC",sans-serif;font-weight:700;font-size:7.7pt;color:var(--c);line-height:1.3;margin-bottom:.2mm}
+.a4in .fi pre{background:#F0F0F0;padding:.5mm 1.1mm;border-radius:.6mm;margin-bottom:.3mm}
+.a4in .fi p{margin:0 0 .6mm;font-size:6.8pt;line-height:1.34}
+.a4in .fi pre+pre{margin-top:.6mm}
+
+/* ===== 手機版 ===== */
+@media (max-width:600px){
+  .wrap{padding-block:12px 24px}
+  header.top{gap:8px;margin-bottom:10px}
+  .brand h1{font-size:1.35rem}
+  .brand p{display:none}
+  .regs{flex-wrap:nowrap;overflow-x:auto;width:100%;scrollbar-width:none;font-size:.76rem}
+  .reg{padding:3px 8px;flex:none}
+  .tabs{margin-bottom:12px}
+  .tab{flex:1;padding:10px 4px;font-size:.95rem}
+  aside.units h3{display:none}
+  .unitlist{scrollbar-width:none;padding-bottom:2px}
+  .unit{min-width:0;width:auto;flex:none;display:flex;gap:6px;padding:7px 12px;border-radius:999px;white-space:nowrap}
+  .unit .bar,.unit .tag,.unit .sb{display:none}
+  .unit .nm{font-size:.86rem}
+  .drill{gap:10px}
+  .filters{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-bottom:10px;padding-bottom:2px}
+  .filters>*{flex:none}
+  .filters .spacer{display:none}
+  .chip{padding:6px 12px}
+  .howto{display:none}
+  .card{padding:14px 12px;gap:12px;border-radius:12px}
+  .card h2{font-size:1.1rem}
+  .codebox{font-size:14px;line-height:1.95;padding:10px 10px;white-space:pre-wrap;overflow-wrap:anywhere;tab-size:2}
+  .blank{font-size:16px;padding:2px 6px;min-width:4em;max-width:100%;border-radius:6px}
+  .actions{position:sticky;bottom:0;z-index:5;margin:0 -12px;padding:8px 12px calc(8px + env(safe-area-inset-bottom,0px));background:var(--surface);border-top:1px solid var(--line);flex-wrap:nowrap;gap:6px}
+  .actions .spacer{display:none}
+  .actions .btn{padding:11px 8px;font-size:.92rem;flex:1;white-space:nowrap}
+  .actions #check{flex:1.6}
+  .actions .lg{display:none}
+  .nav{flex-wrap:nowrap}
+  .dots{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding:4px 2px}
+  .dot{width:20px;height:20px;flex:none}
+  .explain{font-size:.95rem}
+  .explain pre{font-size:13px}
+  .exam-bar{font-size:.86rem}
+}
 @media (prefers-reduced-motion:no-preference){.card,.panel{transition:border-color .15s}}
 </style>
 
@@ -239,254 +286,112 @@ ol.steps li.done .st{text-decoration:line-through;color:var(--muted)}
     </div>
     <div id="sheetroot"><section class="a4" data-page="1">
 <div class="a4in" contenteditable="true" spellcheck="false" id="sheet-1">
-<div class="sh-title"><span>組合語言 上機大抄</span><span class="sh-sub">正面：模板＋作業 1–3＋小考</span></div>
-<div class="blk"><div class="bh"><span class="tg">模板</span>通用模板（每行寫 C／STDCALL，.model 寫哪個都能跑）</div><pre class="d">.386
+<div class="sh-title"><span>組合語言 上機大抄</span><span class="sh-sub">正面　1 輸入輸出 · 2 運算 · 3 判斷 · 4 亂數 · 5 迴圈 · 6 陣列 · 7 字串 · 8 程序 · 9 作業</span></div>
+<div class="cat" style="--c:#111111"><div class="ch"><span class="cn">★</span>通用模板（直接抄）</div><div class="fi big"><pre>.386
 .model flat, c
-option casemap:none
 includelib kernel32.lib
 includelib msvcrt.lib
 includelib legacy_stdio_definitions.lib
 includelib ucrt.lib
-ExitProcess PROTO STDCALL :DWORD
-SetConsoleOutputCP PROTO STDCALL :DWORD
-printf PROTO C :VARARG
-scanf  PROTO C :VARARG
-time   PROTO C :DWORD
-srand  PROTO C :DWORD
-rand   PROTO C
-system PROTO C :VARARG
-.data
-n         dword ?
-formatIn  byte &quot;%d&quot;, 0
-formatOut byte &quot;%d&quot;, 0Ah, 0 <span class="cm">; 0Ah 換行</span>
-msgPause  byte &quot;pause&quot;, 0</pre><pre class="c">.code
-main PROC C
-  INVOKE SetConsoleOutputCP, 65001 <span class="cm">; 中文</span>
-  INVOKE scanf, OFFSET formatIn, OFFSET n <span class="cm">; 位址</span>
-  INVOKE printf, OFFSET formatOut, n <span class="cm">; 值</span>
-  INVOKE system, ADDR msgPause <span class="cm">; 停住</span>
-  INVOKE ExitProcess, 0
-main ENDP
-<span class="cm">; 自己的 PROC 寫這裡</span>
-END main</pre></div>
-<div class="blk note"><div class="bh"><span class="tg">上機</span>VS 流程與錯誤</div><p>空白專案（英文路徑）→ 專案右鍵「建置相依性 → 建置自訂」勾 <b>masm</b> → 平台 <b>x86</b> → 加入 main.asm → Ctrl+Shift+B → <b>Ctrl+F5</b></p><p><b>A1000</b> 中文路徑 · <b>LNK2019</b> 少 lib · <b>A2006</b> 拼錯／少 PROTO · <b>A2008/A2151</b> 撞保留字（name size type nop outs）· <b>A2070</b> mem,mem／大小不合 · x64 改 x86</p></div>
-<div class="blk"><div class="bh"><span class="tg">工具</span>push/call、程序範本、常用片段</div><pre class="c">push n                   <span class="cm">; = INVOKE printf,f,n</span>
-push OFFSET f            <span class="cm">; 由右至左 push</span>
-call printf
-add esp, 8               <span class="cm">; C：個數×4</span>
-F PROC STDCALL x:DWORD, y:DWORD
-  mov eax, x             <span class="cm">; 回傳值放 eax</span>
-  ret                    <span class="cm">; 自動 ret 8</span>
-F ENDP                   <span class="cm">; push y/push x/call F</span>
-G PROC C x:DWORD         <span class="cm">; 呼叫後 add esp,4</span>
-<span class="cm">; 有號 jg jge jl jle｜無號/字元 ja jae jb jbe</span>
-<span class="cm">; 除法 xor edx,edx / div ecx → 商 eax 餘 edx</span>
-<span class="cm">; 亂數 a~b：rand / div (b-a+1) / add edx, a</span>
-<span class="cm">; 奇偶 test eax,1 / jz｜大小寫 or 20h / and 0DFh</span></pre></div>
-<div class="blk"><div class="bh"><span class="tg">作業1</span>Q1–Q5 高階語言轉組語</div><pre class="d">i    dword 123
-j    dword ?
-a    dword 1
-b    dword 1
-res  dword ?
-x    dword 2
-y    dword 1
-r2   dword ?
-vals dword 2, 4, 6, 8
-resx dword ?</pre><pre class="c"><span class="cm">; Q1  j = i; i++; j--;</span>
- mov eax, i
- mov j, eax              <span class="cm">; mem,mem 不行，經過 eax</span>
- inc i
- dec j
-<span class="cm">; Q2  res = ++a - b; b--;</span>
- inc a
- mov eax, a
- sub eax, b
- mov res, eax
- dec b
-<span class="cm">; Q3  r2 = (y*4 + x + 1) * 2（不用乘法）</span>
- mov eax, y
- shl eax, 2              <span class="cm">; ×4</span>
- add eax, x
- inc eax
- shl eax, 1              <span class="cm">; ×2</span>
- mov r2, eax
-<span class="cm">; Q5  resx = vals[0]+…+vals[3]</span>
- mov eax, vals[0]
- add eax, vals[4]        <span class="cm">; DWORD 一格 4</span>
- add eax, vals[8]
- add eax, vals[12]
- mov resx, eax</pre></div>
-<div class="blk"><div class="bh"><span class="tg">作業2</span>Q1　a1[i] += i，再 loop 加總</div><pre class="d">a1 dword 10,20,30,40,50,60,70,80,90,100
-sumResult dword ?</pre><pre class="c">  mov ecx, LENGTHOF a1
-  mov esi, 0             <span class="cm">; esi = 索引</span>
-<b class="lb">L1:</b> mov eax, a1[esi*4]
-  add eax, esi
-  mov a1[esi*4], eax     <span class="cm">; a1[i] += i</span>
-  inc esi
-  loop L1
-  mov ecx, LENGTHOF a1
-  mov esi, 0
-  mov eax, 0
-<b class="lb">L2:</b> add eax, a1[esi*4]
-  inc esi
-  loop L2
-  mov sumResult, eax</pre></div>
-<div class="blk"><div class="bh"><span class="tg">作業2</span>Q2　16 位元最大／最小值與 OF</div><pre class="d">OF_1 dword ?
-OF_2 dword ?</pre><pre class="c">  mov ax, 7FFFh          <span class="cm">; 最大正數 +32767</span>
-  add ax, 1              <span class="cm">; 溢位</span>
-  pushfd                 <span class="cm">; 旗標推進堆疊</span>
-  pop eax
-  and eax, 0800h         <span class="cm">; 只留 OF (bit 11)</span>
-  mov OF_1, eax          <span class="cm">; 800h = OF 是 1</span>
-  mov bx, 8000h          <span class="cm">; 最小負數 -32768</span>
-  sub bx, 1
-  pushfd
-  pop eax
-  and eax, 0800h
-  mov OF_2, eax</pre></div>
-<div class="blk"><div class="bh"><span class="tg">作業2</span>Q4　兩陣列相加，再向左旋轉</div><pre class="d">arr1 dword 1, 2, 3, 4
-arr2 dword 10, 20, 30, 40
-arr3 dword 4 DUP(?)
-ARRAY_SIZE = LENGTHOF arr1</pre><pre class="c">  mov ecx, ARRAY_SIZE
-  mov esi, 0             <span class="cm">; esi = 位元組位移</span>
-<b class="lb">add_loop:</b>
-  mov eax, arr1[esi]
-  add eax, arr2[esi]
-  mov arr3[esi], eax
-  add esi, 4
-  loop add_loop
-  mov edx, arr3[0]       <span class="cm">; 備份第一個</span>
-  mov ecx, ARRAY_SIZE - 1
-  mov esi, 0
-<b class="lb">rotate_loop:</b>
-  mov eax, arr3[esi + 4] <span class="cm">; 拿右邊鄰居</span>
-  mov arr3[esi], eax
-  add esi, 4
-  loop rotate_loop
-  mov arr3[esi], edx     <span class="cm">; 第一個放最後</span></pre></div>
-<div class="blk"><div class="bh"><span class="tg">作業2</span>Q5　費氏數列前 11 項</div><pre class="d">fib dword 11 DUP(?)</pre><pre class="c">  mov fib[0], 1
-  mov fib[4], 1
-  mov ecx, 9             <span class="cm">; 還要算 9 項</span>
-  mov esi, 8             <span class="cm">; 從 fib[2] 開始</span>
-<b class="lb">fib_loop:</b>
-  mov eax, fib[esi - 4]
-  add eax, fib[esi - 8]
-  mov fib[esi], eax      <span class="cm">; f[i]=f[i-1]+f[i-2]</span>
-  add esi, 4
-  loop fib_loop</pre></div>
-<div class="blk"><div class="bh"><span class="tg">小考</span>ArraySum 程序（11/2）＋ STDCALL 程序（10/19）</div><pre class="d">arrS DWORD 10000h,20000h,3000h,400000h,50000h
-fmt5 BYTE &quot;%d is a multiple of 5&quot;,10,0</pre><pre class="c">  mov esi, OFFSET arrS   <span class="cm">; 用暫存器傳參數</span>
-  mov ecx, LENGTHOF arrS
-  call ArraySum          <span class="cm">; 結果在 eax</span>
-  push 25
-  call p_div5            <span class="cm">; stdcall：不用 add esp</span></pre><div class="pl">程序：寫在 main ENDP 之後</div><pre class="c">ArraySum PROC
-  push esi
-  push ecx
-  mov eax, 0
-<b class="lb">AS1:</b> add eax, [esi]      <span class="cm">; esi 是位址，不 ×4</span>
-  add esi, TYPE DWORD
-  loop AS1
-  pop ecx                <span class="cm">; 反順序 pop</span>
-  pop esi
-  ret
-ArraySum ENDP
-p_div5 PROC STDCALL nn:DWORD
-  mov eax, nn            <span class="cm">; = [ebp+8]</span>
-  xor edx, edx
-  mov ecx, 5
-  div ecx
-  cmp edx, 0             <span class="cm">; 餘數</span>
-  jne over1
-  INVOKE printf, OFFSET fmt5, nn
-<b class="lb">over1:</b> ret               <span class="cm">; 自動 ret 4</span>
-p_div5 ENDP</pre></div>
-<div class="blk"><div class="bh"><span class="tg">作業3</span>Q1　n+…+5+3+1</div><pre class="d">n dword ?
-sumResult3 dword ?
-formatIn byte &quot;%d&quot;, 0
-formatOut byte &quot;%d&quot;, 0Ah, 0</pre><pre class="c">  INVOKE scanf, OFFSET formatIn, OFFSET n
-  mov eax, 0
-  mov ecx, n
-<b class="lb">odd_sum_loop:</b>
-  add eax, ecx
-  sub ecx, 2
-  cmp ecx, 0
-  jg odd_sum_loop
-  mov sumResult3, eax
-  INVOKE printf, OFFSET formatOut, sumResult3</pre></div>
-<div class="blk"><div class="bh"><span class="tg">作業3</span>Q2　1*1+…+n*n（巢狀、不用乘法）</div><pre class="d">sumSq dword 0</pre><pre class="c">  INVOKE scanf, OFFSET formatIn, OFFSET n
-  mov ecx, n
-  mov ebx, 1
-<b class="lb">outer_loop:</b>
-  push ecx               <span class="cm">; 存外圈 ecx</span>
-  mov ecx, ebx           <span class="cm">; 內圈跑 ebx 次</span>
-  mov edx, 0
-<b class="lb">inner_loop:</b>
-  add edx, ebx           <span class="cm">; ebx 加 ebx 次</span>
-  loop inner_loop
-  add sumSq, edx
-  inc ebx
-  pop ecx                <span class="cm">; 還原外圈</span>
-  loop outer_loop
-  INVOKE printf, OFFSET formatOut, sumSq</pre></div>
-<div class="blk"><div class="bh"><span class="tg">作業3</span>Q3　質數判斷</div><pre class="d">msgPrime byte &quot;Prime&quot;, 0Ah, 0
-msgNotPrime byte &quot;Not Prime&quot;, 0Ah, 0</pre><pre class="c">  INVOKE scanf, OFFSET formatIn, OFFSET n
-  cmp n, 1
-  jle not_prime_label
-  cmp n, 2
-  je is_prime_label
-  mov ebx, 2
-<b class="lb">check_loop:</b>
-  mov eax, n
-  mov edx, 0             <span class="cm">; 除法前清 edx</span>
-  div ebx
-  cmp edx, 0             <span class="cm">; 餘數 0 → 整除</span>
-  je not_prime_label
-  inc ebx
-  cmp ebx, n
-  jl check_loop
-<b class="lb">is_prime_label:</b>
-  INVOKE printf, OFFSET msgPrime
-  jmp end_program
-<b class="lb">not_prime_label:</b>
-  INVOKE printf, OFFSET msgNotPrime
-<b class="lb">end_program:</b></pre></div>
-<div class="blk"><div class="bh"><span class="tg">作業3</span>Q4　大小寫互換 abCD→ABcd</div><pre class="d">strBuf byte 100 DUP(0)
-formatS byte &quot;%s&quot;, 0
-formatOutS byte &quot;%s&quot;, 0Ah, 0</pre><pre class="c">  INVOKE scanf, OFFSET formatS, OFFSET strBuf
-  mov esi, OFFSET strBuf
-<b class="lb">convert_loop:</b>
-  mov al, [esi]
-  cmp al, 0
-  je print_result        <span class="cm">; 字串結尾</span>
-  cmp al, &#x27;A&#x27;
-  jb next_char           <span class="cm">; 字元用 jb/ja 較正確</span>
-  cmp al, &#x27;Z&#x27;
-  jbe to_lower
-  cmp al, &#x27;a&#x27;
-  jb next_char
-  cmp al, &#x27;z&#x27;
-  jbe to_upper
-  jmp next_char
-<b class="lb">to_lower:</b>
-  add al, 20h
-  jmp store_char
-<b class="lb">to_upper:</b>
-  sub al, 20h
-<b class="lb">store_char:</b>
-  mov [esi], al
-<b class="lb">next_char:</b>
-  inc esi
-  jmp convert_loop
-<b class="lb">print_result:</b>
-  INVOKE printf, OFFSET formatOutS, OFFSET strBuf</pre></div>
-<div class="blk note warn"><div class="bh"><span class="tg">必看</span>寫完檢查</div><p>call 會弄壞 eax ecx edx · loop 用 ecx · mem,mem 不行 · ADDR 只在 INVOKE · esi 是位址→[esi]，是索引→arr[esi*4] · 除法前清 edx · 每個分支都 jmp · push/pop 成對 · 最後 ExitProcess</p></div>
-</div>
-</section>
+ExitProcess proto stdcall :dword
+SetConsoleOutputCP proto stdcall :dword
+printf proto c :vararg
+scanf proto c :vararg
+time proto c :vararg
+srand proto c :vararg
+rand proto c
+system proto c :vararg
 
-<section class="a4" data-page="2">
-<div class="a4in" contenteditable="true" spellcheck="false" id="sheet-2">
-<div class="sh-title"><span>組合語言 上機大抄</span><span class="sh-sub">背面：作業 4＋小考與範例（全部實測可跑）</span></div>
-<div class="blk"><div class="bh"><span class="tg">作業4-1</span>猜數字（重玩、0／-1 結束）</div><pre class="d">cnt dword 1
+.data
+arr dword 45,12,89,3,27,66,14,90,55,8
+
+ansMsg	byte &quot;sum = %d, max = %d, avg = %d&quot;, 10, 0
+
+.code
+main proc c
+	invoke SetConsoleOutputCP, 65001
+
+	mov ecx, lengthof arr
+	mov esi, offset arr
+	mov eax, [esi + ecx*4-4]
+
+	invoke ExitProcess, 0
+main ENDP
+
+END main</pre></div></div><div class="cat" style="--c:#111111"><div class="ch"><span class="cn">0</span>開專案、錯誤</div><div class="fi"><p>空白專案（英文路徑）→ 專案右鍵「建置相依性 → 建置自訂」勾 <b>masm</b> → 平台 <b>x86</b> → 加入 main.asm → main.asm 右鍵「屬性 → 一般 → <b>項目類型</b>」改成 <b>Microsoft Macro Assembler</b> → Ctrl+Shift+B → <b>Ctrl+F5</b></p><p><b>0 錯誤卻沒 exe</b>：項目類型沒改 · <b>A1000</b> 中文路徑 · <b>LNK2019</b> 少 lib · <b>A2006</b> 拼錯／沒宣告／少 PROTO · <b>A2008/A2151</b> 撞保留字（name size type nop outs）· <b>A2070</b> mem,mem、大小不合、<code>div 2</code> 直接接數字 · x64 改 x86</p></div></div><div class="cat" style="--c:#111111"><div class="ch"><span class="cn">1</span>輸入輸出</div><div class="fi"><div class="ft">讀一個整數 → n</div><pre>invoke scanf, addr fmtD, addr n <span class="cm">; 給位址</span></pre></div><div class="fi"><div class="ft">一次讀兩個整數（空白隔開）</div><pre>invoke scanf, addr fmt2, addr a, addr b</pre></div><div class="fi"><div class="ft">讀字串（不含空白）→ buf</div><pre>invoke scanf, addr fmtS, addr buf</pre></div><div class="fi"><div class="ft">印整數</div><pre>invoke printf, addr msg, n <span class="cm">; 給值</span></pre></div><div class="fi"><div class="ft">一次印多個值</div><pre>invoke printf, addr msg2, a, b</pre></div><div class="fi"><div class="ft">印字串</div><pre><span class="cm">; %s 給位址</span>
+invoke printf, addr fmtL, addr buf
+invoke printf, addr hello</pre></div><div class="fi"><div class="ft">印暫存器的值</div><pre>invoke printf, addr msg, eax</pre></div><div class="fi"><div class="ft">格式碼、換行</div><pre><span class="cm">; %d 整數  %u 無號  %x 16進位</span>
+<span class="cm">; %c 字元  %s 字串</span>
+<span class="cm">; 字串後加 10（或 0Ah）= 換行</span>
+<span class="cm">; 最後一定要 0 結尾</span></pre></div><div class="fi"><div class="ft">不用 INVOKE（push/call）</div><pre>push n              <span class="cm">; 參數由右至左推</span>
+push offset msg
+call printf
+add esp, 8          <span class="cm">; C：參數個數×4</span></pre></div><div class="fi"><div class="ft">視窗停住 / 中文</div><pre>invoke system, addr pz <span class="cm">; pz byte &quot;pause&quot;,0</span>
+invoke SetConsoleOutputCP, 65001</pre></div></div><div class="cat" style="--c:#111111"><div class="ch"><span class="cn">2</span>運算</div><div class="fi"><div class="ft">x = a（記憶體到記憶體）</div><pre>mov eax, a          <span class="cm">; mem,mem 不行</span>
+mov x, eax</pre></div><div class="fi"><div class="ft">++ / -- / 清 0</div><pre>inc n
+dec n
+xor eax, eax        <span class="cm">; eax = 0</span></pre></div><div class="fi"><div class="ft">加、減</div><pre>mov eax, a
+add eax, b          <span class="cm">; eax = a + b</span>
+sub eax, b          <span class="cm">; eax = eax - b</span></pre></div><div class="fi"><div class="ft">乘法</div><pre>mov eax, a
+imul eax, b         <span class="cm">; 有號 eax = eax×b</span>
+imul eax, b, 5      <span class="cm">; eax = b×5</span>
+mov eax, a
+mul b               <span class="cm">; 無號 edx:eax = eax×b</span></pre></div><div class="fi"><div class="ft">除法、餘數</div><pre>mov eax, a          <span class="cm">; 被除數</span>
+xor edx, edx        <span class="cm">; 有號改用 cdq</span>
+mov ecx, 3          <span class="cm">; 除數放暫存器</span>
+div ecx             <span class="cm">; 有號用 idiv</span>
+<span class="cm">; 商 → eax，餘數 → edx</span></pre></div><div class="fi"><div class="ft">×2ⁿ、÷2ⁿ（不用乘除）</div><pre>shl eax, 3          <span class="cm">; ×8</span>
+shr eax, 1          <span class="cm">; ÷2（無號）</span>
+add eax, eax        <span class="cm">; ×2</span></pre></div><div class="fi"><div class="ft">變負號、交換</div><pre>neg eax             <span class="cm">; eax = -eax</span>
+xchg eax, ebx       <span class="cm">; 交換</span></pre></div></div><div class="cat" style="--c:#111111"><div class="ch"><span class="cn">3</span>判斷</div><div class="fi"><div class="ft">if / else 骨架</div><pre>mov eax, a
+cmp eax, b
+jg  ifBig           <span class="cm">; a &gt; b 跳過去</span>
+<span class="cm">  ; …else 的事…</span>
+  jmp ifEnd         <span class="cm">; 一定要跳過 if 區塊</span>
+<b class="lb">ifBig:</b>
+<span class="cm">  ; …if 的事…</span>
+<b class="lb">ifEnd:</b></pre></div><div class="fi"><div class="ft">跳躍指令對照</div><pre><span class="cm">; 有號  &gt;  jg   &gt;= jge   &lt;  jl   &lt;= jle</span>
+<span class="cm">; 無號/字元  ja   jae   jb   jbe</span>
+<span class="cm">; ==  je(jz)   !=  jne(jnz)</span></pre></div><div class="fi"><div class="ft">範圍判斷（&#x27;A&#x27;~&#x27;Z&#x27;）</div><pre>mov al, &#x27;Q&#x27;
+cmp al, &#x27;A&#x27;
+jb  notIn           <span class="cm">; 字元用 jb/ja</span>
+cmp al, &#x27;Z&#x27;
+ja  notIn
+<span class="cm">  ; …在範圍內…</span>
+<b class="lb">notIn:</b></pre></div><div class="fi"><div class="ft">奇偶</div><pre>mov eax, n
+test eax, 1
+jz  isEven          <span class="cm">; 最低位 0 → 偶數</span>
+<b class="lb">isEven:</b></pre></div><div class="fi"><div class="ft">是否為 k 的倍數</div><pre>mov eax, n
+xor edx, edx
+mov ecx, 5
+div ecx
+cmp edx, 0
+je  isMul           <span class="cm">; 餘數 0 → 是倍數</span>
+<b class="lb">isMul:</b></pre></div><div class="fi"><div class="ft">多路分支（switch）</div><pre>cmp n, 0
+je  c0
+cmp n, 1
+je  c1
+<span class="cm">  ; …其他…</span>
+  jmp sEnd
+<b class="lb">c0:</b>                 <span class="cm">; …case 0…</span>
+  jmp sEnd
+<b class="lb">c1:</b>                 <span class="cm">; …case 1…</span>
+<b class="lb">sEnd:</b></pre></div><div class="fi"><div class="ft">三數最大值放 ax</div><pre>mov ax, 7
+mov bx, 42
+mov cx, 15
+cmp ax, bx
+jge m1
+xchg ax, bx
+<b class="lb">m1:</b> cmp ax, cx
+jge m2
+xchg ax, cx
+<b class="lb">m2:</b></pre></div></div><div class="cat" style="--c:#111111"><div class="ch"><span class="cn">4</span>亂數</div><div class="fi"><div class="ft">a ~ b 的亂數 → edx</div><pre>invoke time, 0
+invoke srand, eax   <span class="cm">; 洗牌：只做一次</span>
+invoke rand         <span class="cm">; 結果 → eax</span>
+xor edx, edx
+mov ecx, 96         <span class="cm">; 個數 = b-a+1（3~98）</span>
+div ecx
+add edx, 3          <span class="cm">; + a</span></pre></div></div><div class="cat" style="--c:#111111"><div class="ch"><span class="cn">9</span>作業／小考完整程式</div><div class="fi big"><div class="ft">作業4-1 猜數字（重玩、0/-1 結束）</div><pre>cnt dword 1
 mxR dword ?
 tar dword ?
 guess dword ?
@@ -495,8 +400,10 @@ askGuess BYTE &quot;guess: &quot;, 0
 showCnt  BYTE &quot;correct! %d times&quot;, 10, 0
 gameOver BYTE &quot;game over&quot;, 10, 0
 showBig  BYTE &quot;too big&quot;, 10, 0
-showSmol BYTE &quot;too small&quot;, 10, 0</pre><pre class="c">  INVOKE time, 0
-  INVOKE srand, eax      <span class="cm">; 洗牌一次</span>
+showSmol BYTE &quot;too small&quot;, 10, 0
+<span class="cm">; ---- .code ----</span>
+  INVOKE time, 0
+  INVOKE srand, eax <span class="cm">; 洗牌一次</span>
 <b class="lb">while_loop:</b>
   INVOKE printf, ADDR askLimit
   INVOKE scanf, ADDR formatIn, ADDR mxR
@@ -506,10 +413,10 @@ showSmol BYTE &quot;too small&quot;, 10, 0</pre><pre class="c">  INVOKE time, 0
   je game_over
   call rand
   xor edx, edx
-  div mxR                <span class="cm">; 餘數 0~mxR-1</span>
+  div mxR           <span class="cm">; 餘數 0~mxR-1</span>
   inc edx
   mov tar, edx
-  mov cnt, 1             <span class="cm">; 每局重設</span>
+  mov cnt, 1        <span class="cm">; 每局重設</span>
 <b class="lb">guess_loop:</b>
   INVOKE printf, ADDR askGuess
   INVOKE scanf, ADDR formatIn, ADDR guess
@@ -524,7 +431,7 @@ showSmol BYTE &quot;too small&quot;, 10, 0</pre><pre class="c">  INVOKE time, 0
   jg find_greater
 <b class="lb">find_same:</b>
   INVOKE printf, ADDR showCnt, cnt
-  jmp while_loop         <span class="cm">; 重玩</span>
+  jmp while_loop    <span class="cm">; 重玩</span>
 <b class="lb">find_less:</b>
   INVOKE printf, ADDR showSmol
   inc cnt
@@ -534,77 +441,157 @@ showSmol BYTE &quot;too small&quot;, 10, 0</pre><pre class="c">  INVOKE time, 0
   inc cnt
   jmp guess_loop
 <b class="lb">game_over:</b>
-  INVOKE printf, ADDR gameOver</pre></div>
-<div class="blk"><div class="bh"><span class="tg">作業4-2</span>核心：出題、四路分支、記錄錯題、等第</div><pre class="d">mnR dword 1
-num dword 1
-cntQ dword 1
-op dword 1
+  INVOKE printf, ADDR gameOver</pre></div><div class="fi"><div class="ft">11/2 ArraySum（暫存器傳參數）</div><pre>arrS DWORD 10000h,20000h,3000h
+<span class="cm">; ---- .code ----</span>
+  mov esi, OFFSET arrS
+  mov ecx, LENGTHOF arrS
+  call ArraySum     <span class="cm">; 結果在 eax</span>
+<span class="cm">; ---- main ENDP 之後 ----</span>
+ArraySum PROC
+  push esi
+  push ecx
+  mov eax, 0
+<b class="lb">AS1:</b> add eax, [esi] <span class="cm">; esi 是位址，不 ×4</span>
+  add esi, TYPE DWORD
+  loop AS1
+  pop ecx           <span class="cm">; 反順序 pop</span>
+  pop esi
+  ret
+ArraySum ENDP</pre></div></div>
+</div>
+</section>
+
+<section class="a4" data-page="2">
+<div class="a4in" contenteditable="true" spellcheck="false" id="sheet-2">
+<div class="sh-title"><span>組合語言 上機大抄</span><span class="sh-sub">背面　1 輸入輸出 · 2 運算 · 3 判斷 · 4 亂數 · 5 迴圈 · 6 陣列 · 7 字串 · 8 程序 · 9 作業</span></div>
+<div class="cat" style="--c:#111111"><div class="ch"><span class="cn">5</span>迴圈</div><div class="fi"><div class="ft">跑 n 次（loop）</div><pre>mov n, 4
+mov ecx, n          <span class="cm">; 只能用 ecx，不能是 0</span>
+xor eax, eax
+<b class="lb">L1:</b>                 <span class="cm">; 開頭：標籤（有冒號）</span>
+  add eax, ecx
+  loop L1           <span class="cm">; 結尾：ecx-1，≠0 跳回</span></pre></div><div class="fi"><div class="ft">i 從 1 到 n（while）</div><pre>mov ebx, 1          <span class="cm">; i</span>
+<b class="lb">W1:</b> cmp ebx, n
+jg  W1end           <span class="cm">; i &gt; n 結束</span>
+<span class="cm">  ; …用 ebx 做事…</span>
+  inc ebx
+  jmp W1
+<b class="lb">W1end:</b></pre></div><div class="fi"><div class="ft">倒數、每次 -2</div><pre>mov ecx, 7
+<b class="lb">D1:</b>                 <span class="cm">; …用 ecx…</span>
+sub ecx, 2
+cmp ecx, 0
+jg  D1</pre></div><div class="fi"><div class="ft">巢狀迴圈（兩層都用 ecx）</div><pre>mov ecx, 3
+<b class="lb">O1:</b> push ecx        <span class="cm">; 存外圈</span>
+  mov ecx, 2
+<b class="lb">I1:</b>                 <span class="cm">; …內圈…</span>
+  loop I1
+  pop ecx           <span class="cm">; 還原外圈</span>
+  loop O1</pre></div></div><div class="cat" style="--c:#111111"><div class="ch"><span class="cn">6</span>陣列</div><div class="fi"><div class="ft">宣告</div><pre>arr  dword 5, 3, 9, 1 <span class="cm">; 有初值</span>
+arr2 dword 4 DUP(?) <span class="cm">; 4 格空的</span>
+buf  byte 100 DUP(0) <span class="cm">; 字串空間</span>
+<span class="cm">; LENGTHOF 個數  SIZEOF 位元組數</span>
+<span class="cm">; TYPE 一格大小</span></pre></div><div class="fi"><div class="ft">取 / 存第 i 個（i 在 esi）</div><pre>mov esi, 2
+<span class="cm">; dword×4 word×2 byte×1</span>
+mov eax, arr[esi*4]
+mov arr2[esi*4], eax
+mov eax, arr[8]     <span class="cm">; 直接寫位元組位移</span></pre></div><div class="fi"><div class="ft">加總（esi 當索引）</div><pre>mov ecx, LENGTHOF arr
+mov esi, 0
+xor eax, eax
+<b class="lb">S1:</b> add eax, arr[esi*4]
+  inc esi
+  loop S1</pre></div><div class="fi"><div class="ft">加總（esi 當位址）</div><pre>mov esi, offset arr
+mov ecx, LENGTHOF arr
+xor eax, eax
+<b class="lb">S2:</b> add eax, [esi]  <span class="cm">; 不再 ×4</span>
+  add esi, 4
+  loop S2</pre></div><div class="fi"><div class="ft">找最大值</div><pre>mov esi, 0
+mov ecx, LENGTHOF arr
+mov eax, arr[0]
+<b class="lb">X1:</b> cmp arr[esi*4], eax
+  jle X2            <span class="cm">; 無號用 jbe</span>
+  mov eax, arr[esi*4]
+<b class="lb">X2:</b> inc esi
+  loop X1</pre></div><div class="fi"><div class="ft">兩陣列相加 arr2[i] = arr[i] + arr[i]</div><pre>mov esi, 0
+mov ecx, LENGTHOF arr
+<b class="lb">P1:</b> mov eax, arr[esi*4]
+  add eax, arr[esi*4]
+  mov arr2[esi*4], eax
+  inc esi
+  loop P1</pre></div><div class="fi"><div class="ft">向左旋轉一格</div><pre>mov edx, arr[0]     <span class="cm">; 備份第一個</span>
+mov esi, 0
+mov ecx, LENGTHOF arr - 1
+<b class="lb">R1:</b> mov eax, arr[esi*4+4]
+  mov arr[esi*4], eax
+  inc esi
+  loop R1
+mov arr[esi*4], edx <span class="cm">; 放最後</span></pre></div></div><div class="cat" style="--c:#111111"><div class="ch"><span class="cn">7</span>字串</div><div class="fi"><div class="ft">逐字走訪到結尾 0</div><pre>mov esi, offset buf
+<b class="lb">T1:</b> mov al, [esi]
+  cmp al, 0
+  je  T2
+<span class="cm">  ; …處理 al，改完 mov [esi], al…</span>
+  inc esi
+  jmp T1
+<b class="lb">T2:</b></pre></div><div class="fi"><div class="ft">大小寫轉換（al）</div><pre>or  al, 20h         <span class="cm">; 大→小（add al, 20h）</span>
+and al, 0DFh        <span class="cm">; 小→大（sub al, 20h）</span>
+xor al, 20h         <span class="cm">; 互換</span></pre></div><div class="fi"><div class="ft">字串長度</div><pre>invoke strlen, addr buf <span class="cm">; 長度 → eax</span></pre></div><div class="fi"><div class="ft">比對兩字串</div><pre>mov esi, offset buf
+mov edi, offset buf
+mov ecx, 5
+cld
+repe cmpsb
+je  same            <span class="cm">; 全部一樣</span>
+<b class="lb">same:</b></pre></div></div><div class="cat" style="--c:#111111"><div class="ch"><span class="cn">8</span>程序（副程式）</div><div class="fi"><div class="ft">STDCALL：定義與呼叫</div><pre><span class="cm">; 寫在 main ENDP 之後</span>
+F PROC STDCALL p:DWORD, q:DWORD
+  mov eax, p        <span class="cm">; p=[ebp+8] q=[ebp+12]</span>
+  add eax, q        <span class="cm">; 回傳值放 eax</span>
+  ret               <span class="cm">; 自動 ret 8</span>
+F ENDP
+<span class="cm">; 呼叫：push q / push p / call F</span>
+<span class="cm">;      （stdcall 不用 add esp）</span>
+<span class="cm">; 或 invoke F, 3, 4，但要先寫：</span>
+<span class="cm">; F PROTO STDCALL :DWORD, :DWORD</span></pre></div><div class="fi"><div class="ft">C 慣例：定義與呼叫</div><pre>G PROC C p:DWORD
+  mov eax, p
+  ret
+G ENDP
+<span class="cm">; 呼叫：push 5 / call G / add esp, 4</span></pre></div><div class="fi"><div class="ft">讀 OF 旗標</div><pre>pushfd
+pop eax
+and eax, 0800h      <span class="cm">; ≠0 代表 OF=1</span></pre></div></div><div class="cat" style="--c:#111111"><div class="ch"><span class="cn">!</span>寫完檢查</div><div class="fi"><p>scanf 給 <b>addr</b>、printf 數字給值 · call 會弄壞 eax ecx edx · loop 只用 ecx · mem,mem 不行 · div/mul 不接數字 · 除法前清 edx · 每個分支結尾都 jmp · push/pop 成對、順序相反 · stdcall 不 add esp、C 要 · 最後 ExitProcess</p></div></div><div class="cat" style="--c:#111111"><div class="ch"><span class="cn">9</span>作業／小考完整程式（續）</div><div class="fi big"><div class="ft">作業4-2 核心：四路分支、記錄錯題、分數</div><pre>op dword ?
 numA dword ?
 numB dword ?
 ans dword ?
 ansInput dword ?
+cntQ dword 1
 correct dword 0
 wrong dword 0
 wCnt dword 4 DUP(0)
 wA dword 50 DUP(0)
-score dword 0
 fmtAdd BYTE &quot;%d) %d + %d = &quot;, 0
 fmtSub BYTE &quot;%d) %d - %d = &quot;, 0
 fmtMul BYTE &quot;%d) %d * %d = &quot;, 0
 fmtDiv BYTE &quot;%d) %d / %d = &quot;, 0
-qFmt dword OFFSET fmtAdd, OFFSET fmtSub, OFFSET fmtMul, OFFSET fmtDiv
-gradeA BYTE &quot;A&quot;,0
-gradeB BYTE &quot;B&quot;,0
-gradePass BYTE &quot;PASS&quot;,0
-gradeFail BYTE &quot;FAIL&quot;,0
-msgRes BYTE &quot;score %d %s&quot;,10,0</pre><pre class="c"><span class="cm">  ; mxR、mnR、num 先用 scanf 讀入</span>
-<b class="lb">q_loop:</b>
-  mov eax, cntQ
-  cmp eax, num
-  jg q_end
-  call rand              <span class="cm">; op = rand % 4</span>
-  xor edx, edx
-  mov ecx, 4
-  div ecx
-  mov op, edx
-  call rand              <span class="cm">; numA = mnR ~ mxR</span>
-  mov ecx, mxR
-  sub ecx, mnR
-  inc ecx
-  xor edx, edx
-  div ecx
-  add edx, mnR
-  mov numA, edx
-  mov numB, 3            <span class="cm">; (numB 同上產生)</span>
+qFmt dword OFFSET fmtAdd, OFFSET fmtSub
+     dword OFFSET fmtMul, OFFSET fmtDiv
+<span class="cm">; ---- .code ----</span>
+<span class="cm">; op = rand%4、numA/numB 用 ⑦ 亂數</span>
   cmp op, 0
   je do_add
   cmp op, 1
   je do_sub
   cmp op, 2
   je do_mul
-<b class="lb">do_div:</b>                  <span class="cm">; 先定商，A = B×商</span>
-  mov eax, mxR
-  xor edx, edx
-  div numB
-  mov ebx, eax           <span class="cm">; 商最大 = mxR/B</span>
-  call rand
-  xor edx, edx
-  div ebx
-  inc edx
-  mov ans, edx
-  mov eax, numB
-  mul edx
-  mov numA, eax
+<b class="lb">do_div:</b>             <span class="cm">; 先定商，A=B×商</span>
+  mov eax, numA
+  mov ans, eax      <span class="cm">; 商</span>
+  mul numB
+  mov numA, eax     <span class="cm">; 一定整除</span>
   jmp ask
 <b class="lb">do_add:</b>
   mov eax, numA
   add eax, numB
   mov ans, eax
-  jmp ask                <span class="cm">; 都跳到匯合點</span>
+  jmp ask           <span class="cm">; 都跳匯合點</span>
 <b class="lb">do_sub:</b>
   mov eax, numA
   cmp eax, numB
-  jge sub_ok             <span class="cm">; 不可小減大</span>
+  jge sub_ok        <span class="cm">; 不可小減大</span>
   mov ebx, numB
   mov numA, ebx
   mov numB, eax
@@ -618,140 +605,79 @@ msgRes BYTE &quot;score %d %s&quot;,10,0</pre><pre class="c"><span class="cm">  
   mul numB
   mov ans, eax
 <b class="lb">ask:</b>
-  mov ebx, op            <span class="cm">; 用 op 挑格式字串</span>
-  INVOKE printf, qFmt[ebx*4], cntQ, numA, numB
-  INVOKE scanf, ADDR formatIn, ADDR ansInput
+  mov ebx, op       <span class="cm">; 用 op 挑格式</span>
+  invoke printf, qFmt[ebx*4],
+         cntQ, numA, numB <span class="cm">; 逗號結尾可換行</span>
+  invoke scanf, addr fmtD, addr ansInput
   mov eax, ansInput
   cmp eax, ans
   jne q_wrong
   inc correct
   jmp q_next
 <b class="lb">q_wrong:</b>
-  mov ebx, wrong         <span class="cm">; 存到第 wrong 格</span>
+  mov ebx, wrong    <span class="cm">; 存到第 wrong 格</span>
   mov eax, numA
-  mov wA[ebx*4], eax     <span class="cm">; (wB wOp wAns 同法)</span>
+  mov wA[ebx*4], eax
   inc wrong
   mov ebx, op
-  inc wCnt[ebx*4]        <span class="cm">; 該類錯 +1</span>
+  inc wCnt[ebx*4]   <span class="cm">; 該類錯 +1</span>
 <b class="lb">q_next:</b>
-  inc cntQ
-  jmp q_loop
-<b class="lb">q_end:</b>
-  mov eax, correct       <span class="cm">; 分數 = 對×100÷題數</span>
+<span class="cm">; 分數 = correct×100÷題數；等第由差往好升級</span>
+  mov eax, correct
   mov ecx, 100
-  mul ecx
-  xor edx, edx
-  div num
-  mov score, eax
-  mov ebx, OFFSET gradeFail <span class="cm">; 由差往好升級</span>
-  cmp score, 60
-  jl show
-  mov ebx, OFFSET gradePass
-  cmp score, 80
-  jl show
-  mov ebx, OFFSET gradeB
-  cmp score, 90
-  jl show
-  mov ebx, OFFSET gradeA
-<b class="lb">show:</b>
-  INVOKE printf, ADDR msgRes, score, ebx</pre></div>
-<div class="blk"><div class="bh"><span class="tg">作業4-2</span>輸入檢查、各類錯題數、錯題清單</div><pre class="d">userName BYTE 64 DUP(0)
-nameFmt  BYTE &quot;%s&quot;, 0
-rangeFmt BYTE &quot;%d %d&quot;, 0
-msgAskWrong BYTE &quot;bad range&quot;,10,0
-wQ   dword 50 DUP(0)
-wB   dword 50 DUP(0)
-wOp  dword 50 DUP(0)
-wAns dword 50 DUP(0)
-msgCat BYTE &quot;add %d sub %d mul %d div %d&quot;,10,0
-msgWrong BYTE &quot; ans %d&quot;,10,0
-msgName BYTE &quot;%s&quot;,10,0</pre><pre class="c">  INVOKE scanf, ADDR nameFmt, ADDR userName <span class="cm">; 字串</span>
-<b class="lb">ask_range:</b>
-  INVOKE scanf, ADDR rangeFmt, ADDR mxR, ADDR mnR
-  mov eax, mnR
-  cmp mxR, eax
-  jl ask_range_wrong     <span class="cm">; 上限 &lt; 下限</span>
-  cmp mnR, 1
-  jl ask_range_wrong     <span class="cm">; 下限 &lt; 1（除法會除以 0）</span>
-<span class="cm">  ; ……出題迴圈……</span>
-  INVOKE printf, ADDR msgName, ADDR userName <span class="cm">; %s 給位址</span>
-  INVOKE printf, ADDR msgCat, wCnt[0], wCnt[4], wCnt[8], wCnt[12]
-  mov cntQ, 0            <span class="cm">; cnt 用完拿來當索引</span>
-<b class="lb">list_loop:</b>
-  mov eax, cntQ
-  cmp eax, wrong
-  jge list_end
-  mov ebx, cntQ          <span class="cm">; ebx 不會被 printf 改</span>
-  mov eax, wOp[ebx*4]
-  INVOKE printf, qFmt[eax*4], wQ[ebx*4], wA[ebx*4], wB[ebx*4]
-  INVOKE printf, ADDR msgWrong, wAns[ebx*4]
-  inc cntQ
-  jmp list_loop
-<b class="lb">list_end:</b>
-  jmp done42
-<b class="lb">ask_range_wrong:</b>         <span class="cm">; 放在走不到的地方</span>
-  INVOKE printf, ADDR msgAskWrong
-  jmp ask_range
-<b class="lb">done42:</b></pre></div>
-<div class="blk"><div class="bh"><span class="tg">小考</span>最大值、push/call 亂數、階乘</div><pre class="d">fmtR BYTE &quot;%d %d&quot;,10,0</pre><pre class="c"><span class="cm">; 11/2 ax,bx,cx 最大值 → ax（有號）</span>
-  mov ax, 7
-  mov bx, 42
-  mov cx, 15
-  cmp ax, bx
-  jg pp1
-  xchg ax, bx
-<b class="lb">pp1:</b> cmp ax, cx
-  jg pp2
-  xchg ax, cx
-<b class="lb">pp2:</b> movsx esi, ax       <span class="cm">; esi=42</span>
-<span class="cm">; 11/2 不用 INVOKE：3~98 亂數 → edx</span>
-  push 0
-  call time
-  add esp, 4
-  push eax
-  call srand
-  add esp, 4
-  call rand              <span class="cm">; 結果在 eax</span>
-  mov ecx, 96            <span class="cm">; 98-3+1</span>
+  mul ecx</pre></div><div class="fi big"><div class="ft">作業3 質數判斷</div><pre>n dword ?
+msgPrime byte &quot;Prime&quot;, 0Ah, 0
+msgNotPrime byte &quot;Not Prime&quot;, 0Ah, 0
+<span class="cm">; ---- .code ----</span>
+  INVOKE scanf, OFFSET formatIn, OFFSET n
+  cmp n, 1
+  jle not_prime_label
+  cmp n, 2
+  je is_prime_label
+  mov ebx, 2
+<b class="lb">check_loop:</b>
+  mov eax, n
+  mov edx, 0        <span class="cm">; 除法前清 edx</span>
+  div ebx
+  cmp edx, 0        <span class="cm">; 餘數 0 → 整除</span>
+  je not_prime_label
+  inc ebx
+  cmp ebx, n
+  jl check_loop
+<b class="lb">is_prime_label:</b>
+  INVOKE printf, OFFSET msgPrime
+  jmp end_program
+<b class="lb">not_prime_label:</b>
+  INVOKE printf, OFFSET msgNotPrime
+<b class="lb">end_program:</b></pre></div><div class="fi"><div class="ft">作業3 1*1+…+n*n（巢狀、不用乘法）</div><pre>n dword ?
+sumSq dword 0
+<span class="cm">; ---- .code ----</span>
+  INVOKE scanf, OFFSET formatIn, OFFSET n
+  mov ecx, n
+  mov ebx, 1
+<b class="lb">outer_loop:</b>
+  push ecx          <span class="cm">; 存外圈 ecx</span>
+  mov ecx, ebx      <span class="cm">; 內圈跑 ebx 次</span>
   mov edx, 0
-  div ecx
-  add edx, 3
-<span class="cm">; 範例：階乘（C 慣例）</span>
-  push 5
-  call Factorial
-  add esp, 4             <span class="cm">; C：呼叫者清</span>
-  INVOKE printf, OFFSET fmtR, esi, eax</pre><div class="pl">程序：寫在 main ENDP 之後</div><pre class="c">Factorial PROC C USES ecx, nF:DWORD
-  mov ecx, nF
-  mov eax, 1
-<b class="lb">FL:</b> mul ecx              <span class="cm">; eax = eax*ecx</span>
-  loop FL
-  ret
-Factorial ENDP</pre></div>
-<div class="blk"><div class="bh"><span class="tg">範例</span>字串比對 repe cmpsb、堆疊反轉</div><pre class="d">s1 BYTE &quot;Hello&quot;,0
-s2 BYTE &quot;Hello&quot;,0
-nm BYTE &quot;Taipei&quot;,0
-nmLen = ($ - nm) - 1
-fmtC BYTE &quot;%d %s&quot;,10,0</pre><pre class="c">  mov esi, OFFSET s1
-  mov edi, OFFSET s2
-  mov ecx, LENGTHOF s1
-  cld                    <span class="cm">; 往後比</span>
-  repe cmpsb             <span class="cm">; 一樣就繼續</span>
-  mov ebx, 0
-  jne cDiff
-  mov ebx, 1             <span class="cm">; 1 = 相同</span>
-<b class="lb">cDiff:</b> mov ecx, nmLen
-  mov esi, 0
-<b class="lb">R1:</b> movzx eax, nm[esi]   <span class="cm">; push 不能推 8 位</span>
-  push eax
-  inc esi
-  loop R1
-  mov ecx, nmLen
-  mov esi, 0
-<b class="lb">R2:</b> pop eax              <span class="cm">; 反序拿回</span>
-  mov nm[esi], al
-  inc esi
-  loop R2
-  INVOKE printf, OFFSET fmtC, ebx, OFFSET nm</pre></div>
+<b class="lb">inner_loop:</b>
+  add edx, ebx      <span class="cm">; ebx 加 ebx 次</span>
+  loop inner_loop
+  add sumSq, edx
+  inc ebx
+  pop ecx           <span class="cm">; 還原外圈</span>
+  loop outer_loop
+  INVOKE printf, OFFSET formatOut, sumSq</pre></div><div class="fi"><div class="ft">作業2 費氏數列前 11 項</div><pre>fib dword 11 DUP(?)
+<span class="cm">; ---- .code ----</span>
+  mov fib[0], 1
+  mov fib[4], 1
+  mov ecx, 9        <span class="cm">; 還要算 9 項</span>
+  mov esi, 8        <span class="cm">; 從 fib[2] 開始</span>
+<b class="lb">fib_loop:</b>
+  mov eax, fib[esi - 4]
+  add eax, fib[esi - 8]
+  mov fib[esi], eax <span class="cm">; f[i]=f[i-1]+f[i-2]</span>
+  add esi, 4
+  loop fib_loop</pre></div></div>
 </div>
 </section>
 </div>
@@ -2884,13 +2810,14 @@ function renderUnits(){
   const mk=(key,label,sub,tag,qs)=>{
     const ok=qs.filter(q=>st(q.id)==='ok').length, bad=qs.filter(q=>st(q.id)&&st(q.id)!=='ok').length;
     const b=document.createElement('button'); b.className='unit'; b.setAttribute('aria-current',String(!view.exam&&view.unit===key));
-    b.innerHTML=`<span class="seg">${key==='all'?'ALL':'U'+String(key).padStart(2,'0')}</span><span class="nm">${label}<br><span style="color:var(--muted);font-size:.78rem;font-weight:400">${sub}</span></span><span class="ct">${ok}/${qs.length}</span>`+
+    b.innerHTML=`<span class="seg">${key==='all'?'ALL':'U'+String(key).padStart(2,'0')}</span><span class="nm">${label}<br class="sb"><span class="sb" style="color:var(--muted);font-size:.78rem;font-weight:400">${sub}</span></span><span class="ct">${ok}/${qs.length}</span>`+
       `<span class="bar"><i class="o" style="width:${qs.length?ok/qs.length*100:0}%"></i><i class="x" style="width:${qs.length?bad/qs.length*100:0}%"></i></span>`+(tag?`<span class="tag">${tag}</span>`:'');
     b.onclick=()=>{view.exam=null;view.unit=key;view.idx=0;saveView();renderAll();};
     box.appendChild(b);
   };
   mk('all','全部單元','依序全練',null,BANK);
   Object.entries(UNITS).forEach(([k,u])=>mk(+k,u.n,u.s,u.tag,BANK.filter(q=>q.u===+k)));
+  const cur=box.querySelector('[aria-current="true"]'); if(cur&&box.scrollWidth>box.clientWidth) box.scrollLeft=cur.offsetLeft-box.offsetLeft-12;
 }
 
 // ---------- 篩選 ----------
@@ -2935,7 +2862,7 @@ function withBlanks(text,q){
     const m=p.match(/^\[\[(\d+)\]\]$/);
     if(!m) return esc(p);
     const i=+m[1];
-    return `<input class="blank" data-i="${i}" id="b-${q.id}-${i}" size="${blankWidth(q,i)}" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="第 ${i+1} 格">`;
+    return `<input class="blank" data-i="${i}" id="b-${q.id}-${i}" size="${blankWidth(q,i)}" autocomplete="off" autocapitalize="off" spellcheck="false" autocorrect="off" enterkeyhint="next" inputmode="text" aria-label="第 ${i+1} 格">`;
   }).join('');
 }
 function renderCard(){
@@ -2956,10 +2883,10 @@ function renderCard(){
     <div class="actions">
       <button class="btn primary" id="check">對答案</button>
       <button class="btn" id="hintbtn">提示</button>
-      <button class="btn ghost" id="reset">清空重寫</button>
+      <button class="btn ghost" id="reset">清空<span class="lg">重寫</span></button>
       <span class="spacer"></span>
-      <button class="btn" id="prev" ${view.idx===0?'disabled':''}>← 上一題</button>
-      <button class="btn" id="next" ${view.idx>=list.length-1?'disabled':''}>下一題 →</button>
+      <button class="btn" id="prev" aria-label="上一題" ${view.idx===0?'disabled':''}>←<span class="lg"> 上一題</span></button>
+      <button class="btn" id="next" aria-label="下一題" ${view.idx>=list.length-1?'disabled':''}><span class="lg">下一題 </span>→</button>
     </div>
     <div class="hint" id="hint" hidden>${esc(q.hint||'')}</div>
     <div id="result"></div>
@@ -2967,6 +2894,7 @@ function renderCard(){
   </article>`;
   const dots=document.getElementById('dots');
   list.forEach((qq,i)=>{const d=document.createElement('button'); d.className='dot '+(st(qq.id)||'')+(i===view.idx?' cur':''); d.title=qq.title; d.setAttribute('aria-label',`第 ${i+1} 題：${qq.title}`); d.onclick=()=>{view.idx=i;renderCard();}; dots.appendChild(d);});
+  const cd=dots.children[view.idx]; if(cd&&dots.scrollWidth>dots.clientWidth) dots.scrollLeft=cd.offsetLeft-dots.clientWidth/2;
   const inputs=[...slot.querySelectorAll('.blank')];
   inputs.forEach((inp,k)=>inp.addEventListener('keydown',e=>{
     if(e.key==='Enter'){e.preventDefault(); if(k<inputs.length-1 && !inputs[k+1].value) inputs[k+1].focus(); else check(q);}
@@ -3007,6 +2935,7 @@ function check(q){
     `<div class="explain"><h3>詳解</h3><div class="tw">${q.ex}</div></div>`+
     (res!=='ok'?`<p class="retry">讀完詳解後：按「清空重寫」，不看上面的答案自己再寫一次，全對才算真的會。</p>`:'');
   renderRegs(); renderUnits(); renderFilters(); renderExamBar();
+  if(matchMedia('(max-width:600px)').matches){document.activeElement&&document.activeElement.blur&&document.activeElement.blur(); const v=document.querySelector('#result .verdict'); v&&v.scrollIntoView({behavior:'smooth',block:'center'});}
   const dots=document.getElementById('dots'); const list=curList();
   if(dots){[...dots.children].forEach((d,i)=>{d.className='dot '+(st(list[i].id)||'')+(i===view.idx?' cur':'');});}
   const st2=document.querySelector('#card .state'); if(st2){st2.className='state '+res; st2.textContent=(res==='ok'?'✓ 答對過':res==='bad'?'✗ 在錯題本':'△ 觀念對、寫法要改')+` · 第 ${rec.n} 次`;}
