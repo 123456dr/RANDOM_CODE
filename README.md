@@ -117,7 +117,13 @@ JUST [C](./Code/)ODE
 
 <br><br><br><br><br><br>
 #### ALGO_web<br>
-- [CH4](https://123456dr.github.io/RANDOM_CODE/Code/UT/ALGO/%E7%AD%86%E8%A9%A6/ch4.html)
+- [演算法期中考古題詳解](https://123456dr.github.io/RANDOM_CODE/Code/UT/ALGO/筆試/演算法期中考古題詳解.html)
+- [CH4](https://123456dr.github.io/RANDOM_CODE/Code/UT/ALGO/筆試/ch4.html)
+- [CH3](https://123456dr.github.io/RANDOM_CODE/Code/UT/ALGO/筆試/ch3.html)
+- [CH1 & 2](https://123456dr.github.io/RANDOM_CODE/Code/UT/ALGO/筆試/ch1n2.html)
+#### Assemble Language_web<br>
+- [期中](https://123456dr.github.io/RANDOM_CODE/Code/UT/Assemble/組語期中特訓.html)
+- [期中大抄](https://123456dr.github.io/RANDOM_CODE/Code/UT/Assemble/組語上機大抄_A4雙面.pdf)
 
 <br><hr>
 #### VScode快捷們

@@ -175,12 +175,12 @@ ol.steps li.done .st{text-decoration:line-through;color:var(--muted)}
 .pagelabel .warn{color:var(--bad);font-weight:600}
 .pagelabel .fit{color:var(--ok)}
 .a4wrap{overflow:hidden}
-.a4{width:210mm;height:297mm;background:#FFFFFF;color:#111111;box-shadow:0 1px 3px rgba(0,0,0,.18),0 8px 24px rgba(0,0,0,.08);transform-origin:top left;padding:7mm 7.5mm}
-.a4in{height:100%;overflow:hidden;column-count:2;column-gap:5mm;column-fill:auto;column-rule:.2mm solid #D7D7D7;font-family:"Noto Sans TC","Noto Sans CJK TC",system-ui,sans-serif;font-size:7.3pt;line-height:1.33;outline:none;color:#111}
+.a4{width:210mm;height:297mm;background:#FFFFFF;color:#111111;box-shadow:0 1px 3px rgba(0,0,0,.18),0 8px 24px rgba(0,0,0,.08);transform-origin:top left;padding:6mm 6mm}
+.a4in{height:100%;overflow:hidden;column-count:3;column-gap:3.5mm;column-fill:auto;column-rule:.2mm solid #D7D7D7;font-family:"Noto Sans TC","Noto Sans CJK TC",system-ui,sans-serif;font-size:6.6pt;line-height:1.28;outline:none;color:#111}
 .a4in:focus{box-shadow:inset 0 0 0 .3mm #2348C2}
 .a4in .sh-title{column-span:all;font-family:"IBM Plex Sans","Noto Sans TC","Noto Sans CJK TC",sans-serif;font-weight:700;font-size:9.5pt;border-bottom:.4mm solid #111;padding-bottom:1mm;margin-bottom:1.5mm}
-.a4in h4{font-family:"IBM Plex Sans","Noto Sans TC","Noto Sans CJK TC",sans-serif;font-size:7.7pt;font-weight:700;margin:1.6mm 0 .6mm;background:#E9EDF5;padding:.2mm 1.2mm;break-after:avoid;color:#111}
-.a4in pre{font-family:"IBM Plex Mono","DejaVu Sans Mono",Consolas,"Noto Sans CJK TC",monospace;font-size:6.6pt;line-height:1.2;margin:0 0 .8mm;white-space:pre-wrap;background:none;border:0;padding:0;color:#111;break-inside:avoid}
+.a4in h4{font-family:"IBM Plex Sans","Noto Sans TC","Noto Sans CJK TC",sans-serif;font-size:6.9pt;font-weight:700;margin:1.2mm 0 .4mm;background:#E9EDF5;padding:.1mm 1mm;break-after:avoid;color:#111}
+.a4in pre{font-family:"IBM Plex Mono","DejaVu Sans Mono",Consolas,"Noto Sans CJK TC",monospace;font-size:6pt;line-height:1.13;margin:0 0 .6mm;white-space:pre-wrap;background:none;border:0;padding:0;color:#111;break-inside:auto}
 .a4in p{margin:0 0 .8mm}
 .a4in code{font-family:"IBM Plex Mono","DejaVu Sans Mono",Consolas,monospace;font-size:6.6pt;background:#F1F1F1;border:0;padding:0 .4mm;color:#111}
 .a4in b{font-weight:700}
@@ -233,241 +233,579 @@ ol.steps li.done .st{text-decoration:line-through;color:var(--muted)}
     </div>
     <div id="sheetroot"><section class="a4" data-page="1">
 <div class="a4in" contenteditable="true" spellcheck="false" id="sheet-1">
-<div class="sh-title">組合語言 上機大抄 · 正面（程式）</div>
-<h4>① 萬用模板（.model flat, stdcall）</h4>
+<div class="sh-title">組合語言 上機大抄 · 正面（模板＋作業 1–3＋小考程式）</div>
+<h4>① 通用模板（每行都寫 C / STDCALL，.model 寫哪個都能跑）</h4>
 <pre>.386
-.model flat, stdcall
+.model flat, c
 option casemap:none
 includelib kernel32.lib
 includelib msvcrt.lib
 includelib legacy_stdio_definitions.lib
-includelib ucrt.lib          ; 少了→LNK2019
-ExitProcess PROTO :DWORD     ; API: stdcall
-printf PROTO C :VARARG       ; C 函式: cdecl
+includelib ucrt.lib
+ExitProcess PROTO STDCALL :DWORD
+SetConsoleOutputCP PROTO STDCALL :DWORD
+printf PROTO C :VARARG
 scanf  PROTO C :VARARG
 time   PROTO C :DWORD
 srand  PROTO C :DWORD
 rand   PROTO C
-strlen PROTO C :DWORD
-system PROTO C :DWORD        ; "pause"
+system PROTO C :VARARG
 .data
-fmtD  BYTE "%d",0
-fmtS  BYTE "%s",0
-msg   BYTE "ans=%d",10,0     ; 10=換行 0=結尾
-n     DWORD ?
-buf   BYTE 100 DUP(0)
+n         dword ?
+formatIn  byte "%d", 0
+formatOut byte "%d", 0Ah, 0      ; 0Ah 換行
+msgPause  byte "pause", 0
 .code
-main PROC
-  INVOKE scanf, OFFSET fmtD, OFFSET n ; 讀:位址
-  INVOKE printf, OFFSET msg, n        ; 印:值
+main PROC C
+  INVOKE SetConsoleOutputCP, 65001
+  INVOKE scanf, OFFSET formatIn, OFFSET n ;位址
+  INVOKE printf, OFFSET formatOut, n      ; 印:值
+  INVOKE system, ADDR msgPause            ; 停住
   INVOKE ExitProcess, 0
 main ENDP
-END main                     ; 起點=main</pre>
-<p class="s">.model flat, c 版本：ExitProcess 要寫 <b>PROTO STDCALL :DWORD</b>；自己的 PROC 預設變 C。</p>
-<h4>② VS 建專案</h4>
-<p class="s">空白專案(英文路徑) → 專案右鍵「建置相依性→建置自訂」勾 <b>masm</b> → 平台 <b>x86</b> → 來源檔案加入新項目 <b>main.asm</b> → Ctrl+Shift+B 建置 → <b>Ctrl+F5</b> 執行。追蹤：中斷點+F5、F10，偵錯→視窗→暫存器/記憶體。exe 在 Debug\。</p>
-<p class="s">cmd：<code>ml /c /coff a.asm</code> → <code>link a.obj kernel32.lib … /subsystem:console /entry:main</code></p>
-<h4>③ INVOKE ↔ push/call</h4>
-<pre>INVOKE printf, OFFSET f, a, b
-= push b            ; 由右至左
-  push a
-  push OFFSET f
-  call printf
-  add esp, 12       ; C:呼叫者清 個數×4
-push 0
-call ExitProcess    ; stdcall:不 add esp</pre>
-<h4>④ 自己的程序（stdcall / C）</h4>
-<pre>F PROC STDCALL x:DWORD, y:DWORD
-  mov eax, x        ; =[ebp+8]  y=[ebp+12]
-  add eax, y        ; 回傳值放 eax
-  ret               ; 自動變 ret 8
-F ENDP              ; 寫在 main ENDP 後
-; 呼叫: push y / push x / call F（不清）
-G PROC C x:DWORD    ; C:呼叫後 add esp,4
-H PROC USES ebx esi ; 自動 push/pop
-L PROC
-  LOCAL t:DWORD     ; 必須第1行 =[ebp-4]
-  lea eax, t        ; 區域變數取位址用 lea</pre>
-<h4>⑤ 迴圈</h4>
-<pre>  mov ecx, n        ; loop 一定用 ecx(≠0!)
-L1: ...
-  loop L1           ; ecx-1, ≠0 就跳
-; 巢狀: push ecx … pop ecx
-; 條件迴圈: inc ebx / cmp ebx,n / jl L1</pre>
-<h4>⑥ 陣列走訪（兩種，不要混）</h4>
-<pre>mov esi, OFFSET arr     ; esi=位址
-mov ecx, LENGTHOF arr
-L1: add eax, [esi]      ; 不再×4
-    add esi, TYPE arr   ; DWORD=4 WORD=2
-    loop L1
-; 另一種 esi=索引
-mov esi, 0
-L2: add eax, arr[esi*4]
-    inc esi
-    loop L2
-; 取 AA[3]: lea ebx,AA / mov eax,[ebx+12]</pre>
-<h4>⑦ printf 格式、其他</h4>
-<p class="s"><code>%d</code> 整數 <code>%u</code> 無號 <code>%x</code> 16進位 <code>%c</code> 字元 <code>%s</code> 字串(傳位址) <code>%5d</code> 寬5。換行 <code>10</code> 或 <code>0Ah</code>（<code>13,10</code>=\r\n）。暫停：<code>p BYTE "pause",0</code> → <code>INVOKE system, OFFSET p</code>。中文：<code>SetConsoleOutputCP PROTO :DWORD</code> → <code>INVOKE SetConsoleOutputCP, 65001</code>。反轉字串：<code>movzx eax, s[esi]</code> / <code>push eax</code> … <code>pop eax</code> / <code>mov s[esi], al</code>。</p>
-<h4>⑧ 字串走訪到 0</h4>
-<pre>  mov esi, OFFSET buf
-nx: mov al, [esi]
-  test al, al
-  jz done             ; 遇到 0 結束
-  cmp al, 'A'
-  jb  sk              ; 字元=無號
-  cmp al, 'Z'
-  ja  sk
-  or  al, 20h         ; 大→小
-  mov [esi], al
-sk: inc esi
-  jmp nx</pre>
-<p class="s">大→小 <b>or 20h / add 20h</b>；小→大 <b>and 0DFh / sub 20h</b>；互換 <b>xor 20h</b>。'A'=41h 'a'=61h '0'=30h。長度：<code>INVOKE strlen, OFFSET buf</code> → eax。</p>
-<h4>⑨ 除法、亂數、乘法</h4>
-<pre>xor edx, edx      ; 無號先清 (有號: cdq)
-mov ecx, 7
-div ecx           ; 商 eax 餘數 edx (idiv)
-; 亂數 a~b
-INVOKE time, 0
-INVOKE srand, eax ; 只做一次，在迴圈外
-INVOKE rand
-xor edx, edx
-mov ecx, b-a+1    ; 例 3~98 → 96
-div ecx
-add edx, a        ; 結果在 edx
-mul ecx           ; edx:eax = eax×ecx
-imul eax, ebx     ; 有號 eax=eax×ebx</pre>
-<h4>⑩ 分支模板（每段結尾要 jmp！）</h4>
-<pre>  cmp eax, target
-  je  same
-  jg  big
-  ...太小...  jmp again
-big: ...太大... jmp again
-same: ...
-; 交換: xchg ax,bx / 最大值: cmp ax,bx / cmovl ax,bx</pre>
-<h4>⑪ 錯誤速查</h4>
-<p class="s"><b>A1000</b> 中文路徑 · <b>LNK2019 _printf</b> 少 legacy_stdio · <b>__stdio_common</b> 少 ucrt · <b>A2006</b> 拼錯/少 PROTO/大小寫 · <b>A2008</b> 保留字(name,size)/rand() · <b>A2070</b> mem,mem 或大小不合 · <b>A2022</b> 大小不同 · <b>A2111</b> PROTO/PROC 慣例不一致 · x64→改 x86 · 一閃就關→Ctrl+F5 · 亂碼→英文字串 · 當掉→push/pop 不對稱、stdcall 多 add esp、忘 ExitProcess · 迴圈不停→ecx=0、只設 cx、忘 jmp。</p>
-<p class="s"><b>call 會弄壞 eax ecx edx</b>；要保留的值放 ebx esi edi 或先 push。</p>
-<h4>⑫ 範例：STDCALL 判斷倍數</h4>
-<pre>IsMul PROC STDCALL num:DWORD, k:DWORD
-  mov eax, num
-  xor edx, edx
-  div k                 ; 可直接除記憶體
-  cmp edx, 0
-  jne no
-  mov eax, 1
-  ret                   ; = ret 8
-no: mov eax, 0
+; 自己的 PROC 寫這裡
+END main</pre>
+<p class="s"><b>VS</b>：空白專案(英文路徑) → 專案右鍵「建置相依性→建置自訂」勾 masm → 平台 <b>x86</b> → 加 main.asm → Ctrl+Shift+B → <b>Ctrl+F5</b>。<b>錯誤</b>：A1000 中文路徑 · LNK2019 少 lib · A2006 拼錯/少 PROTO · A2008/A2151 名字撞保留字(name size type nop outs) · A2070 mem,mem/大小不合 · x64→x86。</p>
+<h4>② push/call、程序範本、常用片段</h4>
+<pre>push n                 ; = INVOKE printf,f,n
+push OFFSET f          ; 由右至左 push
+call printf
+add esp, 8             ; C:個數×4 stdcall不清
+F PROC STDCALL x:DWORD, y:DWORD
+  mov eax, x           ; 回傳值放 eax
+  ret                  ; 自動 ret 8
+F ENDP                 ; push y/push x/call F
+G PROC C x:DWORD       ; 呼叫後 add esp,4
+; 跳躍 有號 jg jge jl jle｜無號/字元 ja jae jb jbe
+; 除法 xor edx,edx / div ecx → 商 eax 餘 edx
+; 亂數 a~b：rand / div (b-a+1) / add edx, a
+; 奇偶 test eax,1 / jz 偶｜大小寫 or 20h / and 0DFh</pre>
+<h4>作業1 Q1–Q5：高階語言轉組語</h4>
+<pre>i    dword 123
+j    dword ?
+a    dword 1
+b    dword 1
+res  dword ?
+x    dword 2
+y    dword 1
+r2   dword ?
+vals dword 2, 4, 6, 8
+resx dword ?
+; ---- .code ----
+; Q1  j = i; i++; j--;
+ mov eax, i
+ mov j, eax          ; mem,mem 不行，經過 eax
+ inc i
+ dec j
+; Q2  res = ++a - b; b--;
+ inc a
+ mov eax, a
+ sub eax, b
+ mov res, eax
+ dec b
+; Q3  r2 = (y*4 + x + 1) * 2（不用乘法）
+ mov eax, y
+ shl eax, 2          ; ×4
+ add eax, x
+ inc eax
+ shl eax, 1          ; ×2
+ mov r2, eax
+; Q5  resx = vals[0]+…+vals[3]
+ mov eax, vals[0]
+ add eax, vals[4]    ; DWORD 一格 4
+ add eax, vals[8]
+ add eax, vals[12]
+ mov resx, eax</pre>
+<h4>作業2 Q1：a1[i] += i，再 loop 加總</h4>
+<pre>a1 dword 10,20,30,40,50,60,70,80,90,100
+sumResult dword ?
+; ---- .code ----
+  mov ecx, LENGTHOF a1
+  mov esi, 0           ; esi = 索引
+L1: mov eax, a1[esi*4]
+  add eax, esi
+  mov a1[esi*4], eax   ; a1[i] += i
+  inc esi
+  loop L1
+  mov ecx, LENGTHOF a1
+  mov esi, 0
+  mov eax, 0
+L2: add eax, a1[esi*4]
+  inc esi
+  loop L2
+  mov sumResult, eax</pre>
+<h4>作業2 Q2：16 位元最大/最小值與 OF</h4>
+<pre>OF_1 dword ?
+OF_2 dword ?
+; ---- .code ----
+  mov ax, 7FFFh        ; 最大正數 +32767
+  add ax, 1            ; 溢位
+  pushfd               ; 旗標推進堆疊
+  pop eax
+  and eax, 0800h       ; 只留 OF (bit 11)
+  mov OF_1, eax        ; 800h = OF 是 1
+  mov bx, 8000h        ; 最小負數 -32768
+  sub bx, 1
+  pushfd
+  pop eax
+  and eax, 0800h
+  mov OF_2, eax</pre>
+<h4>作業2 Q4：兩陣列相加存第三陣列，再向左旋轉</h4>
+<pre>arr1 dword 1, 2, 3, 4
+arr2 dword 10, 20, 30, 40
+arr3 dword 4 DUP(?)
+ARRAY_SIZE = LENGTHOF arr1
+; ---- .code ----
+  mov ecx, ARRAY_SIZE
+  mov esi, 0           ; esi = 位元組位移
+add_loop:
+  mov eax, arr1[esi]
+  add eax, arr2[esi]
+  mov arr3[esi], eax
+  add esi, 4
+  loop add_loop
+  mov edx, arr3[0]     ; 備份第一個
+  mov ecx, ARRAY_SIZE - 1
+  mov esi, 0
+rotate_loop:
+  mov eax, arr3[esi + 4] ; 拿右邊鄰居
+  mov arr3[esi], eax
+  add esi, 4
+  loop rotate_loop
+  mov arr3[esi], edx   ; 第一個放最後</pre>
+<h4>作業2 Q5：費氏數列前 11 項</h4>
+<pre>fib dword 11 DUP(?)
+; ---- .code ----
+  mov fib[0], 1
+  mov fib[4], 1
+  mov ecx, 9           ; 還要算 9 項
+  mov esi, 8           ; 從 fib[2] 開始
+fib_loop:
+  mov eax, fib[esi - 4]
+  add eax, fib[esi - 8]
+  mov fib[esi], eax    ; f[i]=f[i-1]+f[i-2]
+  add esi, 4
+  loop fib_loop</pre>
+<h4>11/2 ArraySum 程序 ＋ 10/19 STDCALL 程序</h4>
+<pre>arrS DWORD 10000h,20000h,3000h,400000h,50000h
+fmt5 BYTE &quot;%d is a multiple of 5&quot;,10,0
+; ---- .code ----
+  mov esi, OFFSET arrS   ; 用暫存器傳參數
+  mov ecx, LENGTHOF arrS
+  call ArraySum          ; 結果在 eax
+  push 25
+  call p_div5            ; stdcall：不用 add esp
+; ---- main ENDP 之後 ----
+ArraySum PROC
+  push esi
+  push ecx
+  mov eax, 0
+AS1: add eax, [esi]      ; esi 是位址，不 ×4
+  add esi, TYPE DWORD
+  loop AS1
+  pop ecx                ; 反順序 pop
+  pop esi
   ret
-IsMul ENDP
-; main: push 3 / push n / call IsMul
-;       cmp eax,1 / je yes</pre>
-<h4>⑬ 範例：最大值 + 總和</h4>
-<pre>  mov esi, OFFSET arr
-  mov ecx, LENGTHOF arr
-  mov eax, [esi]
-  mov maxV, eax         ; 先當第一個最大
-  xor eax, eax
-L1: mov edx, [esi]
-  add eax, edx
-  cmp edx, maxV         ; mem,mem 不行→用 edx
-  jle skip              ; 無號用 jbe
-  mov maxV, edx
-skip: add esi, 4
-  loop L1</pre>
-<h4>⑭ 範例：巢狀迴圈 1²+2²+…+n²</h4>
-<pre>  mov ecx, n
-  mov ebx, 1            ; 底數
-out1: push ecx          ; 存外圈
-  mov ecx, ebx
+ArraySum ENDP
+p_div5 PROC STDCALL nn:DWORD
+  mov eax, nn            ; = [ebp+8]
   xor edx, edx
-in1: add edx, ebx       ; i 加 i 次 = i²
-  loop in1
-  add sum, edx
+  mov ecx, 5
+  div ecx
+  cmp edx, 0             ; 餘數
+  jne over1
+  INVOKE printf, OFFSET fmt5, nn
+over1: ret               ; 自動 ret 4
+p_div5 ENDP</pre>
+<h4>作業3 Q1：n+…+5+3+1（n 正奇數）</h4>
+<pre>n dword ?
+sumResult3 dword ?
+formatIn byte &quot;%d&quot;, 0
+formatOut byte &quot;%d&quot;, 0Ah, 0
+; ---- .code ----
+  INVOKE scanf, OFFSET formatIn, OFFSET n
+  mov eax, 0
+  mov ecx, n
+odd_sum_loop:
+  add eax, ecx
+  sub ecx, 2
+  cmp ecx, 0
+  jg odd_sum_loop
+  mov sumResult3, eax
+  INVOKE printf, OFFSET formatOut, sumResult3</pre>
+<h4>作業3 Q2：1*1+2*2+…+n*n（巢狀、不用乘法）</h4>
+<pre>sumSq dword 0
+; ---- .code ----
+  INVOKE scanf, OFFSET formatIn, OFFSET n
+  mov ecx, n
+  mov ebx, 1
+outer_loop:
+  push ecx             ; 存外圈 ecx
+  mov ecx, ebx         ; 內圈跑 ebx 次
+  mov edx, 0
+inner_loop:
+  add edx, ebx         ; ebx 加 ebx 次
+  loop inner_loop
+  add sumSq, edx
   inc ebx
-  pop ecx
-  loop out1</pre>
+  pop ecx              ; 還原外圈
+  loop outer_loop
+  INVOKE printf, OFFSET formatOut, sumSq</pre>
+<h4>作業3 Q3：質數判斷</h4>
+<pre>msgPrime byte &quot;Prime&quot;, 0Ah, 0
+msgNotPrime byte &quot;Not Prime&quot;, 0Ah, 0
+; ---- .code ----
+  INVOKE scanf, OFFSET formatIn, OFFSET n
+  cmp n, 1
+  jle not_prime_label
+  cmp n, 2
+  je is_prime_label
+  mov ebx, 2
+check_loop:
+  mov eax, n
+  mov edx, 0           ; 除法前清 edx
+  div ebx
+  cmp edx, 0           ; 餘數 0 → 整除
+  je not_prime_label
+  inc ebx
+  cmp ebx, n
+  jl check_loop
+is_prime_label:
+  INVOKE printf, OFFSET msgPrime
+  jmp end_program
+not_prime_label:
+  INVOKE printf, OFFSET msgNotPrime
+end_program:</pre>
+<h4>作業3 Q4：大小寫互換（abCD→ABcd）</h4>
+<pre>strBuf byte 100 DUP(0)
+formatS byte &quot;%s&quot;, 0
+formatOutS byte &quot;%s&quot;, 0Ah, 0
+; ---- .code ----
+  INVOKE scanf, OFFSET formatS, OFFSET strBuf
+  mov esi, OFFSET strBuf
+convert_loop:
+  mov al, [esi]
+  cmp al, 0
+  je print_result      ; 字串結尾
+  cmp al, &#x27;A&#x27;
+  jb next_char         ; 字元用 jb/ja 較正確
+  cmp al, &#x27;Z&#x27;
+  jbe to_lower
+  cmp al, &#x27;a&#x27;
+  jb next_char
+  cmp al, &#x27;z&#x27;
+  jbe to_upper
+  jmp next_char
+to_lower:
+  add al, 20h
+  jmp store_char
+to_upper:
+  sub al, 20h
+store_char:
+  mov [esi], al
+next_char:
+  inc esi
+  jmp convert_loop
+print_result:
+  INVOKE printf, OFFSET formatOutS, OFFSET strBuf</pre>
 
 </div>
 </section>
 
 <section class="a4" data-page="2">
 <div class="a4in" contenteditable="true" spellcheck="false" id="sheet-2">
-<div class="sh-title">組合語言 上機大抄 · 背面（觀念）</div>
-<h4>① 條件跳躍</h4>
-<table><tr><th></th><th>無號 A/B</th><th>有號 G/L</th></tr>
-<tr><td>&gt; / ≥</td><td>ja / jae</td><td>jg / jge</td></tr>
-<tr><td>&lt; / ≤</td><td>jb / jbe</td><td>jl / jle</td></tr>
-<tr><td>= / ≠</td><td colspan="2">je=jz / jne=jnz</td></tr></table>
-<p class="s">用 sub 代替 cmp：<b>有號看 js</b>（負）、<b>無號看 jc</b>（借位）、<b>相等看 jz</b>；logic：<code>xor bx,ax / jz</code>。先看清楚<b>誰減誰</b>：<code>sub bx,ax</code>=v2−v1，負→v1&gt;v2。字元、位址 = 無號。</p>
-<h4>② 旗標（EFLAGS bit）</h4>
-<table><tr><th>CF 0</th><th>PF 2</th><th>AF 4</th><th>ZF 6</th><th>SF 7</th><th>DF 10</th><th>OF 11</th></tr></table>
-<p class="s"><b>CF</b> 無號放不下/借位 · <b>OF</b> 有號超範圍（正+正=負、負+負=正）· <b>ZF</b> 結果=0 · <b>SF</b> 最高位=1 · <b>PF</b> 低8位1的個數偶數→1 · <b>AF</b> bit3→4 進位。<b>inc/dec 不動 CF</b>；neg 非0→CF=1；not 不動旗標；test/and/or 清 CF、OF。OF = CF xor carryIn。</p>
-<p class="s">讀旗標：<code>pushfd / pop eax / and eax,0800h</code>（OF）；ZF 0040h、SF 0080h、CF 0001h。不能 mov eax,eflags。stc/clc 設/清 CF，cld 讓 DF=0（字串往後）。</p>
-<h4>③ 定址模式（英文）</h4>
-<table><tr><td>mov ax,bx</td><td>register</td></tr><tr><td>mov ax,11h</td><td>immediate</td></tr>
-<tr><td>mov ax,themax</td><td>direct</td></tr><tr><td>mov ax,[dx]</td><td>register indirect</td></tr>
-<tr><td>[ebx+8]</td><td>based/indexed with displacement</td></tr><tr><td>AB[esi*4]</td><td>indexed</td></tr>
-<tr><td>[ebx+edi]</td><td>based-indexed</td></tr><tr><td>[edx+esi*4]</td><td>based-indexed with scaling</td></tr>
-<tr><td>clc / ret</td><td>implied</td></tr><tr><td>jmp 標籤 / jmp eax</td><td>relative / register indirect</td></tr></table>
-<h4>④ 呼叫慣例</h4>
-<table><tr><th></th><th>cdecl (C)</th><th>stdcall</th></tr>
-<tr><td>誰清堆疊</td><td>呼叫者 add esp,X</td><td>被呼叫者 ret X</td></tr>
-<tr><td>VARARG</td><td>可（printf）</td><td>不可</td></tr>
-<tr><td>名字</td><td>_f</td><td>_f@8</td></tr><tr><td>用途</td><td>C 函式庫</td><td>Windows API</td></tr></table>
-<p class="s">兩者都由右至左 push。回傳：32 位 EAX、16 AX、8 AL、64 EDX:EAX。<b>INVOKE 是 directive（巨集）</b>，CALL 是 CPU 指令。call=push 返回位址+改 EIP；ret=pop 到 EIP、ESP+4。</p>
-<pre>[ebp+12] 參數2   [ebp+8] 參數1
-[ebp+4]  返回位址 [ebp+0] 舊 ebp
-[ebp-4]  區域變數
-開頭 push ebp / mov ebp,esp / sub esp,4
-結尾 mov esp,ebp / pop ebp / ret</pre>
-<p class="s">push：ESP−4；pop：ESP+4；後進先出，pop 順序相反。PUSHAD：EAX ECX EDX EBX ESP EBP ESI EDI（−32）。</p>
-<h4>⑤ 資料與運算子</h4>
-<p class="s">BYTE 1 · WORD 2 · DWORD 4 · QWORD 8 · REAL8 8。<b>TYPE</b> 一格大小、<b>LENGTHOF</b> 個數、<b>SIZEOF</b>=兩者相乘（字串含結尾0）。<b>OFFSET</b> 組譯時位址（mov 後面、.data）；<b>ADDR</b> 只在 INVOKE；<b>lea</b> 是指令，可算 [AB+esi*4]、LOCAL。<code>$</code>=目前位置：<code>N = ($-arr)/TYPE DWORD</code>。<b>=</b> 可重定義、<b>EQU</b> 不行；都不佔記憶體。DUP：<code>4 DUP("STACK")</code>=20B。16 進位字母開頭補 0：0A3h、0DFh。後綴 b q/o d h。</p>
-<p class="s"><b>PTR</b>：[ ] 說在哪、ptr 說拿多大；另一邊沒暫存器(<code>mov [esi],5</code>、<code>inc [esi]</code>)一定要寫。myDouble DWORD 12345678h → WORD PTR = 5678h、[+2] = 1234h、BYTE PTR = 78h（little endian：78 56 34 12）。</p>
-<p class="s"><b>MOV 規則</b>：不能 mem,mem；大小相同；EIP 不能當目的。<b>movzx</b> 補 0（無號）、<b>movsx</b> 補符號（有號）：bl=9Bh → movzx 0000009B、movsx FFFFFF9B。寫 al/ax 不清高位：EAX=12345678 → mov ax,0 → 12340000。</p>
-<h4>⑥ 位元運算 / 快速寫法</h4>
-<p class="s">and 遇 0 清、or 遇 1 開、xor 一樣→0、not 全反。清 0：<code>xor ebx,ebx</code>（最快）/ sub ebx,ebx / mov ebx,0。eax−−：sub eax,1 / add eax,−1 / dec eax。×8：add ax,ax×3 或 shl ax,3；×3：mov bx,ax / add ax,ax / add ax,bx。奇偶：<code>test eax,1 / jz 偶</code>。字串比對：esi、edi、ecx、<b>cld</b>、<b>repe cmpsb</b>、je 相同（cmpsb 1B / cmpsw 2 / cmpsd 4）。</p>
-<h4>⑦ 數字表示</h4>
-<p class="s">n bits：有號 −2<sup>n−1</sup>~2<sup>n−1</sup>−1、無號 0~2<sup>n</sup>−1（5 bits：−16~15、31；8：−128~127、255；16：−32768~32767、65535）。1 補數全反；2 補數=1 補數+1（從右第一個 1 之後全反）。A+(−A) 在 n bits = 全 0（進位掉出）。parity：數 1，even 補到偶數。little endian：低位元組放低位址（x86）。IEEE754 單精度 1+8+23、bias 127（倍精度 11/52、1023）：17.25=10001.01=1.000101×2⁴ → 0 10000011 000101…；−0.75=BF400000h。</p>
-<h4>⑧ 其他常考</h4>
-<p class="s">.asm →(ml)→ .obj →(link + .lib)→ .exe。ml <b>/c</b> 只組譯 <b>/coff</b> 格式；link <b>/subsystem:console /entry:main</b>。DOS：dir、dir *.obj、del、<b>type</b>（看內容）、cls、rename/ren、cd ..、<b>cd \</b>、cd sb2。EIP 下個指令、CS 程式、DS 資料、SS 堆疊、ESP 堆疊頂、EBP 框架、ECX 計數、ESI/EDI 字串。DRAM 主記憶體、SRAM cache、CMOS RAM 設定、ROM BIOS。Fetch→Decode→Execute；data bus 雙向、address bus 單向（32 位→4GB）。</p>
-<h4>⑨ 我的易錯清單</h4>
-<p class="s err">loop 用 <b>ecx</b> 不是 cx · div 餘數 <b>edx</b>、商 eax · pop 順序相反 · PROC 標頭 <b>名字 PROC STDCALL x:DWORD</b>（參數名在前）· PROTO≠PROC · add esp 要<b>重數參數</b> · 第一個 push 是 <b>offset</b> 字串 · [esi] 已是位址不再×4 · LENGTHOF≠SIZEOF · srand(time) 不是 time() · 組語不寫括號 · AA[3]=+12 · 空格在行首→lea、在 mov 後→offset · 字元 jb/ja · Windows 指令不是 ls、cd ~ · 5 bits 答案只寫 5 位 · 運算指令後寫 jz/jc（不寫 je/jb）。</p>
-<h4>⑩ 16 進位 ↔ 2 進位 ↔ 10 進位</h4>
-<table><tr><th>16</th><th>2</th><th>10</th><th>16</th><th>2</th><th>10</th></tr>
-<tr><td>0</td><td>0000</td><td>0</td><td>8</td><td>1000</td><td>8</td></tr>
-<tr><td>1</td><td>0001</td><td>1</td><td>9</td><td>1001</td><td>9</td></tr>
-<tr><td>2</td><td>0010</td><td>2</td><td>A</td><td>1010</td><td>10</td></tr>
-<tr><td>3</td><td>0011</td><td>3</td><td>B</td><td>1011</td><td>11</td></tr>
-<tr><td>4</td><td>0100</td><td>4</td><td>C</td><td>1100</td><td>12</td></tr>
-<tr><td>5</td><td>0101</td><td>5</td><td>D</td><td>1101</td><td>13</td></tr>
-<tr><td>6</td><td>0110</td><td>6</td><td>E</td><td>1110</td><td>14</td></tr>
-<tr><td>7</td><td>0111</td><td>7</td><td>F</td><td>1111</td><td>15</td></tr></table>
-<p class="s">一個 16 進位字 = 4 bits，兩個 = 1 byte。2 的次方：2⁴=16 2⁵=32 2⁶=64 2⁷=128 2⁸=256 2¹⁰=1024 2¹⁵=32768 2¹⁶=65536 2³²≈42.9 億。遮罩：bit n = 2ⁿ（bit11=800h、bit7=80h、bit6=40h、bit5=20h）。</p>
-<h4>⑪ 旗標追蹤例題（實測）</h4>
-<table><tr><th>指令</th><th>結果</th><th>CF</th><th>ZF</th><th>SF</th><th>OF</th></tr>
-<tr><td>al=FFh; add al,1</td><td>00</td><td>1</td><td>1</td><td>0</td><td>0</td></tr>
-<tr><td>al=7Fh; add al,1</td><td>80h</td><td>0</td><td>0</td><td>1</td><td>1</td></tr>
-<tr><td>al=1; sub al,2</td><td>FFh</td><td>1</td><td>0</td><td>1</td><td>0</td></tr>
-<tr><td>bl=−128; dec bl</td><td>7Fh</td><td>–</td><td>0</td><td>0</td><td>1</td></tr>
-<tr><td>bl=−127; sub bl,1</td><td>80h</td><td>0</td><td>0</td><td>1</td><td>0</td></tr>
-<tr><td>al=F0h; and al,0</td><td>00</td><td>0</td><td>1</td><td>0</td><td>0</td></tr>
-<tr><td>ax=7FF0h; add al,10h</td><td>AL=00</td><td>1</td><td>1</td><td>0</td><td>0</td></tr>
-<tr><td>→ add ah,1</td><td>AH=80h</td><td>0</td><td>0</td><td>1</td><td>1</td></tr>
-<tr><td>→ add ax,2</td><td>8002h</td><td>0</td><td>0</td><td>1</td><td>0</td></tr>
-<tr><td>al=−128; neg al</td><td>80h</td><td>1</td><td>0</td><td>1</td><td>1</td></tr></table>
-<h4>⑫ 容易混的一對</h4>
-<table><tr><td>lea ebx,AA</td><td>算位址（指令，可帶暫存器）</td></tr>
-<tr><td>mov ebx,OFFSET AA</td><td>同上效果（組譯時常數）</td></tr>
-<tr><td>mov bl,AA</td><td>拿裡面的值</td></tr>
-<tr><td>PROTO / PROC</td><td>宣告別人的 / 寫自己的</td></tr>
-<tr><td>cmp / sub</td><td>都減；cmp 不存結果</td></tr>
-<tr><td>test / and</td><td>都 and；test 不存結果</td></tr>
-<tr><td>xchg / cmovl</td><td>真交換 / 條件蓋掉</td></tr>
-<tr><td>esi / [esi]</td><td>位址本身 / 位址裡的值</td></tr>
-<tr><td>= / EQU / TEXTEQU</td><td>可改數字 / 不可改 / 文字巨集</td></tr>
-<tr><td>directive / instruction</td><td>給組譯器(DWORD,PROC,INVOKE) / CPU 執行(mov,add)</td></tr></table>
-<p class="s">xchg、mov：兩邊不能都是記憶體、大小一致。識別字開頭不能是數字（可 _ @ ? $），不能用保留字。ALIGN 4 推到 4 的倍數位址；<code>v16 LABEL WORD</code> 同位址換大小不佔空間；<code>.data?</code> 放未初始化大陣列。</p>
+<div class="sh-title">組合語言 上機大抄 · 背面（作業 4＋小考與範例，全部實測可跑）</div>
+<h4>作業4-1 猜數字（重玩、0/-1 結束）</h4>
+<pre>cnt dword 1
+mxR dword ?
+tar dword ?
+guess dword ?
+askLimit BYTE &quot;max (0/-1 quit): &quot;, 0
+askGuess BYTE &quot;guess: &quot;, 0
+showCnt  BYTE &quot;correct! %d times&quot;, 10, 0
+gameOver BYTE &quot;game over&quot;, 10, 0
+showBig  BYTE &quot;too big&quot;, 10, 0
+showSmol BYTE &quot;too small&quot;, 10, 0
+; ---- .code ----
+  INVOKE time, 0
+  INVOKE srand, eax    ; 洗牌一次
+while_loop:
+  INVOKE printf, ADDR askLimit
+  INVOKE scanf, ADDR formatIn, ADDR mxR
+  cmp mxR, 0
+  je game_over
+  cmp mxR, -1
+  je game_over
+  call rand
+  xor edx, edx
+  div mxR              ; 餘數 0~mxR-1
+  inc edx
+  mov tar, edx
+  mov cnt, 1           ; 每局重設
+guess_loop:
+  INVOKE printf, ADDR askGuess
+  INVOKE scanf, ADDR formatIn, ADDR guess
+  mov eax, guess
+  cmp eax, 0
+  je game_over
+  cmp eax, -1
+  je game_over
+  cmp eax, tar
+  je find_same
+  jl find_less
+  jg find_greater
+find_same:
+  INVOKE printf, ADDR showCnt, cnt
+  jmp while_loop       ; 重玩
+find_less:
+  INVOKE printf, ADDR showSmol
+  inc cnt
+  jmp guess_loop
+find_greater:
+  INVOKE printf, ADDR showBig
+  inc cnt
+  jmp guess_loop
+game_over:
+  INVOKE printf, ADDR gameOver</pre>
+<h4>作業4-2 四則測驗（核心：出題、四路分支、記錄錯題、等第）</h4>
+<pre>mnR dword 1
+num dword 1
+cntQ dword 1
+op dword 1
+numA dword ?
+numB dword ?
+ans dword ?
+ansInput dword ?
+correct dword 0
+wrong dword 0
+wCnt dword 4 DUP(0)
+wA dword 50 DUP(0)
+score dword 0
+fmtAdd BYTE &quot;%d) %d + %d = &quot;, 0
+fmtSub BYTE &quot;%d) %d - %d = &quot;, 0
+fmtMul BYTE &quot;%d) %d * %d = &quot;, 0
+fmtDiv BYTE &quot;%d) %d / %d = &quot;, 0
+qFmt dword OFFSET fmtAdd, OFFSET fmtSub, OFFSET fmtMul, OFFSET fmtDiv
+gradeA BYTE &quot;A&quot;,0
+gradeB BYTE &quot;B&quot;,0
+gradePass BYTE &quot;PASS&quot;,0
+gradeFail BYTE &quot;FAIL&quot;,0
+msgRes BYTE &quot;score %d %s&quot;,10,0
+; ---- .code ----
+  mov mxR, 9            ; (mxR、mnR、num 由 scanf 讀入)
+q_loop:
+  mov eax, cntQ
+  cmp eax, num
+  jg q_end
+  call rand              ; op = rand % 4
+  xor edx, edx
+  mov ecx, 4
+  div ecx
+  mov op, edx
+  call rand              ; numA = mnR ~ mxR
+  mov ecx, mxR
+  sub ecx, mnR
+  inc ecx
+  xor edx, edx
+  div ecx
+  add edx, mnR
+  mov numA, edx
+  mov numB, 3            ; (numB 同上產生)
+  cmp op, 0
+  je do_add
+  cmp op, 1
+  je do_sub
+  cmp op, 2
+  je do_mul
+do_div:                  ; 先定商，A = B×商
+  mov eax, mxR
+  xor edx, edx
+  div numB
+  mov ebx, eax           ; 商最大 = mxR/B
+  call rand
+  xor edx, edx
+  div ebx
+  inc edx
+  mov ans, edx
+  mov eax, numB
+  mul edx
+  mov numA, eax
+  jmp ask
+do_add:
+  mov eax, numA
+  add eax, numB
+  mov ans, eax
+  jmp ask                ; 都跳到匯合點
+do_sub:
+  mov eax, numA
+  cmp eax, numB
+  jge sub_ok             ; 不可小減大
+  mov ebx, numB
+  mov numA, ebx
+  mov numB, eax
+sub_ok:
+  mov eax, numA
+  sub eax, numB
+  mov ans, eax
+  jmp ask
+do_mul:
+  mov eax, numA
+  mul numB
+  mov ans, eax
+ask:
+  mov ebx, op            ; 用 op 挑格式字串
+  INVOKE printf, qFmt[ebx*4], cntQ, numA, numB
+  INVOKE scanf, ADDR formatIn, ADDR ansInput
+  mov eax, ansInput
+  cmp eax, ans
+  jne q_wrong
+  inc correct
+  jmp q_next
+q_wrong:
+  mov ebx, wrong         ; 存到第 wrong 格
+  mov eax, numA
+  mov wA[ebx*4], eax     ; (wB wOp wAns 同法)
+  inc wrong
+  mov ebx, op
+  inc wCnt[ebx*4]        ; 該類錯 +1
+q_next:
+  inc cntQ
+  jmp q_loop
+q_end:
+  mov eax, correct       ; 分數 = 對×100÷題數
+  mov ecx, 100
+  mul ecx
+  xor edx, edx
+  div num
+  mov score, eax
+  mov ebx, OFFSET gradeFail ; 由差往好升級
+  cmp score, 60
+  jl show
+  mov ebx, OFFSET gradePass
+  cmp score, 80
+  jl show
+  mov ebx, OFFSET gradeB
+  cmp score, 90
+  jl show
+  mov ebx, OFFSET gradeA
+show:
+  INVOKE printf, ADDR msgRes, score, ebx</pre>
+<h4>作業4-2 其他：輸入姓名與範圍檢查、印各類錯題數與錯題清單</h4>
+<pre>userName BYTE 64 DUP(0)
+nameFmt  BYTE &quot;%s&quot;, 0
+rangeFmt BYTE &quot;%d %d&quot;, 0
+msgAskWrong BYTE &quot;bad range&quot;,10,0
+wQ   dword 50 DUP(0)
+wB   dword 50 DUP(0)
+wOp  dword 50 DUP(0)
+wAns dword 50 DUP(0)
+msgCat BYTE &quot;add %d sub %d mul %d div %d&quot;,10,0
+msgWrong BYTE &quot; ans %d&quot;,10,0
+msgName BYTE &quot;%s&quot;,10,0
+; ---- .code ----
+  INVOKE scanf, ADDR nameFmt, ADDR userName ; 字串
+ask_range:
+  INVOKE scanf, ADDR rangeFmt, ADDR mxR, ADDR mnR
+  mov eax, mnR
+  cmp mxR, eax
+  jl ask_range_wrong     ; 上限 &lt; 下限
+  cmp mnR, 1
+  jl ask_range_wrong     ; 下限 &lt; 1（除法會除以 0）
+  ; ……出題迴圈……
+  mov wrong, 1           ; (示範：假設錯 1 題)
+  mov wQ[0], 1
+  mov wA[0], 3
+  mov wB[0], 4
+  mov wOp[0], 0
+  mov wAns[0], 7
+  mov wCnt[0], 1
+  INVOKE printf, ADDR msgName, ADDR userName ; %s 給位址
+  INVOKE printf, ADDR msgCat, wCnt[0], wCnt[4], wCnt[8], wCnt[12]
+  mov cntQ, 0            ; cnt 用完拿來當索引
+list_loop:
+  mov eax, cntQ
+  cmp eax, wrong
+  jge list_end
+  mov ebx, cntQ          ; ebx 不會被 printf 改
+  mov eax, wOp[ebx*4]
+  INVOKE printf, qFmt[eax*4], wQ[ebx*4], wA[ebx*4], wB[ebx*4]
+  INVOKE printf, ADDR msgWrong, wAns[ebx*4]
+  inc cntQ
+  jmp list_loop
+list_end:
+  jmp done42
+ask_range_wrong:         ; 放在走不到的地方
+  INVOKE printf, ADDR msgAskWrong
+  jmp ask_range
+done42:</pre>
+<h4>小考/範例片段：最大值、push/call 亂數、階乘</h4>
+<pre>fmtR BYTE &quot;%d %d&quot;,10,0
+; ---- .code ----
+; 11/2 ax,bx,cx 最大值 → ax（有號）
+  mov ax, 7
+  mov bx, 42
+  mov cx, 15
+  cmp ax, bx
+  jg pp1
+  xchg ax, bx
+pp1: cmp ax, cx
+  jg pp2
+  xchg ax, cx
+pp2: movsx esi, ax       ; esi=42
+; 11/2 不用 INVOKE：3~98 亂數 → edx
+  push 0
+  call time
+  add esp, 4
+  push eax
+  call srand
+  add esp, 4
+  call rand              ; 結果在 eax
+  mov ecx, 96            ; 98-3+1
+  mov edx, 0
+  div ecx
+  add edx, 3
+; 範例：階乘（C 慣例）
+  push 5
+  call Factorial
+  add esp, 4             ; C：呼叫者清
+  INVOKE printf, OFFSET fmtR, esi, eax
+; ---- main ENDP 之後 ----
+Factorial PROC C USES ecx, nF:DWORD
+  mov ecx, nF
+  mov eax, 1
+FL: mul ecx              ; eax = eax*ecx
+  loop FL
+  ret
+Factorial ENDP</pre>
+<h4>範例：字串比對（repe cmpsb）、用堆疊反轉</h4>
+<pre>s1 BYTE &quot;Hello&quot;,0
+s2 BYTE &quot;Hello&quot;,0
+nm BYTE &quot;Taipei&quot;,0
+nmLen = ($ - nm) - 1
+fmtC BYTE &quot;%d %s&quot;,10,0
+; ---- .code ----
+  mov esi, OFFSET s1
+  mov edi, OFFSET s2
+  mov ecx, LENGTHOF s1
+  cld                    ; 往後比
+  repe cmpsb             ; 一樣就繼續
+  mov ebx, 0
+  jne cDiff
+  mov ebx, 1             ; 1 = 相同
+cDiff: mov ecx, nmLen
+  mov esi, 0
+R1: movzx eax, nm[esi]   ; push 不能推 8 位
+  push eax
+  inc esi
+  loop R1
+  mov ecx, nmLen
+  mov esi, 0
+R2: pop eax              ; 反序拿回
+  mov nm[esi], al
+  inc esi
+  loop R2
+  INVOKE printf, OFFSET fmtC, ebx, OFFSET nm</pre>
+<p class="s err"><b>寫完檢查</b>：call 會弄壞 eax ecx edx · loop 用 ecx · mem,mem 不行 · ADDR 只在 INVOKE · esi 是位址→[esi]，是索引→arr[esi*4] · 除法前清 edx · 每個分支都 jmp · push/pop 成對 · 最後 ExitProcess。</p>
 </div>
 </section>
 </div>
@@ -2408,7 +2746,7 @@ const SETUP = [
  {t:'平台選 x86',d:'上方工具列的平台下拉選單選 <b>x86</b>，不要選 x64。x64 不支援 <code>.386</code>、<code>.model flat</code>。'},
  {t:'新增 .asm 檔',d:'在「來源檔案」上按右鍵 →「加入」→「新增項目」→ 選「C++ 檔 (.cpp)」，名稱改成 <code>main.asm</code>（副檔名一定要 .asm）→ 新增。'},
  {t:'確認是主控台程式',d:'專案 → 屬性 → 連結器 → 系統 →「子系統」要是<b>主控台 (/SUBSYSTEM:CONSOLE)</b>。空白專案通常已經是了，看一眼就好。'},
- {t:'貼上模板、寫程式',d:'把下面的「萬用模板」貼進 main.asm，在 <code>.data</code> 宣告變數、在 <code>main PROC</code> 裡寫程式。'},
+ {t:'貼上模板、寫程式',d:'把下面的「通用模板」貼進 main.asm，在 <code>.data</code> 宣告變數、在 <code>main PROC</code> 裡寫程式。'},
  {t:'建置',d:'「建置」→「建置方案」（Ctrl+Shift+B）。看下方「輸出」視窗：<b>1 成功</b> 才往下。失敗就看「錯誤清單」的代碼，對照下面的錯誤表。'},
  {t:'執行',d:'「偵錯」→「啟動但不偵錯」（Ctrl+F5）。用這個執行，視窗會停在「請按任意鍵繼續」，不會一閃就關。'},
  {t:'追蹤暫存器（作業學習單要截圖）',d:'在行號左邊點一下設中斷點 → F5 開始偵錯 → F10 一行一行執行 →「偵錯」→「視窗」→ 打開<b>暫存器</b>、<b>記憶體</b>、<b>監看式</b>。'},
@@ -2423,7 +2761,7 @@ includelib msvcrt.lib
 includelib legacy_stdio_definitions.lib
 includelib ucrt.lib
 
-ExitProcess PROTO :DWORD          ; Windows API：stdcall
+ExitProcess PROTO STDCALL :DWORD  ; Windows API：stdcall
 printf      PROTO C :VARARG       ; C 函式：cdecl
 scanf       PROTO C :VARARG
 
@@ -2433,7 +2771,7 @@ fmtOut  BYTE "result = %d", 10, 0
 n       DWORD ?
 
 .code
-main PROC
+main PROC C
     INVOKE scanf, OFFSET fmtIn, OFFSET n   ; 讀：給位址
     mov eax, n
     ; ……在這裡寫程式……
@@ -2515,14 +2853,14 @@ const LABS = [
   check:['猜對時次數正確','輸入 0 能結束','改成 1~6 的骰子（變化題）']}
 ];
 
-LABS[0].ref=".386\n.model flat, stdcall\noption casemap:none\nincludelib kernel32.lib\nincludelib msvcrt.lib\nincludelib legacy_stdio_definitions.lib\nincludelib ucrt.lib\n\nExitProcess PROTO :DWORD\nprintf      PROTO C :VARARG\nscanf       PROTO C :VARARG\n\n.data\npromptA BYTE \"Enter A: \", 0\npromptB BYTE \"Enter B: \", 0\nfmtIn   BYTE \"%d\", 0\nfmtOut  BYTE \"A + B = %d\", 10, \"A - B = %d\", 10, \"A * B = %d\", 10, 0\nA       DWORD ?\nB       DWORD ?\nsum     DWORD ?\ndiff    DWORD ?\nprod    DWORD ?\n\n.code\nmain PROC\n    INVOKE printf, OFFSET promptA\n    INVOKE scanf, OFFSET fmtIn, OFFSET A      ; scanf \u8981\u7d66\u4f4d\u5740\n    INVOKE printf, OFFSET promptB\n    INVOKE scanf, OFFSET fmtIn, OFFSET B\n\n    mov eax, A\n    add eax, B\n    mov sum, eax          ; sum = A + B\n\n    mov eax, A\n    sub eax, B\n    mov diff, eax         ; diff = A - B\n\n    mov eax, A\n    imul eax, B           ; eax = eax * B\uff08\u6709\u865f\u4e58\u6cd5\uff09\n    mov prod, eax\n\n    INVOKE printf, OFFSET fmtOut, sum, diff, prod   ; \u5370\u6578\u5b57\u50b3\u503c\n    INVOKE ExitProcess, 0\nmain ENDP\nEND main\n";LABS[0].skel=".386\n.model flat, stdcall\noption casemap:none\nincludelib kernel32.lib\nincludelib msvcrt.lib\nincludelib legacy_stdio_definitions.lib\nincludelib ucrt.lib\n\nExitProcess PROTO :DWORD\nprintf      PROTO C :VARARG\nscanf       PROTO C :VARARG\n\n.data\npromptA BYTE \"Enter A: \", 0\npromptB BYTE \"Enter B: \", 0\nfmtIn   BYTE \"%d\", 0\nfmtOut  BYTE \"A + B = %d\", 10, \"A - B = %d\", 10, \"A * B = %d\", 10, 0\nA       DWORD ?\nB       DWORD ?\nsum     DWORD ?\ndiff    DWORD ?\nprod    DWORD ?\n\n.code\nmain PROC\n    INVOKE printf, OFFSET promptA\n    ; TODO\uff1a\u8b80\u5165 A\uff08scanf \u8981\u7d66\u4f4d\u5740\uff09\n    INVOKE printf, OFFSET promptB\n    ; TODO\uff1a\u8b80\u5165 B\n\n    mov eax, A\n    ; TODO\uff1aeax = A + B\n    mov sum, eax          ; sum = A + B\n\n    mov eax, A\n    ; TODO\uff1aeax = A - B\n    mov diff, eax         ; diff = A - B\n\n    mov eax, A\n    ; TODO\uff1aeax = A * B\uff08\u6709\u865f\u4e58\u6cd5 imul\uff09\n    mov prod, eax\n\n    ; TODO\uff1a\u4e00\u884c\u5370\u51fa\u4e09\u500b\u7d50\u679c\uff08\u5370\u6578\u5b57\u50b3\u503c\uff09\n    INVOKE ExitProcess, 0\nmain ENDP\nEND main\n";
-LABS[1].ref=".386\n.model flat, stdcall\noption casemap:none\nincludelib kernel32.lib\nincludelib msvcrt.lib\nincludelib legacy_stdio_definitions.lib\nincludelib ucrt.lib\n\nExitProcess PROTO :DWORD\nprintf      PROTO C :VARARG\nscanf       PROTO C :VARARG\n\n.data\nprompt   BYTE \"Enter an integer: \", 0\nfmtIn    BYTE \"%d\", 0\nevenMsg  BYTE \"%d is EVEN\", 10, 0\noddMsg   BYTE \"%d is ODD\", 10, 0\nnum      DWORD ?\n\n.code\nmain PROC\n    ; \u4e0d\u7528 INVOKE\uff1apush / call / add esp\n    push OFFSET prompt\n    call printf\n    add esp, 4                ; 1 \u500b\u53c3\u6578\n\n    push OFFSET num           ; \u53f3\u908a\u7684\u53c3\u6578\u5148\u63a8\n    push OFFSET fmtIn\n    call scanf\n    add esp, 8                ; 2 \u500b\u53c3\u6578\n\n    mov eax, num\n    test eax, 1               ; \u53ea\u770b\u6700\u4f4e\u4f4d\n    jz is_even                ; \u6700\u4f4e\u4f4d 0 \u2192 \u5076\u6578\n\n    push num\n    push OFFSET oddMsg\n    call printf\n    add esp, 8\n    jmp done                  ; \u8df3\u904e\u5076\u6578\u5340\u584a\uff0c\u4e0d\u7136\u6703\u5f80\u4e0b\u6389\n\nis_even:\n    push num\n    push OFFSET evenMsg\n    call printf\n    add esp, 8\n\ndone:\n    push 0\n    call ExitProcess          ; stdcall\uff1a\u4e0d\u7528 add esp\nmain ENDP\nEND main\n";LABS[1].skel=".386\n.model flat, stdcall\noption casemap:none\nincludelib kernel32.lib\nincludelib msvcrt.lib\nincludelib legacy_stdio_definitions.lib\nincludelib ucrt.lib\n\nExitProcess PROTO :DWORD\nprintf      PROTO C :VARARG\nscanf       PROTO C :VARARG\n\n.data\nprompt   BYTE \"Enter an integer: \", 0\nfmtIn    BYTE \"%d\", 0\nevenMsg  BYTE \"%d is EVEN\", 10, 0\noddMsg   BYTE \"%d is ODD\", 10, 0\nnum      DWORD ?\n\n.code\nmain PROC\n    ; \u4e0d\u7528 INVOKE\uff1apush / call / add esp\n    push OFFSET prompt\n    call printf\n    add esp, 4                ; 1 \u500b\u53c3\u6578\n\n    ; TODO\uff1ascanf \u7684\u7b2c 2 \u500b\u53c3\u6578\u5148\u63a8\uff08\u4f4d\u5740\uff09\n    push OFFSET fmtIn\n    call scanf\n    ; TODO\uff1ascanf \u547c\u53eb\u5b8c\u6e05\u5806\u758a\n\n    mov eax, num\n    ; TODO\uff1a\u53ea\u770b\u6700\u4f4e\u4f4d\n    ; TODO\uff1a\u6700\u4f4e\u4f4d 0 \u2192 \u8df3\u5230 is_even\n\n    push num\n    push OFFSET oddMsg\n    call printf\n    add esp, 8\n    ; TODO\uff1a\u8df3\u904e\u5076\u6578\u5340\u584a\n\nis_even:\n    push num\n    push OFFSET evenMsg\n    call printf\n    add esp, 8\n\ndone:\n    push 0\n    ; TODO\uff1a\u547c\u53eb ExitProcess\uff08stdcall\uff0c\u4e4b\u5f8c\u4e0d\u7528 add esp\uff09\nmain ENDP\nEND main\n";
-LABS[2].ref=".386\n.model flat, stdcall\noption casemap:none\nincludelib kernel32.lib\nincludelib msvcrt.lib\nincludelib legacy_stdio_definitions.lib\nincludelib ucrt.lib\n\nExitProcess PROTO :DWORD\nprintf      PROTO C :VARARG\nscanf       PROTO C :VARARG\n\n.data\nprompt BYTE \"Enter n: \", 0\nfmtIn  BYTE \"%d\", 0\nfmtOut BYTE \"1 + 2 + ... + %d = %d\", 10, 0\nerrMsg BYTE \"n must be >= 1\", 10, 0\nn      DWORD ?\n\n.code\nmain PROC\n    INVOKE printf, OFFSET prompt\n    INVOKE scanf, OFFSET fmtIn, OFFSET n\n\n    cmp n, 1\n    jl bad_input              ; n < 1\uff1aloop \u6703\u8dd1 4294967296 \u6b21\uff0c\u5148\u64cb\u6389\n\n    xor eax, eax              ; eax = \u7e3d\u548c\n    mov ebx, 1                ; ebx = \u76ee\u524d\u8981\u52a0\u7684\u6578\n    mov ecx, n                ; loop \u7528 ecx \u7576\u8a08\u6578\u5668\nL1:\n    add eax, ebx\n    inc ebx\n    loop L1\n\n    INVOKE printf, OFFSET fmtOut, n, eax\n    jmp done\n\nbad_input:\n    INVOKE printf, OFFSET errMsg\ndone:\n    INVOKE ExitProcess, 0\nmain ENDP\nEND main\n";LABS[2].skel=".386\n.model flat, stdcall\noption casemap:none\nincludelib kernel32.lib\nincludelib msvcrt.lib\nincludelib legacy_stdio_definitions.lib\nincludelib ucrt.lib\n\nExitProcess PROTO :DWORD\nprintf      PROTO C :VARARG\nscanf       PROTO C :VARARG\n\n.data\nprompt BYTE \"Enter n: \", 0\nfmtIn  BYTE \"%d\", 0\nfmtOut BYTE \"1 + 2 + ... + %d = %d\", 10, 0\nerrMsg BYTE \"n must be >= 1\", 10, 0\nn      DWORD ?\n\n.code\nmain PROC\n    INVOKE printf, OFFSET prompt\n    INVOKE scanf, OFFSET fmtIn, OFFSET n\n\n    cmp n, 1\n    ; TODO\uff1an < 1 \u5c31\u8df3\u5230 bad_input\n\n    xor eax, eax              ; eax = \u7e3d\u548c\n    mov ebx, 1                ; ebx = \u76ee\u524d\u8981\u52a0\u7684\u6578\n    ; TODO\uff1a\u8a2d\u5b9a loop \u8a08\u6578\u5668\nL1:\n    ; TODO\uff1a\u7d2f\u52a0\n    ; TODO\uff1a\u4e0b\u4e00\u500b\u6578\n    ; TODO\uff1a\u56de\u5230 L1\n\n    INVOKE printf, OFFSET fmtOut, n, eax\n    jmp done\n\nbad_input:\n    INVOKE printf, OFFSET errMsg\ndone:\n    INVOKE ExitProcess, 0\nmain ENDP\nEND main\n";
-LABS[3].ref=".386\n.model flat, stdcall\noption casemap:none\nincludelib kernel32.lib\nincludelib msvcrt.lib\nincludelib legacy_stdio_definitions.lib\nincludelib ucrt.lib\n\nExitProcess PROTO :DWORD\nprintf      PROTO C :VARARG\nscanf       PROTO C :VARARG\n\n.data\narr    DWORD 45, 12, 89, 3, 27, 66, 14, 90, 55, 8\nmaxVal DWORD ?\ntotal  DWORD ?\nfmtOut BYTE \"max = %d, sum = %d, average = %d\", 10, 0\n\n.code\nmain PROC\n    mov esi, OFFSET arr       ; esi \u6307\u5411\u9663\u5217\u958b\u982d\uff08\u4f4d\u5740\uff09\n    mov ecx, LENGTHOF arr     ; 10 \u500b\u5143\u7d20\n    mov eax, [esi]            ; \u5148\u5047\u8a2d\u7b2c\u4e00\u500b\u6700\u5927\n    mov maxVal, eax\n    xor eax, eax              ; eax = \u7e3d\u548c\nL1:\n    mov edx, [esi]            ; \u53d6\u51fa\u76ee\u524d\u5143\u7d20\n    add eax, edx              ; \u52a0\u5230\u7e3d\u548c\n    cmp edx, maxVal\n    jle not_bigger            ; \u6709\u865f\uff1a\u4e0d\u6bd4\u8f03\u5927\u5c31\u8df3\u904e\n    mov maxVal, edx\nnot_bigger:\n    add esi, TYPE DWORD       ; \u4e0b\u4e00\u683c +4\n    loop L1\n    mov total, eax\n\n    ; \u5e73\u5747 = total / 10\uff08\u7121\u865f\u9664\u6cd5\uff09\n    xor edx, edx\n    mov ecx, LENGTHOF arr\n    div ecx                   ; \u5546\u5728 eax\n\n    INVOKE printf, OFFSET fmtOut, maxVal, total, eax\n    INVOKE ExitProcess, 0\nmain ENDP\nEND main\n";LABS[3].skel=".386\n.model flat, stdcall\noption casemap:none\nincludelib kernel32.lib\nincludelib msvcrt.lib\nincludelib legacy_stdio_definitions.lib\nincludelib ucrt.lib\n\nExitProcess PROTO :DWORD\nprintf      PROTO C :VARARG\nscanf       PROTO C :VARARG\n\n.data\narr    DWORD 45, 12, 89, 3, 27, 66, 14, 90, 55, 8\nmaxVal DWORD ?\ntotal  DWORD ?\nfmtOut BYTE \"max = %d, sum = %d, average = %d\", 10, 0\n\n.code\nmain PROC\n    ; TODO\uff1aesi \u6307\u5411\u9663\u5217\u958b\u982d\n    ; TODO\uff1a\u8a2d\u5b9a\u6b21\u6578\uff08\u7528\u904b\u7b97\u5b50\uff09\n    mov eax, [esi]            ; \u5148\u5047\u8a2d\u7b2c\u4e00\u500b\u6700\u5927\n    mov maxVal, eax\n    xor eax, eax              ; eax = \u7e3d\u548c\nL1:\n    ; TODO\uff1a\u53d6\u51fa\u76ee\u524d\u5143\u7d20\u5230 edx\n    add eax, edx              ; \u52a0\u5230\u7e3d\u548c\n    cmp edx, maxVal\n    ; TODO\uff1a\u4e0d\u6bd4 maxVal \u5927\u5c31\u8df3\u904e\n    mov maxVal, edx\nnot_bigger:\n    ; TODO\uff1a\u79fb\u5230\u4e0b\u4e00\u683c\n    loop L1\n    mov total, eax\n\n    ; \u5e73\u5747 = total / 10\uff08\u7121\u865f\u9664\u6cd5\uff09\n    xor edx, edx\n    mov ecx, LENGTHOF arr\n    ; TODO\uff1a\u9664\u6cd5\uff08\u5546\u5728 eax\uff09\n\n    INVOKE printf, OFFSET fmtOut, maxVal, total, eax\n    INVOKE ExitProcess, 0\nmain ENDP\nEND main\n";
-LABS[4].ref=".386\n.model flat, stdcall\noption casemap:none\nincludelib kernel32.lib\nincludelib msvcrt.lib\nincludelib legacy_stdio_definitions.lib\nincludelib ucrt.lib\n\nExitProcess PROTO :DWORD\nprintf      PROTO C :VARARG\nscanf       PROTO C :VARARG\n\n.data\nprompt BYTE \"Enter letters: \", 0\nfmtIn  BYTE \"%s\", 0\nfmtOut BYTE \"Result: %s\", 10, 0\nbuffer BYTE 100 DUP(0)\n\n.code\nmain PROC\n    INVOKE printf, OFFSET prompt\n    INVOKE scanf, OFFSET fmtIn, OFFSET buffer\n\n    mov esi, OFFSET buffer\nnext:\n    mov al, [esi]             ; \u8b80\u4e00\u500b\u5b57\u5143\n    test al, al\n    jz finish                 ; \u9047\u5230\u7d50\u5c3e 0 \u5c31\u7d50\u675f\n\n    cmp al, 'A'\n    jb skip                   ; \u5b57\u5143\u662f\u7121\u865f\uff1a\u7528 jb/ja\n    cmp al, 'Z'\n    jbe toggle                ; A~Z\uff1a\u8981\u8f49\n    cmp al, 'a'\n    jb skip\n    cmp al, 'z'\n    ja skip\ntoggle:\n    xor al, 20h               ; bit 5 \u7ffb\u8f49\uff1a\u5927\u5c0f\u5beb\u4e92\u63db\n    mov [esi], al             ; \u5beb\u56de\u53bb\nskip:\n    inc esi                   ; BYTE\uff1a\u4e0b\u4e00\u683c +1\n    jmp next\n\nfinish:\n    INVOKE printf, OFFSET fmtOut, OFFSET buffer   ; %s \u50b3\u4f4d\u5740\n    INVOKE ExitProcess, 0\nmain ENDP\nEND main\n";LABS[4].skel=".386\n.model flat, stdcall\noption casemap:none\nincludelib kernel32.lib\nincludelib msvcrt.lib\nincludelib legacy_stdio_definitions.lib\nincludelib ucrt.lib\n\nExitProcess PROTO :DWORD\nprintf      PROTO C :VARARG\nscanf       PROTO C :VARARG\n\n.data\nprompt BYTE \"Enter letters: \", 0\nfmtIn  BYTE \"%s\", 0\nfmtOut BYTE \"Result: %s\", 10, 0\nbuffer BYTE 100 DUP(0)\n\n.code\nmain PROC\n    INVOKE printf, OFFSET prompt\n    ; TODO\uff1a\u8b80\u5165\u5b57\u4e32\u5230 buffer\n\n    mov esi, OFFSET buffer\nnext:\n    ; TODO\uff1a\u8b80\u4e00\u500b\u5b57\u5143\u5230 al\n    test al, al\n    ; TODO\uff1a\u9047\u5230 0 \u5c31\u7d50\u675f\n\n    cmp al, 'A'\n    ; TODO\uff1a\u5c0f\u65bc A \u8df3\u904e\uff08\u5b57\u5143\u7528\u7121\u865f\uff09\n    cmp al, 'Z'\n    jbe toggle                ; A~Z\uff1a\u8981\u8f49\n    cmp al, 'a'\n    jb skip\n    cmp al, 'z'\n    ja skip\ntoggle:\n    ; TODO\uff1a\u5927\u5c0f\u5beb\u4e92\u63db\n    ; TODO\uff1a\u5beb\u56de\u53bb\nskip:\n    ; TODO\uff1a\u4e0b\u4e00\u500b\u5b57\u5143\n    jmp next\n\nfinish:\n    INVOKE printf, OFFSET fmtOut, OFFSET buffer   ; %s \u50b3\u4f4d\u5740\n    INVOKE ExitProcess, 0\nmain ENDP\nEND main\n";
-LABS[5].ref=".386\n.model flat, stdcall\noption casemap:none\nincludelib kernel32.lib\nincludelib msvcrt.lib\nincludelib legacy_stdio_definitions.lib\nincludelib ucrt.lib\n\nExitProcess PROTO :DWORD\nprintf      PROTO C :VARARG\nscanf       PROTO C :VARARG\n\n.data\nprompt BYTE \"Enter n: \", 0\nfmtIn  BYTE \"%d\", 0\nyesMsg BYTE \"%d is a multiple of 3\", 10, 0\nnoMsg  BYTE \"%d is NOT a multiple of 3\", 10, 0\nn      DWORD ?\n\n.code\nmain PROC\n    INVOKE printf, OFFSET prompt\n    INVOKE scanf, OFFSET fmtIn, OFFSET n\n\n    push n                    ; \u53c3\u6578\n    call IsMul3               ; \u7d50\u679c\u5728 eax\uff081 = \u662f\uff09\n                              ; stdcall\uff1aIsMul3 \u81ea\u5df1 ret 4\uff0c\u9019\u88e1\u4e0d\u7528 add esp\n    cmp eax, 1\n    je yes\n    INVOKE printf, OFFSET noMsg, n\n    jmp done\nyes:\n    INVOKE printf, OFFSET yesMsg, n\ndone:\n    INVOKE ExitProcess, 0\nmain ENDP\n\n; ------------------------------------------------\n; IsMul3\uff1a\u5224\u65b7 num \u662f\u5426\u70ba 3 \u7684\u500d\u6578\n; \u56de\u50b3 eax = 1\uff08\u662f\uff09\u6216 0\uff08\u4e0d\u662f\uff09\n; ------------------------------------------------\nIsMul3 PROC STDCALL num:DWORD\n    mov eax, num              ; \u5e95\u5c64\u5176\u5be6\u662f [ebp+8]\n    xor edx, edx              ; \u88ab\u9664\u6578 EDX:EAX\uff0c\u5148\u6e05\u9ad8\u4f4d\n    mov ecx, 3\n    div ecx                   ; \u5546 eax\u3001\u9918\u6578 edx\n    cmp edx, 0\n    jne not_mul\n    mov eax, 1\n    ret                       ; MASM \u81ea\u52d5\u8b8a\u6210 ret 4\nnot_mul:\n    mov eax, 0\n    ret\nIsMul3 ENDP\nEND main\n";LABS[5].skel=".386\n.model flat, stdcall\noption casemap:none\nincludelib kernel32.lib\nincludelib msvcrt.lib\nincludelib legacy_stdio_definitions.lib\nincludelib ucrt.lib\n\nExitProcess PROTO :DWORD\nprintf      PROTO C :VARARG\nscanf       PROTO C :VARARG\n\n.data\nprompt BYTE \"Enter n: \", 0\nfmtIn  BYTE \"%d\", 0\nyesMsg BYTE \"%d is a multiple of 3\", 10, 0\nnoMsg  BYTE \"%d is NOT a multiple of 3\", 10, 0\nn      DWORD ?\n\n.code\nmain PROC\n    INVOKE printf, OFFSET prompt\n    INVOKE scanf, OFFSET fmtIn, OFFSET n\n\n    ; TODO\uff1a\u628a\u53c3\u6578 n \u63a8\u9032\u5806\u758a\n    ; TODO\uff1a\u547c\u53eb IsMul3\n                              ; stdcall\uff1aIsMul3 \u81ea\u5df1 ret 4\uff0c\u9019\u88e1\u4e0d\u7528 add esp\n    cmp eax, 1\n    je yes\n    INVOKE printf, OFFSET noMsg, n\n    jmp done\nyes:\n    INVOKE printf, OFFSET yesMsg, n\ndone:\n    INVOKE ExitProcess, 0\nmain ENDP\n\n; ------------------------------------------------\n; IsMul3\uff1a\u5224\u65b7 num \u662f\u5426\u70ba 3 \u7684\u500d\u6578\n; \u56de\u50b3 eax = 1\uff08\u662f\uff09\u6216 0\uff08\u4e0d\u662f\uff09\n; ------------------------------------------------\n; TODO\uff1a\u7a0b\u5e8f\u6a19\u982d\uff1astdcall\u3001\u4e00\u500b\u53c3\u6578 num\n    mov eax, num              ; \u5e95\u5c64\u5176\u5be6\u662f [ebp+8]\n    ; TODO\uff1a\u9664\u6cd5\u524d\u6e05\u9ad8\u4f4d\n    mov ecx, 3\n    ; TODO\uff1a\u9664\u4ee5 3\n    ; TODO\uff1a\u6aa2\u67e5\u9918\u6578\n    ; TODO\uff1a\u9918\u6578\u4e0d\u662f 0 \u2192 not_mul\n    mov eax, 1\n    ret                       ; MASM \u81ea\u52d5\u8b8a\u6210 ret 4\nnot_mul:\n    mov eax, 0\n    ret\nIsMul3 ENDP\nEND main\n";
-LABS[6].ref=".386\n.model flat, stdcall\noption casemap:none\nincludelib kernel32.lib\nincludelib msvcrt.lib\nincludelib legacy_stdio_definitions.lib\nincludelib ucrt.lib\n\nExitProcess PROTO :DWORD\nprintf      PROTO C :VARARG\nscanf       PROTO C :VARARG\n\n.data\nprompt   BYTE \"Enter n: \", 0\nfmtIn    BYTE \"%d\", 0\nprimeMsg BYTE \"%d is prime\", 10, 0\nnotMsg   BYTE \"%d is not prime\", 10, 0\nn        DWORD ?\n\n.code\nmain PROC\n    INVOKE printf, OFFSET prompt\n    INVOKE scanf, OFFSET fmtIn, OFFSET n\n\n    cmp n, 2\n    jl not_prime              ; n < 2 \u4e0d\u662f\u8cea\u6578\n    je is_prime               ; n = 2 \u662f\u8cea\u6578\n\n    mov ebx, 2                ; \u9664\u6578\u5f9e 2 \u958b\u59cb\uff08ebx \u4e0d\u6703\u88ab printf \u6539\u6389\uff09\ncheck:\n    cmp ebx, n\n    jge is_prime              ; \u9664\u6578\u8a66\u5230 n-1 \u90fd\u4e0d\u6574\u9664 \u2192 \u8cea\u6578\n    mov eax, n\n    xor edx, edx\n    div ebx\n    cmp edx, 0                ; \u9918\u6578 0 \u2192 \u6574\u9664\n    je not_prime\n    inc ebx\n    jmp check\n\nis_prime:\n    INVOKE printf, OFFSET primeMsg, n\n    jmp done\nnot_prime:\n    INVOKE printf, OFFSET notMsg, n\ndone:\n    INVOKE ExitProcess, 0\nmain ENDP\nEND main\n";LABS[6].skel=".386\n.model flat, stdcall\noption casemap:none\nincludelib kernel32.lib\nincludelib msvcrt.lib\nincludelib legacy_stdio_definitions.lib\nincludelib ucrt.lib\n\nExitProcess PROTO :DWORD\nprintf      PROTO C :VARARG\nscanf       PROTO C :VARARG\n\n.data\nprompt   BYTE \"Enter n: \", 0\nfmtIn    BYTE \"%d\", 0\nprimeMsg BYTE \"%d is prime\", 10, 0\nnotMsg   BYTE \"%d is not prime\", 10, 0\nn        DWORD ?\n\n.code\nmain PROC\n    INVOKE printf, OFFSET prompt\n    INVOKE scanf, OFFSET fmtIn, OFFSET n\n\n    cmp n, 2\n    ; TODO\uff1an < 2\n    ; TODO\uff1an = 2\n\n    mov ebx, 2                ; \u9664\u6578\u5f9e 2 \u958b\u59cb\uff08ebx \u4e0d\u6703\u88ab printf \u6539\u6389\uff09\ncheck:\n    cmp ebx, n\n    ; TODO\uff1a\u9664\u6578\u5df2\u8a66\u5230 n\n    mov eax, n\n    xor edx, edx\n    ; TODO\uff1an \u00f7 ebx\n    cmp edx, 0                ; \u9918\u6578 0 \u2192 \u6574\u9664\n    ; TODO\uff1a\u6574\u9664 \u2192 \u4e0d\u662f\u8cea\u6578\n    ; TODO\uff1a\u4e0b\u4e00\u500b\u9664\u6578\n    jmp check\n\nis_prime:\n    INVOKE printf, OFFSET primeMsg, n\n    jmp done\nnot_prime:\n    INVOKE printf, OFFSET notMsg, n\ndone:\n    INVOKE ExitProcess, 0\nmain ENDP\nEND main\n";
-LABS[7].ref=".386\n.model flat, stdcall\noption casemap:none\nincludelib kernel32.lib\nincludelib msvcrt.lib\nincludelib legacy_stdio_definitions.lib\nincludelib ucrt.lib\n\nExitProcess PROTO :DWORD\nprintf      PROTO C :VARARG\nscanf       PROTO C :VARARG\ntime  PROTO C :DWORD\nsrand PROTO C :DWORD\nrand  PROTO C\n\n.data\nprompt  BYTE \"Guess (1-100, 0 to quit): \", 0\nfmtIn   BYTE \"%d\", 0\nbigMsg  BYTE \"Too big\", 10, 0\nsmlMsg  BYTE \"Too small\", 10, 0\nokMsg   BYTE \"Correct! You guessed %d times\", 10, 0\nbyeMsg  BYTE \"Bye\", 10, 0\ntarget  DWORD ?\nguess   DWORD ?\ncnt     DWORD 0\n\n.code\nmain PROC\n    INVOKE time, 0\n    INVOKE srand, eax         ; \u6d17\u724c\u4e00\u6b21\n    INVOKE rand               ; \u4e82\u6578\u5728 eax\n    xor edx, edx\n    mov ecx, 100              ; 1~100\uff1a\u9577\u5ea6 100\n    div ecx\n    inc edx                   ; 0~99 \u2192 1~100\n    mov target, edx\n\nagain:\n    INVOKE printf, OFFSET prompt\n    INVOKE scanf, OFFSET fmtIn, OFFSET guess\n    mov eax, guess\n    cmp eax, 0\n    je quit\n    inc cnt\n    cmp eax, target           ; \u731c\u7684 vs \u7b54\u6848\uff08\u6709\u865f\uff09\n    je correct\n    jg too_big\n    INVOKE printf, OFFSET smlMsg\n    jmp again\ntoo_big:\n    INVOKE printf, OFFSET bigMsg\n    jmp again\ncorrect:\n    INVOKE printf, OFFSET okMsg, cnt\n    jmp done\nquit:\n    INVOKE printf, OFFSET byeMsg\ndone:\n    INVOKE ExitProcess, 0\nmain ENDP\nEND main\n";LABS[7].skel=".386\n.model flat, stdcall\noption casemap:none\nincludelib kernel32.lib\nincludelib msvcrt.lib\nincludelib legacy_stdio_definitions.lib\nincludelib ucrt.lib\n\nExitProcess PROTO :DWORD\nprintf      PROTO C :VARARG\nscanf       PROTO C :VARARG\ntime  PROTO C :DWORD\nsrand PROTO C :DWORD\nrand  PROTO C\n\n.data\nprompt  BYTE \"Guess (1-100, 0 to quit): \", 0\nfmtIn   BYTE \"%d\", 0\nbigMsg  BYTE \"Too big\", 10, 0\nsmlMsg  BYTE \"Too small\", 10, 0\nokMsg   BYTE \"Correct! You guessed %d times\", 10, 0\nbyeMsg  BYTE \"Bye\", 10, 0\ntarget  DWORD ?\nguess   DWORD ?\ncnt     DWORD 0\n\n.code\nmain PROC\n    INVOKE time, 0\n    ; TODO\uff1a\u7528\u6642\u9593\u6d17\u724c\n    INVOKE rand               ; \u4e82\u6578\u5728 eax\n    xor edx, edx\n    ; TODO\uff1a\u8a2d\u5b9a\u7bc4\u570d\u9577\u5ea6\n    div ecx\n    ; TODO\uff1a\u9918\u6578 0~99 \u8b8a 1~100\n    mov target, edx\n\nagain:\n    INVOKE printf, OFFSET prompt\n    INVOKE scanf, OFFSET fmtIn, OFFSET guess\n    mov eax, guess\n    cmp eax, 0\n    ; TODO\uff1a\u8f38\u5165 0 \u2192 \u7d50\u675f\n    ; TODO\uff1a\u6b21\u6578 +1\n    cmp eax, target           ; \u731c\u7684 vs \u7b54\u6848\uff08\u6709\u865f\uff09\n    je correct\n    ; TODO\uff1a\u731c\u592a\u5927\n    INVOKE printf, OFFSET smlMsg\n    ; TODO\uff1a\u56de\u53bb\u518d\u731c\ntoo_big:\n    INVOKE printf, OFFSET bigMsg\n    jmp again\ncorrect:\n    INVOKE printf, OFFSET okMsg, cnt\n    jmp done\nquit:\n    INVOKE printf, OFFSET byeMsg\ndone:\n    INVOKE ExitProcess, 0\nmain ENDP\nEND main\n";
+LABS[0].ref=".386\n.model flat, stdcall\noption casemap:none\nincludelib kernel32.lib\nincludelib msvcrt.lib\nincludelib legacy_stdio_definitions.lib\nincludelib ucrt.lib\n\nExitProcess PROTO STDCALL :DWORD\nprintf      PROTO C :VARARG\nscanf       PROTO C :VARARG\n\n.data\npromptA BYTE \"Enter A: \", 0\npromptB BYTE \"Enter B: \", 0\nfmtIn   BYTE \"%d\", 0\nfmtOut  BYTE \"A + B = %d\", 10, \"A - B = %d\", 10, \"A * B = %d\", 10, 0\nA       DWORD ?\nB       DWORD ?\nsum     DWORD ?\ndiff    DWORD ?\nprod    DWORD ?\n\n.code\nmain PROC C\n    INVOKE printf, OFFSET promptA\n    INVOKE scanf, OFFSET fmtIn, OFFSET A      ; scanf \u8981\u7d66\u4f4d\u5740\n    INVOKE printf, OFFSET promptB\n    INVOKE scanf, OFFSET fmtIn, OFFSET B\n\n    mov eax, A\n    add eax, B\n    mov sum, eax          ; sum = A + B\n\n    mov eax, A\n    sub eax, B\n    mov diff, eax         ; diff = A - B\n\n    mov eax, A\n    imul eax, B           ; eax = eax * B\uff08\u6709\u865f\u4e58\u6cd5\uff09\n    mov prod, eax\n\n    INVOKE printf, OFFSET fmtOut, sum, diff, prod   ; \u5370\u6578\u5b57\u50b3\u503c\n    INVOKE ExitProcess, 0\nmain ENDP\nEND main\n";LABS[0].skel=".386\n.model flat, stdcall\noption casemap:none\nincludelib kernel32.lib\nincludelib msvcrt.lib\nincludelib legacy_stdio_definitions.lib\nincludelib ucrt.lib\n\nExitProcess PROTO STDCALL :DWORD\nprintf      PROTO C :VARARG\nscanf       PROTO C :VARARG\n\n.data\npromptA BYTE \"Enter A: \", 0\npromptB BYTE \"Enter B: \", 0\nfmtIn   BYTE \"%d\", 0\nfmtOut  BYTE \"A + B = %d\", 10, \"A - B = %d\", 10, \"A * B = %d\", 10, 0\nA       DWORD ?\nB       DWORD ?\nsum     DWORD ?\ndiff    DWORD ?\nprod    DWORD ?\n\n.code\nmain PROC C\n    INVOKE printf, OFFSET promptA\n    ; TODO\uff1a\u8b80\u5165 A\uff08scanf \u8981\u7d66\u4f4d\u5740\uff09\n    INVOKE printf, OFFSET promptB\n    ; TODO\uff1a\u8b80\u5165 B\n\n    mov eax, A\n    ; TODO\uff1aeax = A + B\n    mov sum, eax          ; sum = A + B\n\n    mov eax, A\n    ; TODO\uff1aeax = A - B\n    mov diff, eax         ; diff = A - B\n\n    mov eax, A\n    ; TODO\uff1aeax = A * B\uff08\u6709\u865f\u4e58\u6cd5 imul\uff09\n    mov prod, eax\n\n    ; TODO\uff1a\u4e00\u884c\u5370\u51fa\u4e09\u500b\u7d50\u679c\uff08\u5370\u6578\u5b57\u50b3\u503c\uff09\n    INVOKE ExitProcess, 0\nmain ENDP\nEND main\n";
+LABS[1].ref=".386\n.model flat, stdcall\noption casemap:none\nincludelib kernel32.lib\nincludelib msvcrt.lib\nincludelib legacy_stdio_definitions.lib\nincludelib ucrt.lib\n\nExitProcess PROTO STDCALL :DWORD\nprintf      PROTO C :VARARG\nscanf       PROTO C :VARARG\n\n.data\nprompt   BYTE \"Enter an integer: \", 0\nfmtIn    BYTE \"%d\", 0\nevenMsg  BYTE \"%d is EVEN\", 10, 0\noddMsg   BYTE \"%d is ODD\", 10, 0\nnum      DWORD ?\n\n.code\nmain PROC C\n    ; \u4e0d\u7528 INVOKE\uff1apush / call / add esp\n    push OFFSET prompt\n    call printf\n    add esp, 4                ; 1 \u500b\u53c3\u6578\n\n    push OFFSET num           ; \u53f3\u908a\u7684\u53c3\u6578\u5148\u63a8\n    push OFFSET fmtIn\n    call scanf\n    add esp, 8                ; 2 \u500b\u53c3\u6578\n\n    mov eax, num\n    test eax, 1               ; \u53ea\u770b\u6700\u4f4e\u4f4d\n    jz is_even                ; \u6700\u4f4e\u4f4d 0 \u2192 \u5076\u6578\n\n    push num\n    push OFFSET oddMsg\n    call printf\n    add esp, 8\n    jmp done                  ; \u8df3\u904e\u5076\u6578\u5340\u584a\uff0c\u4e0d\u7136\u6703\u5f80\u4e0b\u6389\n\nis_even:\n    push num\n    push OFFSET evenMsg\n    call printf\n    add esp, 8\n\ndone:\n    push 0\n    call ExitProcess          ; stdcall\uff1a\u4e0d\u7528 add esp\nmain ENDP\nEND main\n";LABS[1].skel=".386\n.model flat, stdcall\noption casemap:none\nincludelib kernel32.lib\nincludelib msvcrt.lib\nincludelib legacy_stdio_definitions.lib\nincludelib ucrt.lib\n\nExitProcess PROTO STDCALL :DWORD\nprintf      PROTO C :VARARG\nscanf       PROTO C :VARARG\n\n.data\nprompt   BYTE \"Enter an integer: \", 0\nfmtIn    BYTE \"%d\", 0\nevenMsg  BYTE \"%d is EVEN\", 10, 0\noddMsg   BYTE \"%d is ODD\", 10, 0\nnum      DWORD ?\n\n.code\nmain PROC C\n    ; \u4e0d\u7528 INVOKE\uff1apush / call / add esp\n    push OFFSET prompt\n    call printf\n    add esp, 4                ; 1 \u500b\u53c3\u6578\n\n    ; TODO\uff1ascanf \u7684\u7b2c 2 \u500b\u53c3\u6578\u5148\u63a8\uff08\u4f4d\u5740\uff09\n    push OFFSET fmtIn\n    call scanf\n    ; TODO\uff1ascanf \u547c\u53eb\u5b8c\u6e05\u5806\u758a\n\n    mov eax, num\n    ; TODO\uff1a\u53ea\u770b\u6700\u4f4e\u4f4d\n    ; TODO\uff1a\u6700\u4f4e\u4f4d 0 \u2192 \u8df3\u5230 is_even\n\n    push num\n    push OFFSET oddMsg\n    call printf\n    add esp, 8\n    ; TODO\uff1a\u8df3\u904e\u5076\u6578\u5340\u584a\n\nis_even:\n    push num\n    push OFFSET evenMsg\n    call printf\n    add esp, 8\n\ndone:\n    push 0\n    ; TODO\uff1a\u547c\u53eb ExitProcess\uff08stdcall\uff0c\u4e4b\u5f8c\u4e0d\u7528 add esp\uff09\nmain ENDP\nEND main\n";
+LABS[2].ref=".386\n.model flat, stdcall\noption casemap:none\nincludelib kernel32.lib\nincludelib msvcrt.lib\nincludelib legacy_stdio_definitions.lib\nincludelib ucrt.lib\n\nExitProcess PROTO STDCALL :DWORD\nprintf      PROTO C :VARARG\nscanf       PROTO C :VARARG\n\n.data\nprompt BYTE \"Enter n: \", 0\nfmtIn  BYTE \"%d\", 0\nfmtOut BYTE \"1 + 2 + ... + %d = %d\", 10, 0\nerrMsg BYTE \"n must be >= 1\", 10, 0\nn      DWORD ?\n\n.code\nmain PROC C\n    INVOKE printf, OFFSET prompt\n    INVOKE scanf, OFFSET fmtIn, OFFSET n\n\n    cmp n, 1\n    jl bad_input              ; n < 1\uff1aloop \u6703\u8dd1 4294967296 \u6b21\uff0c\u5148\u64cb\u6389\n\n    xor eax, eax              ; eax = \u7e3d\u548c\n    mov ebx, 1                ; ebx = \u76ee\u524d\u8981\u52a0\u7684\u6578\n    mov ecx, n                ; loop \u7528 ecx \u7576\u8a08\u6578\u5668\nL1:\n    add eax, ebx\n    inc ebx\n    loop L1\n\n    INVOKE printf, OFFSET fmtOut, n, eax\n    jmp done\n\nbad_input:\n    INVOKE printf, OFFSET errMsg\ndone:\n    INVOKE ExitProcess, 0\nmain ENDP\nEND main\n";LABS[2].skel=".386\n.model flat, stdcall\noption casemap:none\nincludelib kernel32.lib\nincludelib msvcrt.lib\nincludelib legacy_stdio_definitions.lib\nincludelib ucrt.lib\n\nExitProcess PROTO STDCALL :DWORD\nprintf      PROTO C :VARARG\nscanf       PROTO C :VARARG\n\n.data\nprompt BYTE \"Enter n: \", 0\nfmtIn  BYTE \"%d\", 0\nfmtOut BYTE \"1 + 2 + ... + %d = %d\", 10, 0\nerrMsg BYTE \"n must be >= 1\", 10, 0\nn      DWORD ?\n\n.code\nmain PROC C\n    INVOKE printf, OFFSET prompt\n    INVOKE scanf, OFFSET fmtIn, OFFSET n\n\n    cmp n, 1\n    ; TODO\uff1an < 1 \u5c31\u8df3\u5230 bad_input\n\n    xor eax, eax              ; eax = \u7e3d\u548c\n    mov ebx, 1                ; ebx = \u76ee\u524d\u8981\u52a0\u7684\u6578\n    ; TODO\uff1a\u8a2d\u5b9a loop \u8a08\u6578\u5668\nL1:\n    ; TODO\uff1a\u7d2f\u52a0\n    ; TODO\uff1a\u4e0b\u4e00\u500b\u6578\n    ; TODO\uff1a\u56de\u5230 L1\n\n    INVOKE printf, OFFSET fmtOut, n, eax\n    jmp done\n\nbad_input:\n    INVOKE printf, OFFSET errMsg\ndone:\n    INVOKE ExitProcess, 0\nmain ENDP\nEND main\n";
+LABS[3].ref=".386\n.model flat, stdcall\noption casemap:none\nincludelib kernel32.lib\nincludelib msvcrt.lib\nincludelib legacy_stdio_definitions.lib\nincludelib ucrt.lib\n\nExitProcess PROTO STDCALL :DWORD\nprintf      PROTO C :VARARG\nscanf       PROTO C :VARARG\n\n.data\narr    DWORD 45, 12, 89, 3, 27, 66, 14, 90, 55, 8\nmaxVal DWORD ?\ntotal  DWORD ?\nfmtOut BYTE \"max = %d, sum = %d, average = %d\", 10, 0\n\n.code\nmain PROC C\n    mov esi, OFFSET arr       ; esi \u6307\u5411\u9663\u5217\u958b\u982d\uff08\u4f4d\u5740\uff09\n    mov ecx, LENGTHOF arr     ; 10 \u500b\u5143\u7d20\n    mov eax, [esi]            ; \u5148\u5047\u8a2d\u7b2c\u4e00\u500b\u6700\u5927\n    mov maxVal, eax\n    xor eax, eax              ; eax = \u7e3d\u548c\nL1:\n    mov edx, [esi]            ; \u53d6\u51fa\u76ee\u524d\u5143\u7d20\n    add eax, edx              ; \u52a0\u5230\u7e3d\u548c\n    cmp edx, maxVal\n    jle not_bigger            ; \u6709\u865f\uff1a\u4e0d\u6bd4\u8f03\u5927\u5c31\u8df3\u904e\n    mov maxVal, edx\nnot_bigger:\n    add esi, TYPE DWORD       ; \u4e0b\u4e00\u683c +4\n    loop L1\n    mov total, eax\n\n    ; \u5e73\u5747 = total / 10\uff08\u7121\u865f\u9664\u6cd5\uff09\n    xor edx, edx\n    mov ecx, LENGTHOF arr\n    div ecx                   ; \u5546\u5728 eax\n\n    INVOKE printf, OFFSET fmtOut, maxVal, total, eax\n    INVOKE ExitProcess, 0\nmain ENDP\nEND main\n";LABS[3].skel=".386\n.model flat, stdcall\noption casemap:none\nincludelib kernel32.lib\nincludelib msvcrt.lib\nincludelib legacy_stdio_definitions.lib\nincludelib ucrt.lib\n\nExitProcess PROTO STDCALL :DWORD\nprintf      PROTO C :VARARG\nscanf       PROTO C :VARARG\n\n.data\narr    DWORD 45, 12, 89, 3, 27, 66, 14, 90, 55, 8\nmaxVal DWORD ?\ntotal  DWORD ?\nfmtOut BYTE \"max = %d, sum = %d, average = %d\", 10, 0\n\n.code\nmain PROC C\n    ; TODO\uff1aesi \u6307\u5411\u9663\u5217\u958b\u982d\n    ; TODO\uff1a\u8a2d\u5b9a\u6b21\u6578\uff08\u7528\u904b\u7b97\u5b50\uff09\n    mov eax, [esi]            ; \u5148\u5047\u8a2d\u7b2c\u4e00\u500b\u6700\u5927\n    mov maxVal, eax\n    xor eax, eax              ; eax = \u7e3d\u548c\nL1:\n    ; TODO\uff1a\u53d6\u51fa\u76ee\u524d\u5143\u7d20\u5230 edx\n    add eax, edx              ; \u52a0\u5230\u7e3d\u548c\n    cmp edx, maxVal\n    ; TODO\uff1a\u4e0d\u6bd4 maxVal \u5927\u5c31\u8df3\u904e\n    mov maxVal, edx\nnot_bigger:\n    ; TODO\uff1a\u79fb\u5230\u4e0b\u4e00\u683c\n    loop L1\n    mov total, eax\n\n    ; \u5e73\u5747 = total / 10\uff08\u7121\u865f\u9664\u6cd5\uff09\n    xor edx, edx\n    mov ecx, LENGTHOF arr\n    ; TODO\uff1a\u9664\u6cd5\uff08\u5546\u5728 eax\uff09\n\n    INVOKE printf, OFFSET fmtOut, maxVal, total, eax\n    INVOKE ExitProcess, 0\nmain ENDP\nEND main\n";
+LABS[4].ref=".386\n.model flat, stdcall\noption casemap:none\nincludelib kernel32.lib\nincludelib msvcrt.lib\nincludelib legacy_stdio_definitions.lib\nincludelib ucrt.lib\n\nExitProcess PROTO STDCALL :DWORD\nprintf      PROTO C :VARARG\nscanf       PROTO C :VARARG\n\n.data\nprompt BYTE \"Enter letters: \", 0\nfmtIn  BYTE \"%s\", 0\nfmtOut BYTE \"Result: %s\", 10, 0\nbuffer BYTE 100 DUP(0)\n\n.code\nmain PROC C\n    INVOKE printf, OFFSET prompt\n    INVOKE scanf, OFFSET fmtIn, OFFSET buffer\n\n    mov esi, OFFSET buffer\nnext:\n    mov al, [esi]             ; \u8b80\u4e00\u500b\u5b57\u5143\n    test al, al\n    jz finish                 ; \u9047\u5230\u7d50\u5c3e 0 \u5c31\u7d50\u675f\n\n    cmp al, 'A'\n    jb skip                   ; \u5b57\u5143\u662f\u7121\u865f\uff1a\u7528 jb/ja\n    cmp al, 'Z'\n    jbe toggle                ; A~Z\uff1a\u8981\u8f49\n    cmp al, 'a'\n    jb skip\n    cmp al, 'z'\n    ja skip\ntoggle:\n    xor al, 20h               ; bit 5 \u7ffb\u8f49\uff1a\u5927\u5c0f\u5beb\u4e92\u63db\n    mov [esi], al             ; \u5beb\u56de\u53bb\nskip:\n    inc esi                   ; BYTE\uff1a\u4e0b\u4e00\u683c +1\n    jmp next\n\nfinish:\n    INVOKE printf, OFFSET fmtOut, OFFSET buffer   ; %s \u50b3\u4f4d\u5740\n    INVOKE ExitProcess, 0\nmain ENDP\nEND main\n";LABS[4].skel=".386\n.model flat, stdcall\noption casemap:none\nincludelib kernel32.lib\nincludelib msvcrt.lib\nincludelib legacy_stdio_definitions.lib\nincludelib ucrt.lib\n\nExitProcess PROTO STDCALL :DWORD\nprintf      PROTO C :VARARG\nscanf       PROTO C :VARARG\n\n.data\nprompt BYTE \"Enter letters: \", 0\nfmtIn  BYTE \"%s\", 0\nfmtOut BYTE \"Result: %s\", 10, 0\nbuffer BYTE 100 DUP(0)\n\n.code\nmain PROC C\n    INVOKE printf, OFFSET prompt\n    ; TODO\uff1a\u8b80\u5165\u5b57\u4e32\u5230 buffer\n\n    mov esi, OFFSET buffer\nnext:\n    ; TODO\uff1a\u8b80\u4e00\u500b\u5b57\u5143\u5230 al\n    test al, al\n    ; TODO\uff1a\u9047\u5230 0 \u5c31\u7d50\u675f\n\n    cmp al, 'A'\n    ; TODO\uff1a\u5c0f\u65bc A \u8df3\u904e\uff08\u5b57\u5143\u7528\u7121\u865f\uff09\n    cmp al, 'Z'\n    jbe toggle                ; A~Z\uff1a\u8981\u8f49\n    cmp al, 'a'\n    jb skip\n    cmp al, 'z'\n    ja skip\ntoggle:\n    ; TODO\uff1a\u5927\u5c0f\u5beb\u4e92\u63db\n    ; TODO\uff1a\u5beb\u56de\u53bb\nskip:\n    ; TODO\uff1a\u4e0b\u4e00\u500b\u5b57\u5143\n    jmp next\n\nfinish:\n    INVOKE printf, OFFSET fmtOut, OFFSET buffer   ; %s \u50b3\u4f4d\u5740\n    INVOKE ExitProcess, 0\nmain ENDP\nEND main\n";
+LABS[5].ref=".386\n.model flat, stdcall\noption casemap:none\nincludelib kernel32.lib\nincludelib msvcrt.lib\nincludelib legacy_stdio_definitions.lib\nincludelib ucrt.lib\n\nExitProcess PROTO STDCALL :DWORD\nprintf      PROTO C :VARARG\nscanf       PROTO C :VARARG\n\n.data\nprompt BYTE \"Enter n: \", 0\nfmtIn  BYTE \"%d\", 0\nyesMsg BYTE \"%d is a multiple of 3\", 10, 0\nnoMsg  BYTE \"%d is NOT a multiple of 3\", 10, 0\nn      DWORD ?\n\n.code\nmain PROC C\n    INVOKE printf, OFFSET prompt\n    INVOKE scanf, OFFSET fmtIn, OFFSET n\n\n    push n                    ; \u53c3\u6578\n    call IsMul3               ; \u7d50\u679c\u5728 eax\uff081 = \u662f\uff09\n                              ; stdcall\uff1aIsMul3 \u81ea\u5df1 ret 4\uff0c\u9019\u88e1\u4e0d\u7528 add esp\n    cmp eax, 1\n    je yes\n    INVOKE printf, OFFSET noMsg, n\n    jmp done\nyes:\n    INVOKE printf, OFFSET yesMsg, n\ndone:\n    INVOKE ExitProcess, 0\nmain ENDP\n\n; ------------------------------------------------\n; IsMul3\uff1a\u5224\u65b7 num \u662f\u5426\u70ba 3 \u7684\u500d\u6578\n; \u56de\u50b3 eax = 1\uff08\u662f\uff09\u6216 0\uff08\u4e0d\u662f\uff09\n; ------------------------------------------------\nIsMul3 PROC STDCALL num:DWORD\n    mov eax, num              ; \u5e95\u5c64\u5176\u5be6\u662f [ebp+8]\n    xor edx, edx              ; \u88ab\u9664\u6578 EDX:EAX\uff0c\u5148\u6e05\u9ad8\u4f4d\n    mov ecx, 3\n    div ecx                   ; \u5546 eax\u3001\u9918\u6578 edx\n    cmp edx, 0\n    jne not_mul\n    mov eax, 1\n    ret                       ; MASM \u81ea\u52d5\u8b8a\u6210 ret 4\nnot_mul:\n    mov eax, 0\n    ret\nIsMul3 ENDP\nEND main\n";LABS[5].skel=".386\n.model flat, stdcall\noption casemap:none\nincludelib kernel32.lib\nincludelib msvcrt.lib\nincludelib legacy_stdio_definitions.lib\nincludelib ucrt.lib\n\nExitProcess PROTO STDCALL :DWORD\nprintf      PROTO C :VARARG\nscanf       PROTO C :VARARG\n\n.data\nprompt BYTE \"Enter n: \", 0\nfmtIn  BYTE \"%d\", 0\nyesMsg BYTE \"%d is a multiple of 3\", 10, 0\nnoMsg  BYTE \"%d is NOT a multiple of 3\", 10, 0\nn      DWORD ?\n\n.code\nmain PROC C\n    INVOKE printf, OFFSET prompt\n    INVOKE scanf, OFFSET fmtIn, OFFSET n\n\n    ; TODO\uff1a\u628a\u53c3\u6578 n \u63a8\u9032\u5806\u758a\n    ; TODO\uff1a\u547c\u53eb IsMul3\n                              ; stdcall\uff1aIsMul3 \u81ea\u5df1 ret 4\uff0c\u9019\u88e1\u4e0d\u7528 add esp\n    cmp eax, 1\n    je yes\n    INVOKE printf, OFFSET noMsg, n\n    jmp done\nyes:\n    INVOKE printf, OFFSET yesMsg, n\ndone:\n    INVOKE ExitProcess, 0\nmain ENDP\n\n; ------------------------------------------------\n; IsMul3\uff1a\u5224\u65b7 num \u662f\u5426\u70ba 3 \u7684\u500d\u6578\n; \u56de\u50b3 eax = 1\uff08\u662f\uff09\u6216 0\uff08\u4e0d\u662f\uff09\n; ------------------------------------------------\n; TODO\uff1a\u7a0b\u5e8f\u6a19\u982d\uff1astdcall\u3001\u4e00\u500b\u53c3\u6578 num\n    mov eax, num              ; \u5e95\u5c64\u5176\u5be6\u662f [ebp+8]\n    ; TODO\uff1a\u9664\u6cd5\u524d\u6e05\u9ad8\u4f4d\n    mov ecx, 3\n    ; TODO\uff1a\u9664\u4ee5 3\n    ; TODO\uff1a\u6aa2\u67e5\u9918\u6578\n    ; TODO\uff1a\u9918\u6578\u4e0d\u662f 0 \u2192 not_mul\n    mov eax, 1\n    ret                       ; MASM \u81ea\u52d5\u8b8a\u6210 ret 4\nnot_mul:\n    mov eax, 0\n    ret\nIsMul3 ENDP\nEND main\n";
+LABS[6].ref=".386\n.model flat, stdcall\noption casemap:none\nincludelib kernel32.lib\nincludelib msvcrt.lib\nincludelib legacy_stdio_definitions.lib\nincludelib ucrt.lib\n\nExitProcess PROTO STDCALL :DWORD\nprintf      PROTO C :VARARG\nscanf       PROTO C :VARARG\n\n.data\nprompt   BYTE \"Enter n: \", 0\nfmtIn    BYTE \"%d\", 0\nprimeMsg BYTE \"%d is prime\", 10, 0\nnotMsg   BYTE \"%d is not prime\", 10, 0\nn        DWORD ?\n\n.code\nmain PROC C\n    INVOKE printf, OFFSET prompt\n    INVOKE scanf, OFFSET fmtIn, OFFSET n\n\n    cmp n, 2\n    jl not_prime              ; n < 2 \u4e0d\u662f\u8cea\u6578\n    je is_prime               ; n = 2 \u662f\u8cea\u6578\n\n    mov ebx, 2                ; \u9664\u6578\u5f9e 2 \u958b\u59cb\uff08ebx \u4e0d\u6703\u88ab printf \u6539\u6389\uff09\ncheck:\n    cmp ebx, n\n    jge is_prime              ; \u9664\u6578\u8a66\u5230 n-1 \u90fd\u4e0d\u6574\u9664 \u2192 \u8cea\u6578\n    mov eax, n\n    xor edx, edx\n    div ebx\n    cmp edx, 0                ; \u9918\u6578 0 \u2192 \u6574\u9664\n    je not_prime\n    inc ebx\n    jmp check\n\nis_prime:\n    INVOKE printf, OFFSET primeMsg, n\n    jmp done\nnot_prime:\n    INVOKE printf, OFFSET notMsg, n\ndone:\n    INVOKE ExitProcess, 0\nmain ENDP\nEND main\n";LABS[6].skel=".386\n.model flat, stdcall\noption casemap:none\nincludelib kernel32.lib\nincludelib msvcrt.lib\nincludelib legacy_stdio_definitions.lib\nincludelib ucrt.lib\n\nExitProcess PROTO STDCALL :DWORD\nprintf      PROTO C :VARARG\nscanf       PROTO C :VARARG\n\n.data\nprompt   BYTE \"Enter n: \", 0\nfmtIn    BYTE \"%d\", 0\nprimeMsg BYTE \"%d is prime\", 10, 0\nnotMsg   BYTE \"%d is not prime\", 10, 0\nn        DWORD ?\n\n.code\nmain PROC C\n    INVOKE printf, OFFSET prompt\n    INVOKE scanf, OFFSET fmtIn, OFFSET n\n\n    cmp n, 2\n    ; TODO\uff1an < 2\n    ; TODO\uff1an = 2\n\n    mov ebx, 2                ; \u9664\u6578\u5f9e 2 \u958b\u59cb\uff08ebx \u4e0d\u6703\u88ab printf \u6539\u6389\uff09\ncheck:\n    cmp ebx, n\n    ; TODO\uff1a\u9664\u6578\u5df2\u8a66\u5230 n\n    mov eax, n\n    xor edx, edx\n    ; TODO\uff1an \u00f7 ebx\n    cmp edx, 0                ; \u9918\u6578 0 \u2192 \u6574\u9664\n    ; TODO\uff1a\u6574\u9664 \u2192 \u4e0d\u662f\u8cea\u6578\n    ; TODO\uff1a\u4e0b\u4e00\u500b\u9664\u6578\n    jmp check\n\nis_prime:\n    INVOKE printf, OFFSET primeMsg, n\n    jmp done\nnot_prime:\n    INVOKE printf, OFFSET notMsg, n\ndone:\n    INVOKE ExitProcess, 0\nmain ENDP\nEND main\n";
+LABS[7].ref=".386\n.model flat, stdcall\noption casemap:none\nincludelib kernel32.lib\nincludelib msvcrt.lib\nincludelib legacy_stdio_definitions.lib\nincludelib ucrt.lib\n\nExitProcess PROTO STDCALL :DWORD\nprintf      PROTO C :VARARG\nscanf       PROTO C :VARARG\ntime  PROTO C :DWORD\nsrand PROTO C :DWORD\nrand  PROTO C\n\n.data\nprompt  BYTE \"Guess (1-100, 0 to quit): \", 0\nfmtIn   BYTE \"%d\", 0\nbigMsg  BYTE \"Too big\", 10, 0\nsmlMsg  BYTE \"Too small\", 10, 0\nokMsg   BYTE \"Correct! You guessed %d times\", 10, 0\nbyeMsg  BYTE \"Bye\", 10, 0\ntarget  DWORD ?\nguess   DWORD ?\ncnt     DWORD 0\n\n.code\nmain PROC C\n    INVOKE time, 0\n    INVOKE srand, eax         ; \u6d17\u724c\u4e00\u6b21\n    INVOKE rand               ; \u4e82\u6578\u5728 eax\n    xor edx, edx\n    mov ecx, 100              ; 1~100\uff1a\u9577\u5ea6 100\n    div ecx\n    inc edx                   ; 0~99 \u2192 1~100\n    mov target, edx\n\nagain:\n    INVOKE printf, OFFSET prompt\n    INVOKE scanf, OFFSET fmtIn, OFFSET guess\n    mov eax, guess\n    cmp eax, 0\n    je quit\n    inc cnt\n    cmp eax, target           ; \u731c\u7684 vs \u7b54\u6848\uff08\u6709\u865f\uff09\n    je correct\n    jg too_big\n    INVOKE printf, OFFSET smlMsg\n    jmp again\ntoo_big:\n    INVOKE printf, OFFSET bigMsg\n    jmp again\ncorrect:\n    INVOKE printf, OFFSET okMsg, cnt\n    jmp done\nquit:\n    INVOKE printf, OFFSET byeMsg\ndone:\n    INVOKE ExitProcess, 0\nmain ENDP\nEND main\n";LABS[7].skel=".386\n.model flat, stdcall\noption casemap:none\nincludelib kernel32.lib\nincludelib msvcrt.lib\nincludelib legacy_stdio_definitions.lib\nincludelib ucrt.lib\n\nExitProcess PROTO STDCALL :DWORD\nprintf      PROTO C :VARARG\nscanf       PROTO C :VARARG\ntime  PROTO C :DWORD\nsrand PROTO C :DWORD\nrand  PROTO C\n\n.data\nprompt  BYTE \"Guess (1-100, 0 to quit): \", 0\nfmtIn   BYTE \"%d\", 0\nbigMsg  BYTE \"Too big\", 10, 0\nsmlMsg  BYTE \"Too small\", 10, 0\nokMsg   BYTE \"Correct! You guessed %d times\", 10, 0\nbyeMsg  BYTE \"Bye\", 10, 0\ntarget  DWORD ?\nguess   DWORD ?\ncnt     DWORD 0\n\n.code\nmain PROC C\n    INVOKE time, 0\n    ; TODO\uff1a\u7528\u6642\u9593\u6d17\u724c\n    INVOKE rand               ; \u4e82\u6578\u5728 eax\n    xor edx, edx\n    ; TODO\uff1a\u8a2d\u5b9a\u7bc4\u570d\u9577\u5ea6\n    div ecx\n    ; TODO\uff1a\u9918\u6578 0~99 \u8b8a 1~100\n    mov target, edx\n\nagain:\n    INVOKE printf, OFFSET prompt\n    INVOKE scanf, OFFSET fmtIn, OFFSET guess\n    mov eax, guess\n    cmp eax, 0\n    ; TODO\uff1a\u8f38\u5165 0 \u2192 \u7d50\u675f\n    ; TODO\uff1a\u6b21\u6578 +1\n    cmp eax, target           ; \u731c\u7684 vs \u7b54\u6848\uff08\u6709\u865f\uff09\n    je correct\n    ; TODO\uff1a\u731c\u592a\u5927\n    INVOKE printf, OFFSET smlMsg\n    ; TODO\uff1a\u56de\u53bb\u518d\u731c\ntoo_big:\n    INVOKE printf, OFFSET bigMsg\n    jmp again\ncorrect:\n    INVOKE printf, OFFSET okMsg, cnt\n    jmp done\nquit:\n    INVOKE printf, OFFSET byeMsg\ndone:\n    INVOKE ExitProcess, 0\nmain ENDP\nEND main\n";
 
 const UNITS = {
   1:{n:'資料表示',s:'9/7 · 9/21',tag:''},
@@ -2540,6 +2878,8 @@ const UNITS = {
 const SRC = {orig:'原題',var:'變化題',new:'課本新題'};
 const HEXQ = new Set(['a12','a15','c8','g2','g3','g4','g6','g7','h1','h3','i1','k5','f8']);
 const BANK = [...BANK1, ...BANK2, ...BANK3];
+const DISP = {"b1:1": "OFFSET arr2", "b3:0": "sub eax, 1", "b3:1": "add eax, -1", "b3:2": "dec eax", "b4:0": "add eax, 1", "b4:1": "sub eax, -1", "b4:2": "inc eax", "b5:0": "mov ebx, 0", "b5:1": "sub ebx, ebx", "b5:2": "xor ebx, ebx", "b7:0": "add ax, ax", "b7:1": "add ax, ax", "b7:2": "add ax, ax", "b8:0": "add ax, ax", "b8:1": "add ax, bx", "b9:0": "add ax, ax", "b9:1": "add ax, bx", "b10:2": "ax, bx", "b10:3": "bx, cx", "b10:4": "xchg ax, bx", "c1:1": "link b2.obj", "c3:1": "OFFSET sc", "c3:4": "esi, 2", "c3:5": "loop L1", "c4:2": "TYPE DWORD", "c5:1": "pop bx", "c8:1": "pop eax", "c10:0": "ecx, 10", "c10:1": "inc bx", "c10:2": "loop Lx", "c11:0": "ecx, 6", "c11:1": "add bx, 2", "c11:2": "loop Ly", "c12:0": "ecx, 10", "c12:2": "add ax, bx", "c12:3": "add bx, 2", "c15:1": "del aa.obj", "c15:2": "type aa.asm", "c15:4": "rename aa.asm bb.asm", "d1:2": "PROTO STDCALL :DWORD", "d2:0": "PROC STDCALL inp:DWORD", "d3:0": "PROC C in2:DWORD", "d3:1": "pop ax", "d3:2": "pop cx", "d6:0": "dir *.obj", "d6:1": "cd ..", "d6:2": "cd \\", "d6:3": "cd sb2", "d8:2": "ret X", "d9:1": "ret 8", "d11:0": "OFFSET A", "d11:1": "OFFSET fmtIn", "d13:0": "mul ecx", "d14:0": "mov ebp, esp", "d14:3": "ret 4", "e5:1": "DWORD PTR", "e6:0": "OFFSET", "e6:1": "DWORD PTR", "e7:1": "OFFSET xx", "e8:0": "PROC STDCALL nn:DWORD", "e8:2": "cmp edx", "e14:1": "WORD PTR", "e14:3": "BYTE PTR", "e15:2": "OFFSET fmt", "e16:0": "xor edx, edx", "f1:2": "OFFSET msgsum", "f1:3": "esp, 12", "f3:0": "OFFSET", "f5:2": "ax, cx", "f6:1": "inc edx", "f7:2": "xchg ax, cx", "h4:0": "neg eax", "h4:1": "sub ebx, Zval", "h7:1": "push ecx", "h7:2": "pop ecx", "i3:1": "push eax", "i3:2": "pop eax", "i6:0": "mov ebp, esp", "i6:2": "mov esp, ebp", "i6:3": "pop ebp", "j2:0": "and al, 0", "j2:1": "or al, 1", "j2:2": "or al, 80h", "j2:3": "and al, 7Fh", "j4:0": "xor edx, edx", "j7:1": "repe cmpsb", "j8:3": "inc esi"};
+const showAns=(q,i)=>DISP[q.id+':'+i]||q.a[i][0];
 
 // ---------- 儲存 ----------
 const KEY='asm-mid-v1';
@@ -2702,11 +3042,11 @@ function check(q){
     inp.className='blank '+r.r;
     if(r.r==='ok') nOk++;
     else{
-      const f=document.createElement('span'); f.className='fix'; f.textContent=q.a[i][0];
+      const f=document.createElement('span'); f.className='fix'; f.textContent=showAns(q,i);
       inp.after(f);
       if(r.r==='part'){nPart++; notes.push(`第 ${i+1} 格：${esc(r.msg)}`);} else nBad++;
     }
-    if(q.prev&&q.prev[i]) notes.push(`第 ${i+1} 格 上次小考你寫 <b>${esc(q.prev[i])}</b>，正確是 <b>${esc(q.a[i][0])}</b>${r.r==='ok'?'，這次寫對了 ✓':''}`);
+    if(q.prev&&q.prev[i]) notes.push(`第 ${i+1} 格 上次小考你寫 <b>${esc(q.prev[i])}</b>，正確是 <b>${esc(showAns(q,i))}</b>${r.r==='ok'?'，這次寫對了 ✓':''}`);
   });
   const res=nBad?'bad':nPart?'part':'ok';
   const rec=store.q[q.id]||{n:0}; rec.n=(rec.n||0)+1; rec.s=res; rec.t=Date.now(); store.q[q.id]=rec; save();
@@ -2755,7 +3095,7 @@ function renderLab(){
   });
   // 2. 模板
   const p2=document.createElement('div'); p2.className='panel';
-  p2.innerHTML=`<h2>步驟二：萬用模板</h2><p class="sub">這幾行 includelib 就是你 4-1 一路修錯修出來的組合，每次都直接貼。ExitProcess 是 stdcall、printf/scanf 是 C，所以宣告寫法不一樣。</p>`;
+  p2.innerHTML=`<h2>步驟二：通用模板</h2><p class="sub">這幾行 includelib 就是你 4-1 一路修錯修出來的組合，每次都直接貼。每一行 PROTO / PROC 都寫明 STDCALL 或 C，所以 .model 第二個字寫 c 或 stdcall 都能跑。</p>`;
   p2.appendChild(codeBlock(TEMPLATE));
   const p2b=document.createElement('p'); p2b.className='callout'; p2b.style.marginTop='12px';
   p2b.innerHTML='想用命令列做（10/5 小考考過指令）：';
