@@ -1,0 +1,494 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>施工通知書自動派送流程</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: engineering notebook — sticky contents rail on wide screens, one reading column, dark terminal blocks for anything you type or that a machine sends. */
+:root{
+  --bg:#f4f6f6; --paper:#ffffff; --ink:#15262a; --muted:#5b6b70; --line:#dbe3e5;
+  --teal:#12515a; --teal-soft:#e3eff0; --amber:#b45309; --amber-soft:#fdf1e3;
+  --term:#0f1c1f; --term-ink:#d7e7e9; --term-dim:#7f9a9f; --term-key:#7dd3c8; --term-str:#f6c177;
+  --ok:#15803d; --bad:#b91c1c;
+  --display:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+  --body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0e1517; --paper:#152024; --ink:#e3ecee; --muted:#9db0b4; --line:#26363a;
+    --teal:#6cc3c9; --teal-soft:#16343a; --amber:#f0a94b; --amber-soft:#33250f;
+    --term:#081013; --term-ink:#d7e7e9; --term-dim:#6f8a8f; --term-key:#7dd3c8; --term-str:#f6c177;
+    --ok:#4ade80; --bad:#f87171; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0e1517; --paper:#152024; --ink:#e3ecee; --muted:#9db0b4; --line:#26363a;
+  --teal:#6cc3c9; --teal-soft:#16343a; --amber:#f0a94b; --amber-soft:#33250f;
+  --term:#081013; --term-ink:#d7e7e9; --term-dim:#6f8a8f; --term-key:#7dd3c8; --term-str:#f6c177;
+  --ok:#4ade80; --bad:#f87171; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.75}
+a{color:var(--teal)}
+.shell{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:32px 80px;display:grid;grid-template-columns:220px minmax(0,1fr);gap:48px}
+@media (max-width:900px){.shell{grid-template-columns:minmax(0,1fr);gap:0}.toc{display:none}}
+.toc{position:sticky;top:calc(env(safe-area-inset-top,0px) + 24px);align-self:start;font-size:14px}
+.toc b{display:block;font-size:12px;letter-spacing:.12em;color:var(--muted);margin-bottom:8px}
+.toc ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px;counter-reset:t}
+.toc a{display:block;text-decoration:none;color:var(--muted);padding:5px 10px;border-radius:8px}
+.toc a:hover,.toc a.on{background:var(--teal-soft);color:var(--teal)}
+main{min-width:0}
+section{padding-block:28px;border-top:1px solid var(--line)}
+section:first-of-type{border-top:none;padding-top:0}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;color:var(--amber);text-transform:uppercase}
+h1{font-family:var(--display);font-weight:900;font-size:clamp(2rem,4.6vw,3.1rem);line-height:1.2;margin:.2em 0 .4em;text-wrap:balance}
+h2{font-family:var(--display);font-weight:900;font-size:1.7rem;margin:.2em 0 .6em;text-wrap:balance}
+h3{font-family:var(--display);font-weight:700;font-size:1.15rem;margin:1.6em 0 .5em}
+p{margin:.6em 0;max-width:68ch}
+.lede{font-size:1.12rem;color:var(--ink)}
+.byline{color:var(--muted);font-size:.92rem}
+.facts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:24px 0}
+@media (max-width:700px){.facts{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.fact{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.fact .n{font-family:var(--mono);font-size:1.6rem;font-weight:600;color:var(--teal);font-variant-numeric:tabular-nums}
+.fact .l{font-size:.86rem;color:var(--muted);line-height:1.5}
+.diagram{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:16px;overflow-x:auto;margin:16px 0}
+.diagram svg{display:block;min-width:720px;width:100%;height:auto}
+.diagram text{font-family:var(--body)}
+.cap{font-size:.86rem;color:var(--muted);margin-top:6px}
+table{border-collapse:collapse;width:100%;font-size:.94rem}
+.tbl{overflow-x:auto;margin:12px 0;border:1px solid var(--line);border-radius:12px;background:var(--paper)}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:.82rem;letter-spacing:.06em;color:var(--muted);background:var(--teal-soft)}
+tr:last-child td{border-bottom:none}
+td code,p code,li code{font-family:var(--mono);font-size:.88em;background:var(--teal-soft);color:var(--teal);padding:1px 6px;border-radius:5px}
+pre{background:var(--term);color:var(--term-ink);font-family:var(--mono);font-size:.86rem;line-height:1.65;padding:16px 18px;border-radius:12px;overflow-x:auto;margin:12px 0}
+pre .c{color:var(--term-dim)} pre .k{color:var(--term-key)} pre .s{color:var(--term-str)}
+.term-h{display:flex;justify-content:space-between;align-items:center;background:var(--term);color:var(--term-dim);font-family:var(--mono);font-size:.76rem;padding:8px 18px 0;border-radius:12px 12px 0 0;margin-top:12px}
+.term-h + pre{margin-top:0;border-radius:0 0 12px 12px}
+.copy{font:inherit;font-size:.74rem;background:transparent;color:var(--term-key);border:1px solid var(--term-dim);border-radius:6px;padding:2px 8px;cursor:pointer}
+.copy:focus-visible,.tab:focus-visible,.node:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+.callout{border-radius:12px;padding:12px 16px;margin:14px 0;background:var(--amber-soft);font-size:.95rem}
+.callout b{color:var(--amber)}
+.note{border-radius:12px;padding:12px 16px;margin:14px 0;background:var(--teal-soft);font-size:.95rem}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:700px){.two{grid-template-columns:1fr}}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px 18px;min-width:0}
+.card h4{margin:0 0 4px;font-size:1rem}
+.card p{font-size:.94rem;margin:.3em 0}
+ol.steps{padding-left:0;list-style:none;counter-reset:s;display:flex;flex-direction:column;gap:10px}
+ol.steps>li{counter-increment:s;position:relative;padding:12px 16px 12px 56px;background:var(--paper);border:1px solid var(--line);border-radius:12px}
+ol.steps>li::before{content:counter(s);position:absolute;left:14px;top:12px;width:28px;height:28px;border-radius:50%;background:var(--teal);color:var(--paper);font-family:var(--mono);font-weight:600;display:grid;place-items:center;font-size:.85rem}
+ol.steps>li b{display:block}
+/* flow explorer */
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0}
+.tab{font:inherit;font-size:.9rem;border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:99px;padding:6px 14px;cursor:pointer}
+.tab[aria-selected="true"]{background:var(--teal);border-color:var(--teal);color:var(--paper)}
+.explorer{display:grid;grid-template-columns:minmax(0,260px) minmax(0,1fr);gap:16px}
+@media (max-width:760px){.explorer{grid-template-columns:minmax(0,1fr)}}
+.nodes{display:flex;flex-direction:column;gap:8px}
+.node{font:inherit;text-align:left;background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:10px 12px;cursor:pointer;color:var(--ink);display:flex;gap:10px;align-items:flex-start}
+.node .i{font-family:var(--mono);font-size:.75rem;color:var(--muted);min-width:1.6em;padding-top:2px}
+.node .t{font-weight:700;font-size:.92rem;line-height:1.4}
+.node .k{font-family:var(--mono);font-size:.74rem;color:var(--muted);line-height:1.4}
+.node[aria-pressed="true"]{border-color:var(--teal);box-shadow:inset 0 0 0 1px var(--teal);background:var(--teal-soft)}
+.badge{font-family:var(--body);font-size:.7rem;font-weight:700;color:var(--amber);background:var(--amber-soft);border-radius:99px;padding:1px 8px;margin-left:6px;white-space:nowrap}
+.detail{min-width:0}
+.detail h4{margin:0 0 4px;font-size:1.05rem}
+.detail .type{font-family:var(--mono);font-size:.8rem;color:var(--muted)}
+.foot{color:var(--muted);font-size:.86rem;border-top:1px solid var(--line);padding-top:20px;margin-top:20px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+html{scroll-behavior:smooth}
+</style>
+
+<div class="shell">
+<nav class="toc" aria-label="目錄">
+  <b>目錄</b>
+  <ol id="toc">
+    <li><a href="#overview">專案概述</a></li>
+    <li><a href="#n8n">n8n 是什麼</a></li>
+    <li><a href="#docker">搬上我的電腦</a></li>
+    <li><a href="#ollama">Ollama 與模型</a></li>
+    <li><a href="#connect">串接 n8n × Ollama</a></li>
+    <li><a href="#flows">流程逐節點</a></li>
+    <li><a href="#governance">治理設計</a></li>
+    <li><a href="#first-run">打開 n8n 之後</a></li>
+    <li><a href="#limits">限制與下一步</a></li>
+  </ol>
+</nav>
+
+<main>
+<!-- ============ OVERVIEW ============ -->
+<section id="overview">
+  <div class="eyebrow">Project Overview</div>
+  <h1>施工通知書自動派送流程</h1>
+  <p class="byline">課程：當機器人來上班－未來職場的 AI 必修課 期末作業｜2026</p>
+  <p class="lede">我在一家正在數位轉型的病媒防治公司當行政工讀生。每位客戶的施工通知書建立好之後，我都要手動歸檔、到官方 LINE 找到客戶傳簽署連結、一直回去看客戶簽了沒、簽完再歸檔一次。這個專案用 <b>n8n</b> 把這段流程自動化，並在我的電腦上用 <b>Ollama</b> 跑一個本地 AI 模型，幫我檢查資料、草擬訊息；但訊息要我在 Discord 按下「核准」才會送出。</p>
+
+  <div class="facts">
+    <div class="fact"><div class="n">4</div><div class="l">條自動化流程<br>送審、發送、回簽、提醒</div></div>
+    <div class="fact"><div class="n">5</div><div class="l">個治理節點<br>揭露、把關、停機、紀錄、最小化</div></div>
+    <div class="fact"><div class="n">0</div><div class="l">筆真實客戶資料<br>公司與客戶全部虛構</div></div>
+    <div class="fact"><div class="n">3.09B</div><div class="l">參數的本地模型<br>qwen2.5:3b，不連外</div></div>
+  </div>
+
+  <h3>一張圖看懂整個系統</h3>
+  <div class="diagram" role="img" aria-label="系統架構：我的電腦裡有 Docker，Docker 裡有 n8n 與 Ollama 兩個容器；n8n 連到 Google 雲端硬碟、Google 試算表、Google 表單與 Discord">
+    <svg viewBox="0 0 960 400">
+      <rect x="10" y="10" width="560" height="380" rx="16" fill="var(--teal-soft)" stroke="var(--teal)" stroke-dasharray="6 5"/>
+      <text x="30" y="40" font-size="15" font-weight="700" fill="var(--teal)">我的電腦（Windows）</text>
+      <rect x="30" y="60" width="520" height="250" rx="14" fill="var(--paper)" stroke="var(--line)"/>
+      <text x="50" y="88" font-size="14" font-weight="700" fill="var(--muted)">Docker Desktop</text>
+      <rect x="55" y="105" width="210" height="150" rx="12" fill="var(--paper)" stroke="var(--teal)" stroke-width="2"/>
+      <text x="75" y="135" font-size="17" font-weight="700" fill="var(--ink)">n8n 容器</text>
+      <text x="75" y="160" font-size="13" fill="var(--muted)">流水線：串起每一步</text>
+      <text x="75" y="185" font-size="13" fill="var(--muted)" font-family="JetBrains Mono, monospace">port 5678</text>
+      <text x="75" y="210" font-size="13" fill="var(--muted)">資料存在 ./n8n_data</text>
+      <rect x="315" y="105" width="210" height="150" rx="12" fill="var(--paper)" stroke="var(--amber)" stroke-width="2"/>
+      <text x="335" y="135" font-size="17" font-weight="700" fill="var(--ink)">Ollama 容器</text>
+      <text x="335" y="160" font-size="13" fill="var(--muted)">本地 AI：qwen2.5:3b</text>
+      <text x="335" y="185" font-size="13" fill="var(--muted)" font-family="JetBrains Mono, monospace">port 11434</text>
+      <text x="335" y="210" font-size="13" fill="var(--muted)">模型存在 ollama volume</text>
+      <line x1="265" y1="180" x2="315" y2="180" stroke="var(--ink)" stroke-width="2"/>
+      <text x="268" y="172" font-size="11" fill="var(--muted)" font-family="JetBrains Mono, monospace">http://ollama</text>
+      <text x="55" y="285" font-size="12" fill="var(--muted)">兩個容器在 Docker 的同一個內部網路，用名字互相找到</text>
+      <rect x="30" y="325" width="520" height="50" rx="10" fill="var(--paper)" stroke="var(--line)"/>
+      <text x="50" y="356" font-size="14" fill="var(--ink)">瀏覽器 → <tspan font-family="JetBrains Mono, monospace">http://localhost:5678</tspan>（我畫流程的地方）</text>
+      <line x1="570" y1="180" x2="640" y2="180" stroke="var(--ink)" stroke-width="2" stroke-dasharray="5 4"/>
+      <text x="580" y="170" font-size="12" fill="var(--muted)">網際網路</text>
+      <g font-size="14">
+        <rect x="640" y="30" width="300" height="62" rx="10" fill="var(--paper)" stroke="var(--line)"/>
+        <text x="656" y="56" font-weight="700" fill="var(--ink)">Google 雲端硬碟</text><text x="656" y="78" font-size="12" fill="var(--muted)">模擬公司伺服器：待發送＋客戶資料夾</text>
+        <rect x="640" y="110" width="300" height="62" rx="10" fill="var(--paper)" stroke="var(--line)"/>
+        <text x="656" y="136" font-weight="700" fill="var(--ink)">Google 試算表</text><text x="656" y="158" font-size="12" fill="var(--muted)">模擬公司行事曆＋審核紀錄</text>
+        <rect x="640" y="190" width="300" height="62" rx="10" fill="var(--paper)" stroke="var(--line)"/>
+        <text x="656" y="216" font-weight="700" fill="var(--ink)">Google 表單</text><text x="656" y="238" font-size="12" fill="var(--muted)">模擬電子簽署系統</text>
+        <rect x="640" y="270" width="300" height="62" rx="10" fill="var(--paper)" stroke="var(--line)"/>
+        <text x="656" y="296" font-weight="700" fill="var(--ink)">Discord</text><text x="656" y="318" font-size="12" fill="var(--muted)">#審核區（我）＋ #客戶聊天室（模擬 LINE）</text>
+      </g>
+    </svg>
+  </div>
+
+  <h3>一句話流程</h3>
+  <p>我建好通知書，放進「待發送」資料夾 → AI 對照行事曆檢查並草擬訊息 → 我在 Discord 回覆「核准」→ 自動歸檔並傳簽署連結給客戶 → 客戶簽完自動歸檔、回覆客戶並提醒我 → 每天傍晚提醒還沒簽的客戶。</p>
+
+  <div class="note"><b>範圍界定：</b>公司的通知書建立系統還沒開放外部串接，所以「看行事曆、輸入資料、建立通知書」這一步維持人工。自動化從通知書建立完成之後開始。因為涉及公司機密，作品中的公司「安心病媒防治」、客戶與施藥人員全部虛構，並用 Google 工具和 Discord 模擬公司的伺服器與官方 LINE。</div>
+</section>
+
+<!-- ============ N8N ============ -->
+<section id="n8n">
+  <div class="eyebrow">Part 1</div>
+  <h2>n8n 是什麼</h2>
+  <p>n8n 是一個<b>工作流程自動化</b>工具。你在畫面上把一個個方塊（節點）用線連起來，每個方塊做一件小事，資料就會從左邊流到右邊。不用從頭寫程式，也能把 Google、Discord、AI 模型串在一起。</p>
+  <p>可以把它想成工廠的流水線：觸發節點是門鈴，門鈴一響，流水線上的每個工人依序處理同一份資料。</p>
+
+  <h3>六個核心名詞</h3>
+  <div class="tbl"><table>
+    <tr><th>名詞</th><th>意思</th><th>在我的專案裡</th></tr>
+    <tr><td><b>Workflow</b><br>工作流</td><td>一整條流水線，存成一個 JSON 檔</td><td>流程 A～D 各是一條 workflow</td></tr>
+    <tr><td><b>Node</b><br>節點</td><td>流水線上的一個工人，做一件事</td><td>「讀試算表」「呼叫 AI」「發 Discord 訊息」</td></tr>
+    <tr><td><b>Trigger</b><br>觸發節點</td><td>流程的起點，決定什麼時候開始跑</td><td>資料夾有新檔案、Discord 收到訊息、每天 18:00</td></tr>
+    <tr><td><b>Item</b><br>資料項目</td><td>節點之間傳遞的資料，格式是 JSON</td><td>一位客戶的資料就是一個 item</td></tr>
+    <tr><td><b>Expression</b><br>運算式</td><td>用 <code>{{ }}</code> 取前面節點的資料</td><td><code>{{ $json.客戶名稱 }}</code> 會變成「王小明」</td></tr>
+    <tr><td><b>Credential</b><br>憑證</td><td>連到外部服務的帳號授權，存在 n8n 裡</td><td>Google 帳號、Discord 機器人、Ollama 網址</td></tr>
+  </table></div>
+
+  <h3>資料在節點之間長什麼樣子</h3>
+  <p>n8n 裡每個節點的輸出都是 JSON 陣列。下一個節點用運算式拿裡面的值。例如「讀行事曆」節點輸出：</p>
+  <div class="term-h"><span>行事曆節點的輸出（JSON）</span></div>
+<pre>[
+  {
+    <span class="k">"客戶編號"</span>: <span class="s">"C001"</span>,
+    <span class="k">"施工日期"</span>: <span class="s">"2026-12-01"</span>,
+    <span class="k">"施工時間"</span>: <span class="s">"09:00–11:00"</span>,
+    <span class="k">"客戶名稱"</span>: <span class="s">"王小明（假資料）"</span>,
+    <span class="k">"施工類別"</span>: <span class="s">"白蟻防治"</span>,
+    <span class="k">"施藥人員"</span>: <span class="s">"張師傅"</span>
+  }
+]</pre>
+  <p>下一個節點寫 <code>{{ $json["施工日期"] }}</code>，執行時就會被換成 <code>2026-12-01</code>。這就是課程 12.5「JSON 概念」在實際流程裡的用法。</p>
+</section>
+
+<!-- ============ DOCKER ============ -->
+<section id="docker">
+  <div class="eyebrow">Part 2</div>
+  <h2>n8n 怎麼搬到我的電腦上</h2>
+  <p>n8n 有雲端付費版，也可以自己架。我選擇用 <b>Docker</b> 在自己的電腦上架，原因有三個：免費、資料留在我電腦裡、跟課程 12.4 的示範一樣。</p>
+
+  <h3>Docker 用一個比喻講完</h3>
+  <p>正常安裝 n8n 要先裝 Node.js、對好版本、再裝一堆套件。Docker 的做法是：別人已經把 n8n 和它需要的一切裝進一個<b>便當盒</b>，我只要拿來加熱。</p>
+  <div class="tbl"><table>
+    <tr><th>Docker 名詞</th><th>比喻</th><th>技術上是什麼</th></tr>
+    <tr><td><b>Image</b> 映像檔</td><td>食譜＋材料包</td><td>唯讀的打包檔，例如 <code>n8nio/n8n</code>、<code>ollama/ollama</code>，從 Docker Hub 下載</td></tr>
+    <tr><td><b>Container</b> 容器</td><td>正在吃的便當</td><td>從 image 啟動的程式，有自己的檔案系統與網路，可以開關、刪除</td></tr>
+    <tr><td><b>Volume</b> 磁碟區</td><td>便當盒外的保鮮盒</td><td>容器外的儲存空間。容器刪掉，資料還在</td></tr>
+    <tr><td><b>Port mapping</b> 連接埠對應</td><td>取餐窗口號碼</td><td><code>5678:5678</code>＝電腦的 5678 埠轉到容器的 5678 埠</td></tr>
+    <tr><td><b>Compose</b></td><td>一張點餐單</td><td>用一個 YAML 檔描述多個容器，一個指令全部啟動</td></tr>
+  </table></div>
+
+  <h3>我的 docker-compose.yml，逐行解讀</h3>
+  <div class="term-h"><span>Downloads\n8n作業\docker-compose.yml</span></div>
+<pre><span class="k">services:</span>                       <span class="c"># 這張點餐單要開兩個容器</span>
+  <span class="k">ollama:</span>                       <span class="c"># 容器 1：本地 AI。這個名字也是它在內部網路的「門牌」</span>
+    <span class="k">image:</span> <span class="s">ollama/ollama:latest</span>   <span class="c"># 用哪個映像檔</span>
+    <span class="k">ports:</span> [<span class="s">"11434:11434"</span>]       <span class="c"># 電腦:容器，Ollama 的 API 埠</span>
+    <span class="k">volumes:</span> [<span class="s">"ollama:/root/.ollama"</span>]  <span class="c"># 下載的模型存進 volume，重開不用重下載</span>
+
+  <span class="k">n8n:</span>                          <span class="c"># 容器 2：自動化流水線</span>
+    <span class="k">image:</span> <span class="s">n8nio/n8n:latest</span>
+    <span class="k">ports:</span> [<span class="s">"5678:5678"</span>]          <span class="c"># 瀏覽器打 localhost:5678</span>
+    <span class="k">volumes:</span> [<span class="s">"./n8n_data:/home/node/.n8n"</span>]  <span class="c"># 我的流程與憑證存在旁邊的資料夾</span>
+    <span class="k">environment:</span>
+      - <span class="s">GENERIC_TIMEZONE=Asia/Taipei</span>   <span class="c"># 排程用台灣時間</span>
+    <span class="k">depends_on:</span> [<span class="s">ollama</span>]          <span class="c"># 先開 Ollama，再開 n8n</span>
+
+<span class="k">volumes:</span>
+  <span class="k">ollama:</span>                       <span class="c"># 宣告上面用到的具名 volume</span></pre>
+
+  <div class="callout"><b>開發紀錄：課程原檔的兩個錯字</b><br>課程提供的 yml 直接執行會失敗：<code>./n8n data</code> 中間有空格，Docker 會把它當成兩個參數；<code>depends on</code> 少了底線，Docker 不認得這個欄位。我改成 <code>./n8n_data</code> 和 <code>depends_on</code> 後才成功啟動。</div>
+
+  <h3>啟動指令拆解</h3>
+  <div class="term-h"><span>在 Downloads\n8n作業 資料夾裡執行</span><button class="copy" data-copy="docker compose up -d">複製</button></div>
+<pre>docker compose up -d</pre>
+  <div class="tbl"><table>
+    <tr><th>字</th><th>意思</th></tr>
+    <tr><td><code>docker</code></td><td>呼叫 Docker 程式</td></tr>
+    <tr><td><code>compose</code></td><td>讀「目前資料夾」的 <code>docker-compose.yml</code></td></tr>
+    <tr><td><code>up</code></td><td>建立並啟動單子上所有容器；image 不在電腦裡就先下載</td></tr>
+    <tr><td><code>-d</code></td><td>detached，在背景執行，終端機視窗可以關</td></tr>
+  </table></div>
+
+  <h3>其他常用指令</h3>
+  <div class="tbl"><table>
+    <tr><th>指令</th><th>用途</th></tr>
+    <tr><td><code>docker compose ps</code></td><td>看兩個容器是不是 <code>running</code></td></tr>
+    <tr><td><code>docker compose logs n8n</code></td><td>看 n8n 的執行紀錄，出錯時找原因</td></tr>
+    <tr><td><code>docker compose down</code></td><td>停止並移除容器；volume 和 n8n_data 保留，流程不會不見</td></tr>
+    <tr><td><code>docker exec -it ollama ollama pull qwen2.5:3b</code></td><td>進到 Ollama 容器裡，下載模型</td></tr>
+  </table></div>
+</section>
+
+<!-- ============ OLLAMA ============ -->
+<section id="ollama">
+  <div class="eyebrow">Part 3</div>
+  <h2>Ollama 與我用的模型</h2>
+
+  <h3>Ollama 是什麼</h3>
+  <p>先分清楚兩個東西：<b>模型</b>是 AI 的大腦檔案，<b>Ollama</b> 是負責把這個大腦跑起來的程式。模型像食譜，Ollama 像廚師。Ollama 會下載模型、載入記憶體，然後開一個 HTTP 服務等別的程式來問問題。</p>
+
+  <div class="two">
+    <div class="card"><h4>雲端 AI（例如 ChatGPT）</h4><p>模型在別人公司的伺服器上跑，資料要傳過去，通常按用量付費，需要網路。</p></div>
+    <div class="card"><h4>Ollama 本地 AI</h4><p>模型在我自己的電腦上跑，資料不出我的電腦，不收費，下載完模型後可以離線使用。</p></div>
+  </div>
+
+  <h3>為什麼可以免費</h3>
+  <p>一、Ollama 是開源軟體。二、有些公司把模型權重公開讓人下載，例如阿里巴巴通義千問團隊的 Qwen 系列。三、運算用的是我自己的電腦和電費，沒有人需要替我付伺服器費用。代價是模型比雲端的小，能力有限，也會吃我電腦的記憶體和 CPU。</p>
+
+  <h3>為什麼 Ollama 有網址：它是一個 API 服務</h3>
+  <p>Ollama 啟動後會在 11434 埠開一個 HTTP 服務，其他程式送一個請求過去，它就回傳 AI 的答案。這就是課程 12.6 講的 API。我可以自己用指令測試：</p>
+  <div class="term-h"><span>送一個請求給 Ollama</span><button class="copy" data-copy='curl http://localhost:11434/api/generate -d "{\"model\":\"qwen2.5:3b\",\"prompt\":\"用一句話介紹白蟻防治\",\"stream\":false}"'>複製</button></div>
+<pre>curl http://localhost:11434/api/generate -d '{
+  <span class="k">"model"</span>: <span class="s">"qwen2.5:3b"</span>,
+  <span class="k">"prompt"</span>: <span class="s">"用一句話介紹白蟻防治"</span>,
+  <span class="k">"stream"</span>: false
+}'</pre>
+  <div class="term-h"><span>Ollama 的回應（節錄）</span></div>
+<pre>{
+  <span class="k">"model"</span>: <span class="s">"qwen2.5:3b"</span>,
+  <span class="k">"response"</span>: <span class="s">"白蟻防治是透過藥劑與環境處理，防止白蟻蛀蝕建築木材的工作。"</span>,
+  <span class="k">"done"</span>: true
+}</pre>
+  <p class="cap">回應內容每次會略有不同。n8n 的 Ollama 節點背後做的就是同一件事，只是幫我包成方塊。</p>
+
+  <h3>我選的模型：qwen2.5:3b</h3>
+  <div class="tbl"><table>
+    <tr><th>項目</th><th>規格</th><th>對專案的意義</th></tr>
+    <tr><td>開發者</td><td>阿里巴巴 Qwen 團隊</td><td>中文訓練資料多，繁體中文輸出穩定</td></tr>
+    <tr><td>參數量</td><td>3.09B（約 30.9 億）</td><td>筆電跑得動；越大越聰明但越慢</td></tr>
+    <tr><td>層數／注意力頭</td><td>36 層；GQA，Q 16 個、KV 2 個</td><td>GQA 讓推論時的記憶體用量較低</td></tr>
+    <tr><td>上下文長度</td><td>32,768 tokens</td><td>一位客戶的資料加提示詞遠遠用不完</td></tr>
+    <tr><td>Ollama 下載大小</td><td>約 1.9 GB（量化版）</td><td>量化是把數字精度降低以縮小檔案，品質略降但能在一般電腦執行</td></tr>
+    <tr><td>授權</td><td>Qwen Research License</td><td>可下載使用於研究與課程作業；若要商用需另看授權條款</td></tr>
+  </table></div>
+  <div class="note"><b>為什麼只讓小模型做簡單的事：</b>3B 模型會犯錯，也可能編造資料（課程 1.4 幻覺）。所以我只讓它做兩件事：檢查欄位齊不齊、寫 60 字以內的訊息；而且輸出一定要經過我核准。</div>
+</section>
+
+<!-- ============ CONNECT ============ -->
+<section id="connect">
+  <div class="eyebrow">Part 4</div>
+  <h2>我怎麼把 n8n 和 Ollama 串起來</h2>
+
+  <h3>關鍵：容器裡的 localhost 不是你的電腦</h3>
+  <div class="diagram" role="img" aria-label="從瀏覽器用 localhost:11434 找 Ollama；從 n8n 容器裡要用 ollama:11434">
+    <svg viewBox="0 0 760 230">
+      <rect x="10" y="20" width="200" height="80" rx="12" fill="var(--paper)" stroke="var(--line)"/>
+      <text x="30" y="55" font-size="15" font-weight="700" fill="var(--ink)">我的瀏覽器</text>
+      <text x="30" y="80" font-size="12" fill="var(--muted)">在 Windows 上</text>
+      <rect x="10" y="130" width="200" height="80" rx="12" fill="var(--paper)" stroke="var(--teal)" stroke-width="2"/>
+      <text x="30" y="165" font-size="15" font-weight="700" fill="var(--ink)">n8n 容器</text>
+      <text x="30" y="190" font-size="12" fill="var(--muted)">在 Docker 網路裡</text>
+      <rect x="540" y="75" width="200" height="80" rx="12" fill="var(--paper)" stroke="var(--amber)" stroke-width="2"/>
+      <text x="560" y="110" font-size="15" font-weight="700" fill="var(--ink)">Ollama 容器</text>
+      <text x="560" y="135" font-size="12" fill="var(--muted)" font-family="JetBrains Mono, monospace">:11434</text>
+      <line x1="210" y1="60" x2="540" y2="105" stroke="var(--ok)" stroke-width="2"/>
+      <text x="260" y="62" font-size="13" fill="var(--ok)" font-family="JetBrains Mono, monospace">✓ http://localhost:11434</text>
+      <line x1="210" y1="170" x2="540" y2="125" stroke="var(--ok)" stroke-width="2"/>
+      <text x="260" y="190" font-size="13" fill="var(--ok)" font-family="JetBrains Mono, monospace">✓ http://ollama:11434</text>
+      <text x="260" y="215" font-size="12" fill="var(--bad)" font-family="JetBrains Mono, monospace">✗ localhost 在這裡指 n8n 自己</text>
+    </svg>
+  </div>
+  <p>Docker Compose 會把同一份檔案裡的容器放進同一個內部網路，並用服務名稱當作主機名稱。所以 n8n 要找 Ollama，網址寫 <code>http://ollama:11434</code>。</p>
+
+  <h3>在 n8n 裡的設定步驟</h3>
+  <ol class="steps">
+    <li><b>建立 Ollama 憑證</b>左側選單 Credentials → 新增 → 搜尋 Ollama → Base URL 填 <code>http://ollama:11434</code> → 儲存後顯示連線成功</li>
+    <li><b>加入 Basic LLM Chain 節點</b>這是「把提示詞送給語言模型並拿回答案」的節點</li>
+    <li><b>在它底下掛 Ollama Chat Model</b>選剛剛的憑證，模型選 <code>qwen2.5:3b</code>（課程 13.6 教的「換模型」就是改這裡）</li>
+    <li><b>寫提示詞，要求只回傳 JSON</b>這樣下一個節點才能用 <code>{{ $json.完整 }}</code> 判斷要不要停機</li>
+  </ol>
+
+  <div class="term-h"><span>提示詞（Prompt）</span></div>
+<pre>你是病媒防治公司的行政助理。請檢查以下施工資料是否完整，並草擬給客戶的 LINE 通知。
+必要欄位：客戶名稱、施工日期、施工時間、施工類別。
+資料：<span class="s">{{ JSON.stringify($json) }}</span>
+
+只回傳 JSON，不要加任何其他文字：
+{<span class="k">"完整"</span>: true 或 false, <span class="k">"缺漏欄位"</span>: <span class="s">""</span>, <span class="k">"草稿"</span>: <span class="s">"60 字以內、禮貌的繁體中文。不可編造資料中沒有的內容"</span>}</pre>
+  <p>「不可編造」和「只回傳 JSON」是針對小模型最常出的兩種問題：自己補資料、回答格式跑掉。格式跑掉時，後面的 If 節點會判定為不完整，流程就停下來通知我，不會把壞掉的訊息傳給客戶。</p>
+</section>
+
+<!-- ============ FLOWS ============ -->
+<section id="flows">
+  <div class="eyebrow">Part 5</div>
+  <h2>四條流程，逐節點拆解</h2>
+  <p>點選左邊的節點，可以看到它做什麼、輸出什麼資料。標了橘色標籤的是治理節點。</p>
+  <div class="tabs" role="tablist" id="tabs"></div>
+  <div class="explorer">
+    <div class="nodes" id="nodes"></div>
+    <div class="detail" id="detail"></div>
+  </div>
+</section>
+
+<!-- ============ GOVERNANCE ============ -->
+<section id="governance">
+  <div class="eyebrow">Part 6</div>
+  <h2>治理設計：把課程的原則變成節點</h2>
+  <p>課程第 2 單元提到，治理不是背法條，而是把原則翻成流程裡的具體步驟。我在流程中放了五個：</p>
+  <div class="tbl"><table>
+    <tr><th>原則</th><th>流程中的做法</th><th>對應</th></tr>
+    <tr><td><b>揭露</b></td><td>客戶訊息最後固定加上「本訊息由 AI 協助草擬，並經專人確認後發送」</td><td>2.4 EU AI Act 透明告知、2.8 揭露聲明</td></tr>
+    <tr><td><b>把關</b></td><td>AI 草稿先送到 #審核區，我回覆「核准」才會發給客戶</td><td>2.5 人類監督、Human in the Loop</td></tr>
+    <tr><td><b>停機</b></td><td>行事曆找不到客戶、或 AI 判定資料不完整，流程停止並通知我</td><td>2.6 停機機制</td></tr>
+    <tr><td><b>紀錄</b></td><td>試算表記下 AI 檢查結果、審核人、審核時間、發送時間</td><td>2.3 可歸責、1.3 出事算誰的</td></tr>
+    <tr><td><b>最小化</b></td><td>只把客戶名稱、日期、時間、類別交給 AI；施藥人員、資料夾 ID 不送</td><td>2.3 GDPR 資料最小化</td></tr>
+  </table></div>
+  <p>為什麼不讓 AI 直接傳給客戶？課程 3.5 提到 automation bias：人容易相信機器的輸出而不檢查。小模型可能把日期寫錯，一旦傳錯，客戶就會在錯的時間等施工人員。所以最後一步一定由人確認。</p>
+</section>
+
+<!-- ============ FIRST RUN ============ -->
+<section id="first-run">
+  <div class="eyebrow">Part 7</div>
+  <h2>打開 localhost:5678 之後怎麼操作</h2>
+  <p>啟動容器後，瀏覽器打開 <code>http://localhost:5678</code>。以下是從第一次打開到流程能自動執行的順序。n8n 改版很快，按鈕名稱可能和這裡略有不同，以畫面為準。</p>
+  <ol class="steps">
+    <li><b>建立擁有者帳號（只有第一次）</b>填 email、姓名、密碼。這個帳號只存在你電腦的 n8n_data 資料夾裡，不會上傳。</li>
+    <li><b>進入 Overview 首頁</b>這裡會列出所有 workflow、憑證和執行紀錄。</li>
+    <li><b>先建立憑證（Credentials）</b>依序新增：Ollama（<code>http://ollama:11434</code>）、Google（課程 13.1、13.2 的 OAuth 憑證）、Discord（課程 14.3 的機器人 Token）。先建好，之後加節點時直接選。</li>
+    <li><b>Create Workflow，替流程命名</b>例如「流程 A：送審」。</li>
+    <li><b>按畫布中間的 ＋ 加觸發節點</b>搜尋 Google Drive Trigger，選「檔案新增到資料夾」，指定「待發送」資料夾。</li>
+    <li><b>按節點右邊的 ＋ 接下一個節點</b>依照 Part 5 的順序一個一個加。每加一個，就用運算式從前一個節點拿資料。</li>
+    <li><b>測試：Execute step／Execute workflow</b>單獨執行一個節點，打開節點會看到左邊 INPUT、右邊 OUTPUT 的 JSON。輸出不對就在這裡修。</li>
+    <li><b>存檔</b>右上角 Save（或 Ctrl＋S）。</li>
+    <li><b>啟用流程</b>測試都通過後，把右上角的 Active／Publish 打開。啟用後觸發節點才會在背景持續監聽，不需要你一直開著畫面。</li>
+    <li><b>看執行紀錄（Executions）</b>每次自動執行都會留下紀錄，失敗的會標紅。點進去能看到是哪個節點出錯、錯誤訊息是什麼，把這段複製給 AI 協助除錯（課程 14.7）。</li>
+  </ol>
+  <div class="callout"><b>容易卡住的三個地方</b><br>1. Ollama 憑證填成 <code>localhost</code> → 連不上，改成 <code>http://ollama:11434</code>。<br>2. 第一次呼叫模型很慢 → 模型要先載入記憶體，第二次就會變快。<br>3. 流程測試會跑、但平常不會自己跑 → 忘記把流程設為 Active。</div>
+</section>
+
+<!-- ============ LIMITS ============ -->
+<section id="limits">
+  <div class="eyebrow">Part 8</div>
+  <h2>限制與下一步</h2>
+  <div class="two">
+    <div class="card"><h4>目前的限制</h4>
+      <p>建立通知書仍是人工，因為公司系統尚未開放串接。</p>
+      <p>用 Discord 和 Google 表單模擬官方 LINE 與電子簽署，真實環境需要換成 LINE Messaging API 與公司的簽署系統。</p>
+      <p>3B 小模型偶爾格式不穩，靠 If 節點停機和人工核准兜底。</p>
+    </div>
+    <div class="card"><h4>如果公司系統建好之後</h4>
+      <p>把觸發點往前移：行事曆新增客戶就自動產生通知書草稿。</p>
+      <p>Discord 換成官方 LINE 的 Messaging API。</p>
+      <p>每日提醒升級成週報表，統計每位客戶平均回簽天數（課程 17.5）。</p>
+    </div>
+  </div>
+  <p class="foot">模型規格來源：<a href="https://huggingface.co/Qwen/Qwen2.5-3B" target="_blank" rel="noopener">Qwen2.5-3B 模型卡（Hugging Face）</a>、<a href="https://qwenlm.github.io/blog/qwen2.5-llm" target="_blank" rel="noopener">Qwen2.5 官方介紹</a>；n8n 與 Ollama 的 Docker 架設方式參考 <a href="https://github.com/n8n-io/self-hosted-ai-starter-kit" target="_blank" rel="noopener">n8n Self-hosted AI Starter Kit</a> 與課程 12.4、13.5。<br>本頁中的公司、客戶、施藥人員與所有資料皆為虛構，僅供課程作業展示。</p>
+</section>
+</main>
+</div>
+
+<script>
+const FLOWS={
+ A:{name:'A 送審',desc:'通知書放進待發送資料夾 → AI 檢查草擬 → 送到 #審核區',nodes:[
+  {t:'新檔案觸發',k:'Google Drive Trigger',d:'監看「待發送」資料夾。我把建好的通知書 PDF 放進來，流程就開始。',o:{name:'C001_施工計畫通知書.pdf',id:'1AbC…xyz',mimeType:'application/pdf'}},
+  {t:'取出客戶編號',k:'Edit Fields (Set)',d:'檔名規則是「客戶編號_施工計畫通知書.pdf」，用運算式切出編號。',code:"{{ $json.name.split('_')[0] }}",o:{客戶編號:'C001',檔案ID:'1AbC…xyz'}},
+  {t:'對照行事曆',k:'Google Sheets: Get Rows',d:'在模擬行事曆的試算表，用客戶編號找出這位客戶。',o:{客戶編號:'C001',施工日期:'2026-12-01',施工時間:'09:00–11:00',客戶名稱:'王小明（假資料）',施工類別:'白蟻防治',施藥人員:'張師傅',資料夾ID:'1FoL…der'}},
+  {t:'只留必要欄位',k:'Edit Fields (Set)',gov:'最小化',d:'施藥人員、資料夾 ID 不交給 AI，只留 AI 需要的四個欄位。',o:{客戶名稱:'王小明（假資料）',施工日期:'2026-12-01',施工時間:'09:00–11:00',施工類別:'白蟻防治'}},
+  {t:'AI 檢查＋草擬',k:'Basic LLM Chain + Ollama (qwen2.5:3b)',d:'送提示詞給本地模型，要求只回傳 JSON。',o:{完整:true,缺漏欄位:'',草稿:'王小明您好，我們將於 12/1 09:00–11:00 到府進行白蟻防治，請點連結確認簽署，謝謝！'}},
+  {t:'資料完整嗎？',k:'If',gov:'停機',d:'找不到客戶，或「完整」不是 true，就走停機分支：通知 #審核區，流程結束，客戶什麼都收不到。',o:{分支:'true → 繼續送審'}},
+  {t:'送到 #審核區',k:'Discord: Send Message',gov:'把關',d:'把草稿送給我看，等我回覆「核准 C001」。',o:{channel:'#審核區',content:'📝 C001 草稿如下，回覆「核准 C001」才會發送：\n王小明您好，我們將於 12/1…'}},
+  {t:'寫入紀錄',k:'Google Sheets: Update Row',gov:'紀錄',d:'把 AI 檢查結果與草稿寫回試算表，狀態改為「待審核」。',o:{客戶編號:'C001',狀態:'待審核',AI檢查結果:'完整'}}
+ ]},
+ B:{name:'B 核准發送',desc:'我回覆「核准」→ 歸檔 PDF → 傳簽署連結給客戶',nodes:[
+  {t:'收到 Discord 訊息',k:'Discord Trigger',d:'監聽 #審核區，訊息開頭是「核准」才處理（課程 14.5 接收訊息）。',o:{author:'行政工讀生',content:'核准 C001',timestamp:'2026-11-30T10:12:03+08:00'}},
+  {t:'取出客戶編號',k:'Edit Fields (Set)',d:'從「核准 C001」切出 C001。',code:"{{ $json.content.replace('核准','').trim() }}",o:{客戶編號:'C001',審核人:'行政工讀生'}},
+  {t:'讀取客戶資料',k:'Google Sheets: Get Rows',d:'拿到資料夾 ID 與 AI 草稿。',o:{客戶編號:'C001',資料夾ID:'1FoL…der',AI草稿:'王小明您好，我們將於 12/1…'}},
+  {t:'歸檔未簽 PDF',k:'Google Drive: Move',d:'把待發送資料夾裡的 PDF 移到 C001 的客戶資料夾。',o:{name:'C001_施工計畫通知書.pdf',parent:'C001_王小明'}},
+  {t:'傳給客戶',k:'Discord: Send Message',gov:'揭露',d:'發到 #客戶聊天室（模擬官方 LINE），附簽署表單連結與 AI 揭露句。',o:{channel:'#客戶聊天室',content:'王小明您好，我們將於 12/1…\n簽署連結：https://forms.gle/…\n（本訊息由 AI 協助草擬，並經專人確認後發送）'}},
+  {t:'寫入紀錄',k:'Google Sheets: Update Row',gov:'紀錄',d:'狀態改「已發送」，記下審核人、審核時間、發送時間。',o:{狀態:'已發送',審核人:'行政工讀生',審核時間:'2026-11-30 10:12',發送時間:'2026-11-30 10:12'}}
+ ]},
+ C:{name:'C 回簽歸檔',desc:'客戶填表簽署 → 歸檔 → 回覆客戶 → 提醒我',nodes:[
+  {t:'表單新回覆',k:'Google Sheets Trigger',d:'Google 表單的回覆會寫進「簽署回覆」試算表，新增一列就觸發。',o:{時間戳記:'2026-11-30 14:05',客戶編號:'C001',簽署人姓名:'王小明',同意:'同意'}},
+  {t:'找客戶資料夾',k:'Google Sheets: Get Rows',d:'用客戶編號找資料夾 ID。',o:{客戶編號:'C001',資料夾ID:'1FoL…der'}},
+  {t:'歸檔簽署紀錄',k:'Google Docs + Drive',d:'在客戶資料夾建立「C001_簽署紀錄」，內容含簽署人與時間。',o:{name:'C001_簽署紀錄',parent:'C001_王小明'}},
+  {t:'回覆客戶',k:'Discord: Send Message',d:'「已收到您的簽署，我們會準時到府施工，謝謝！」',o:{channel:'#客戶聊天室'}},
+  {t:'提醒我',k:'Discord: Send Message',d:'在 #審核區通知我這位客戶已完成。',o:{channel:'#審核區',content:'🔔 C001 已回簽並歸檔'}},
+  {t:'更新狀態',k:'Google Sheets: Update Row',gov:'紀錄',d:'狀態改為「已完成」。',o:{狀態:'已完成'}}
+ ]},
+ D:{name:'D 每日提醒',desc:'每天 18:00 找出超過 2 天沒回簽的客戶',nodes:[
+  {t:'每天 18:00',k:'Schedule Trigger',d:'依台灣時區（compose 裡設定的 GENERIC_TIMEZONE）每天觸發。',o:{timestamp:'2026-12-02T18:00:00+08:00'}},
+  {t:'讀取已發送客戶',k:'Google Sheets: Get Rows',d:'篩出狀態是「已發送」的列。',o:[{客戶編號:'C002',發送時間:'2026-11-29 09:30'},{客戶編號:'C004',發送時間:'2026-12-02 11:00'}]},
+  {t:'超過 2 天的',k:'Filter',d:'發送時間距今超過 48 小時才留下。',code:"{{ $now.diff(DateTime.fromSQL($json.發送時間), 'hours').hours > 48 }}",o:[{客戶編號:'C002',發送時間:'2026-11-29 09:30'}]},
+  {t:'提醒追蹤',k:'Discord: Send Message',d:'在 #審核區列出需要追蹤的客戶。',o:{channel:'#審核區',content:'🔔 以下客戶超過 2 天未回簽：C002，請追蹤'}}
+ ]}
+};
+let cur='A', sel=0;
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function hl(o){return esc(JSON.stringify(o,null,2)).replace(/(&quot;[^&]*?&quot;)(\s*:)/g,'<span class="k">$1</span>$2').replace(/:\s(&quot;.*?&quot;)/g,': <span class="s">$1</span>');}
+function renderTabs(){
+  $('tabs').innerHTML='';
+  Object.entries(FLOWS).forEach(([k,f])=>{const b=document.createElement('button');b.className='tab';b.role='tab';b.id='tab-'+k;b.setAttribute('aria-selected',k===cur);b.textContent=f.name;b.onclick=()=>{cur=k;sel=0;render();};$('tabs').appendChild(b);});
+}
+function render(){
+  renderTabs();
+  const f=FLOWS[cur]; const n=$('nodes'); n.innerHTML='';
+  f.nodes.forEach((x,i)=>{const b=document.createElement('button');b.className='node'+(x.gov?' gov':'');if(x.gov)b.dataset.gov=x.gov;b.setAttribute('aria-pressed',i===sel);
+    b.innerHTML=`<span class="i">${String(i+1).padStart(2,'0')}</span><span><span class="t">${esc(x.t)}</span>${x.gov?`<span class="badge">${esc(x.gov)}</span>`:''}<br><span class="k">${esc(x.k)}</span></span>`;b.onclick=()=>{sel=i;render();};n.appendChild(b);});
+  const x=f.nodes[sel];
+  $('detail').innerHTML=`<p class="cap" style="margin-top:0">${esc(f.desc)}</p><h4>${esc(x.t)}</h4><div class="type">${esc(x.k)}</div><p>${esc(x.d)}</p>`+
+    (x.code?`<div class="term-h"><span>運算式</span></div><pre>${esc(x.code)}</pre>`:'')+
+    `<div class="term-h"><span>這個節點的輸出（示意資料）</span></div><pre>${hl(x.o)}</pre>`;
+}
+render();
+document.querySelectorAll('.copy').forEach(b=>b.addEventListener('click',async()=>{
+  const t=b.dataset.copy; try{await navigator.clipboard.writeText(t);b.textContent='已複製';}catch(e){const r=document.createRange();r.selectNodeContents(b.parentElement.nextElementSibling);const s=getSelection();s.removeAllRanges();s.addRange(r);b.textContent='已選取';}
+  setTimeout(()=>b.textContent='複製',1500);
+}));
+const links=[...document.querySelectorAll('#toc a')];
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){links.forEach(a=>a.classList.toggle('on',a.getAttribute('href')==='#'+e.target.id));}}),{rootMargin:'-30% 0px -60% 0px'});
+document.querySelectorAll('main section').forEach(s=>io.observe(s));
+</script>
+
+</body></html>

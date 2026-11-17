@@ -115,7 +115,11 @@ JUST [C](./Code/)ODE
 | | LC | [M_1340](./Code/LeetCode/M_1340.cpp) Jump Game V - DP與DFS跳樓求最長路徑 | 1 | ![DP](https://img.shields.io/badge/-DP-blue) ![DFS](https://img.shields.io/badge/-DFS-blue) |
 
 
-<br><br><br><br><br><br>
+<br><br><br><br><br><br><hr>
+#### CyberSec
+- [AIS3_OT_工控資安](https://123456dr.github.io/RANDOM_CODE/Code/CyberSec/AIS3_1114_OT.html)
+#### Self_Project
+- [n8n_with_PTjob](https://123456dr.github.io/RANDOM_CODE/Code/Self_Project/n8n.html)
 #### ALGO_web<br>
 - [演算法期中考古題詳解](https://123456dr.github.io/RANDOM_CODE/Code/UT/ALGO/筆試/演算法期中考古題詳解.html)
 - [CH4](https://123456dr.github.io/RANDOM_CODE/Code/UT/ALGO/筆試/ch4.html)
