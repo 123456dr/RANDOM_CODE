@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OT 工控資安 互動學習站</title>
+<style>
+:root{
+  --bg:#0f1115; --panel:#171a21; --panel2:#1e222b; --line:#2a2f3a;
+  --text:#e6e8ec; --muted:#9aa3b2; --dim:#6b7280;
+  --accent:#4f9cf9; --accent-bg:#13263f;
+  --ok:#36c08b; --ok-bg:#0f2a22;
+  --warn:#e5a53b; --warn-bg:#2c2110;
+  --danger:#e2514a; --danger-bg:#2c1413;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);
+  font-family:"Noto Sans TC",system-ui,-apple-system,"Segoe UI",sans-serif;
+  line-height:1.75;font-size:16px;}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+code{font-family:var(--mono);background:var(--panel2);padding:1px 6px;border-radius:5px;font-size:.9em}
+h1,h2,h3{font-weight:600;line-height:1.3}
+h2{font-size:26px;margin:0 0 4px;border-left:4px solid var(--accent);padding-left:12px}
+h3{font-size:19px;margin:28px 0 8px;color:#fff}
+.wrap{display:flex;max-width:1200px;margin:0 auto}
+/* sidebar */
+nav.side{width:240px;flex:0 0 240px;position:sticky;top:0;height:100vh;overflow-y:auto;
+  padding:20px 14px;border-right:1px solid var(--line);background:#0c0e12}
+nav.side .brand{font-weight:700;font-size:16px;margin-bottom:4px}
+nav.side .sub{color:var(--dim);font-size:12px;margin-bottom:16px}
+nav.side .grp{color:var(--muted);font-size:12px;letter-spacing:1px;text-transform:uppercase;margin:16px 0 6px}
+nav.side a{display:block;color:var(--muted);padding:6px 10px;border-radius:7px;font-size:14px}
+nav.side a:hover{background:var(--panel);color:var(--text);text-decoration:none}
+/* main */
+main{flex:1;min-width:0;padding:34px 40px 120px}
+section{margin-bottom:56px;scroll-margin-top:16px}
+.lead{color:var(--muted);font-size:15px;margin:2px 0 18px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin:16px 0}
+.callout{border-left:4px solid var(--accent);background:var(--accent-bg);padding:12px 16px;border-radius:0 8px 8px 0;margin:14px 0;font-size:14.5px}
+.callout.warn{border-color:var(--warn);background:var(--warn-bg)}
+.callout.danger{border-color:var(--danger);background:var(--danger-bg)}
+.callout.ok{border-color:var(--ok);background:var(--ok-bg)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:860px){.grid2{grid-template-columns:1fr}}
+table{width:100%;border-collapse:collapse;margin:12px 0;font-size:14px}
+th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+th{background:var(--panel2);color:#fff;font-weight:600}
+.pill{display:inline-block;padding:2px 8px;border-radius:20px;font-size:12px;font-family:var(--mono)}
+.pill.b{background:var(--accent-bg);color:var(--accent)}
+.pill.y{background:var(--warn-bg);color:var(--warn)}
+.pill.r{background:var(--danger-bg);color:var(--danger)}
+.pill.g{background:var(--ok-bg);color:var(--ok)}
+/* interactive blocks */
+.sim{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:16px;margin:16px 0}
+.sim .simhead{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);margin-bottom:10px}
+.dot{width:10px;height:10px;border-radius:50%}
+.btn{background:var(--panel);border:1px solid var(--line);color:var(--text);padding:7px 14px;border-radius:8px;
+  cursor:pointer;font-size:14px;font-family:inherit}
+.btn:hover{border-color:var(--accent);color:#fff}
+.btn.pri{background:var(--accent-bg);border-color:var(--accent);color:var(--accent)}
+.btn.sm{padding:4px 10px;font-size:13px}
+input.inp,select.inp{background:#0c0e12;border:1px solid var(--line);color:var(--text);
+  padding:8px 10px;border-radius:8px;font-family:var(--mono);font-size:13px;width:100%}
+.mono{font-family:var(--mono)}
+/* wireshark sim */
+.ws{border:1px solid var(--line);border-radius:8px;overflow:hidden;font-family:var(--mono);font-size:12.5px}
+.ws .row{display:grid;grid-template-columns:34px 128px 128px 64px 1fr;padding:5px 8px;cursor:pointer;border-bottom:1px solid #20242e}
+.ws .row.hd{color:var(--muted);background:#0c0e12;cursor:default}
+.ws .row:hover:not(.hd){background:#1a1f29}
+.ws .row.sel{background:var(--accent-bg)}
+.ws .det{background:#0c0e12;padding:10px 12px;font-size:12.5px;line-height:1.9;border-top:1px solid var(--line)}
+.ws .det .ind{padding-left:16px;color:var(--muted)}
+.hl{padding:1px 6px;border-radius:5px}
+.hl.b{background:var(--accent-bg);color:var(--accent)}
+.hl.y{background:var(--warn-bg);color:var(--warn)}
+.hl.r{background:var(--danger-bg);color:var(--danger)}
+/* plant */
+.plant{display:grid;grid-template-columns:1fr 200px;gap:14px}
+@media(max-width:720px){.plant{grid-template-columns:1fr}}
+.valve{display:flex;align-items:center;justify-content:space-between;background:#0c0e12;border:1px solid var(--line);
+  border-radius:8px;padding:8px 12px;margin-bottom:8px}
+.valve .st{font-family:var(--mono);font-size:12px;padding:2px 8px;border-radius:5px}
+.gauge{height:20px;background:#0c0e12;border:1px solid var(--line);border-radius:20px;overflow:hidden;margin-top:6px}
+.gauge .fill{height:100%;transition:width .4s,background .4s}
+/* terminal */
+.term{background:#07090c;border:1px solid var(--line);border-radius:8px;font-family:var(--mono);font-size:13px}
+.term .out{padding:12px;height:220px;overflow-y:auto;white-space:pre-wrap;line-height:1.6}
+.term .inrow{display:flex;border-top:1px solid var(--line)}
+.term .inrow span{padding:9px 4px 9px 12px;color:var(--ok)}
+.term input{flex:1;background:transparent;border:0;color:var(--text);font-family:var(--mono);font-size:13px;padding:9px 12px 9px 4px;outline:none}
+.term .c-ok{color:var(--ok)}.term .c-warn{color:var(--warn)}.term .c-r{color:var(--danger)}.term .c-dim{color:var(--dim)}.term .c-b{color:var(--accent)}
+/* topology */
+.topo{position:relative;height:260px;background:#0c0e12;border:1px solid var(--line);border-radius:8px}
+.node{position:absolute;transform:translate(-50%,-50%);text-align:center;cursor:pointer}
+.node .box{width:92px;padding:8px 6px;border-radius:8px;border:1px solid var(--line);background:var(--panel);font-size:12px}
+.node .box:hover{border-color:var(--accent)}
+.node .ip{font-family:var(--mono);font-size:10.5px;color:var(--dim);margin-top:2px}
+.edge{position:absolute;height:1px;background:var(--line);transform-origin:left center}
+/* quiz */
+.quiz .opt{display:block;background:#0c0e12;border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin:6px 0;cursor:pointer;font-size:14px}
+.quiz .opt:hover{border-color:var(--accent)}
+.quiz .opt.correct{border-color:var(--ok);background:var(--ok-bg)}
+.quiz .opt.wrong{border-color:var(--danger);background:var(--danger-bg)}
+.quiz .fb{font-size:13.5px;margin-top:8px;color:var(--muted)}
+.steps{counter-reset:s}
+.step{position:relative;padding-left:40px;margin:14px 0}
+.step::before{counter-increment:s;content:counter(s);position:absolute;left:0;top:0;width:26px;height:26px;
+  background:var(--accent-bg);color:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700}
+.tag{font-size:11px;font-family:var(--mono);color:var(--dim);border:1px solid var(--line);padding:1px 6px;border-radius:5px}
+.flow{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:13px;margin:12px 0}
+.flow .n{background:var(--panel);border:1px solid var(--line);border-radius:7px;padding:6px 10px}
+.flow .ar{color:var(--dim)}
+hr{border:0;border-top:1px solid var(--line);margin:40px 0}
+.kbd{font-family:var(--mono);font-size:12px;background:var(--panel);border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:1px 6px}
+.toc-top{display:none}
+@media(max-width:780px){
+  nav.side{display:none}
+  main{padding:20px}
+  .toc-top{display:block}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="side">
+  <div class="brand">OT 工控資安</div>
+  <div class="sub">Day 1 → Day 2 互動學習站</div>
+  <a href="#intro">開始之前</a>
+  <div class="grp">Day 1 · 基礎</div>
+  <a href="#d1-otit">1.1 OT 與 IT 的差別</a>
+  <a href="#d1-roles">1.2 四大角色</a>
+  <a href="#d1-grfics">1.3 GRFICS 靶場</a>
+  <a href="#d1-modbus">1.4 Modbus 基礎</a>
+  <a href="#d1-stux">1.5 Stuxnet 的啟示</a>
+  <div class="grp">Day 2 · 攻防</div>
+  <a href="#d2-ws">2.1 Wireshark（封包模擬）</a>
+  <a href="#d2-attack">2.2 Modbus 攻防（實作模擬）</a>
+  <a href="#d2-mitm">2.3 中間人攻擊</a>
+  <a href="#d2-grass">2.4 GRASSMARLIN</a>
+  <a href="#d2-triton">2.5 TRITON / TRISIS</a>
+  <a href="#d2-caldera">2.6 OT Caldera</a>
+  <a href="#d2-ext">2.7 延伸知識</a>
+  <div class="grp">驗收</div>
+  <a href="#quiz">期末小測驗</a>
+  <a href="#refs">參考連結</a>
+</nav>
+
+<main>
+<section id="intro">
+  <h1 style="font-size:30px;margin:0 0 6px">OT 工控資安 · 互動學習站</h1>
+  <p class="lead">把第一天到第二天的所有內容整理成一條學習線，並在網頁裡直接讓你「模擬操作」——看封包、下指令、開關閥門、跑攻擊腳本，不用裝任何虛擬機就能先學會。</p>
+  <div class="card">
+    <strong>怎麼用這個網站</strong>
+    <ul style="margin:8px 0 0;padding-left:20px;color:var(--muted);font-size:14.5px">
+      <li>左邊照順序往下走；每一節先講觀念，再給你一個可以動手的<span class="pill b">模擬練習</span>。</li>
+      <li>模擬畫面都是真的互動：你點、你打指令，畫面會照工控真實邏輯反應。</li>
+      <li>這份模擬了真實操作的「判讀與邏輯」。真的要寫進履歷，最後仍建議用本機 Wireshark 開一次課程 pcap。</li>
+    </ul>
+  </div>
+  <div class="callout">這門課在學 <strong>OT 資安</strong>：保護「會動的機器」（工廠的馬達、閥門、溫壓控制），而不是只保護資料。被駭的後果可能是爆炸、停產，不只是資料外洩。</div>
+</section>
+
+<hr>
+<!-- ================= DAY 1 ================= -->
+<section id="d1-otit">
+  <h2>1.1 OT 與 IT 的差別</h2>
+  <p class="lead">先把世界觀調對：你熟悉的資安大多是 IT；工控是另一套優先順序。</p>
+  <table>
+    <tr><th>比較</th><th>IT 資安</th><th>OT 資安</th></tr>
+    <tr><td>最重視</td><td>機密性（資料不外洩）</td><td>可用性（產線不能停）</td></tr>
+    <tr><td>被駭後果</td><td>資料外洩、網站當機</td><td>爆炸、停水停電、產品報廢</td></tr>
+    <tr><td>設備壽命</td><td>3–5 年</td><td>10–20 年，常是老系統</td></tr>
+    <tr><td>能不能隨便更新</td><td>可以常更新修補</td><td>停機成本高，常不敢更新</td></tr>
+    <tr><td>通訊協定</td><td>HTTP、TLS…</td><td>Modbus、DNP3… 多半沒有加密與驗證</td></tr>
+  </table>
+  <div class="callout ok">為什麼對你（想當資安工程師）重要：台灣製造業、半導體、電力水資源很多，OT 資安人才稀缺、門檻高，是很好的差異化方向。</div>
+</section>
+
+<section id="d1-roles">
+  <h2>1.2 工廠裡的四大角色</h2>
+  <p class="lead">之後所有工具都圍著這四個角色轉，先認得它們。點卡片看白話解釋。</p>
+  <div class="grid2" id="roleCards"></div>
+</section>
+
+<section id="d1-grfics">
+  <h2>1.3 GRFICS 靶場</h2>
+  <p class="lead">GRFICS 是一座「虛擬化工廠」，把 PLC、HMI、模擬裝置、攻擊機全裝進你電腦，讓你安全地練攻防，不會弄壞真設備。它模擬的是田納西伊士曼化學製程。</p>
+  <h3>通訊流程（背起來，第二天會很有感）</h3>
+  <div class="flow">
+    <span class="n">化工廠物理模擬</span><span class="ar">↔</span>
+    <span class="n">虛擬 IO</span><span class="ar">—Modbus 502→</span>
+    <span class="n">OpenPLC 控制器</span><span class="ar">—Modbus 502→</span>
+    <span class="n">HMI 螢幕</span>
+  </div>
+  <p style="font-size:14.5px;color:var(--muted)">所有通訊都走 <code>Modbus TCP · port 502</code>，而且沒有身分驗證——這就是第二天要拆解與攻擊的對象。</p>
+  <h3>v2 與 v3 的差別</h3>
+  <table>
+    <tr><th></th><th>GRFICSv2</th><th>GRFICSv3</th></tr>
+    <tr><td>部署</td><td>5 台 VirtualBox 虛擬機</td><td>Docker，一條指令啟動</td></tr>
+    <tr><td>元件</td><td>5 個</td><td>7 個容器（多了防火牆、Caldera、IDS）</td></tr>
+    <tr><td>特點</td><td>雙網段、ScadaBR</td><td>全容器化、3D 視覺、整合 MITRE Caldera</td></tr>
+  </table>
+  <div class="callout">GRFICSv3 多了「實體安全」關卡：便利貼帳密、沒鎖的 PLC 機櫃、私接路由器、磚頭擋住的門……提醒你資安不只網路，實體接觸常是最快的突破口。</div>
+</section>
+
+<section id="d1-modbus">
+  <h2>1.4 Modbus 基礎（互動）</h2>
+  <p class="lead">Modbus 是最老、最廣用的工控協定，走 <code>port 502</code>，<strong>沒有任何身分驗證</strong>——誰都能發指令，這就是它好攻擊的原因。先弄懂它的四種資料。</p>
+  <h3>四種資料型態</h3>
+  <p style="font-size:14.5px;color:var(--muted)">一句話記：<strong>1 bit 就是開/關，16 bits 就是數值</strong>；Input 類只能讀，Output/Holding 類外部可寫。點下面切換看差別。</p>
+  <div class="sim" id="modbusTypes"></div>
+  <div class="callout">位置編號口訣：<code>0x</code>、<code>1x</code> 開頭是 bit（開關）；<code>3x</code>、<code>4x</code> 開頭是 16-bit 數值。<code>1x/3x</code> 是 Input 只能讀，<code>0x/4x</code> 是 Output/Holding 外部可寫。</div>
+</section>
+
+<section id="d1-stux">
+  <h2>1.5 Stuxnet 的啟示</h2>
+  <p class="lead">Stuxnet 是人類史上第一個「目標是實體工廠」的惡意程式，2010 年被發現，摧毀了伊朗離心機。</p>
+  <div class="card">
+    它證明了一件事：<strong>純軟體的攻擊可以造成物理世界的真實破壞</strong>。這是 OT 資安這門學問誕生的原點，也是為什麼今天要用「虛擬化工廠」來練——因為真的練在真設備上，後果可能是災難。
+  </div>
+</section>
+
+<hr>
+<!-- ================= DAY 2 ================= -->
+<section id="d2-ws">
+  <h2>2.1 Wireshark（封包模擬練習）</h2>
+  <p class="lead">Wireshark 是抓封包工具。最重要觀念：它有<strong>兩個</strong>過濾器——Capture filter（抓之前，決定抓什麼，用空格語法 <code>port 502</code>）和 Display filter（抓之後，決定顯示什麼，用點語法 <code>tcp.port == 502</code>）。</p>
+
+  <h3>模擬練習：讀懂一段工控流量</h3>
+  <p style="font-size:14.5px;color:var(--muted)">在過濾器輸入 <code>modbus</code>、<code>arp</code>、<code>tcp.port == 502</code> 或 <code>ip.addr == 192.168.95.2</code>，看清單變化；點任一封包看解碼。試著找出「有人在寫 coil（開關閥門）」的那一包。</p>
+  <div class="sim">
+    <div class="simhead"><span class="dot" style="background:var(--danger)"></span><span class="dot" style="background:var(--warn)"></span><span class="dot" style="background:var(--ok)"></span>&nbsp;Wireshark 模擬器</div>
+    <div style="display:flex;gap:8px;margin-bottom:10px">
+      <input class="inp" id="wsFilter" placeholder="display filter，例如：modbus">
+      <button class="btn sm" onclick="applyWsFilter()">套用</button>
+      <button class="btn sm" onclick="clearWsFilter()">清除</button>
+    </div>
+    <div class="ws">
+      <div class="row hd"><span>No.</span><span>Source</span><span>Destination</span><span>Proto</span><span>Info</span></div>
+      <div id="wsRows"></div>
+    </div>
+    <div id="wsDetail" style="margin-top:10px;font-size:13px;color:var(--muted)">↑ 點一個封包看它的解碼內容。</div>
+  </div>
+
+  <h3>三步判讀法（面試也會問）</h3>
+  <div class="steps">
+    <div class="step"><strong>先認協定</strong>：看 Protocol 欄是不是 Modbus，或打 <code>modbus</code> 過濾。</div>
+    <div class="step"><strong>判斷讀還是寫</strong>：看 Function Code。讀（FC 1/2/3/4）是正常監看；<span class="pill r">寫（FC 5/6/15/16）</span>代表有人在動東西，是攻擊訊號。</div>
+    <div class="step"><strong>看動了什麼</strong>：位址（第幾號點位）＋ 數值（<code>ff00</code>=ON／<code>0000</code>=OFF）。</div>
+  </div>
+  <table>
+    <tr><th>常用 Display Filter</th><th>意思</th></tr>
+    <tr><td><code>modbus</code></td><td>只看 Modbus 流量</td></tr>
+    <tr><td><code>tcp.port == 502</code></td><td>Modbus/TCP 的埠</td></tr>
+    <tr><td><code>tcp.flags.syn == 1 &amp;&amp; tcp.flags.ack == 0</code></td><td>只看連線開始的 SYN（看是不是掃描）</td></tr>
+    <tr><td><code>frame.time_delta &gt; 1</code></td><td>跟前一封包間隔超過 1 秒</td></tr>
+  </table>
+  <div class="callout">其他武器：<strong>Follow TCP Stream</strong>（右鍵重組整條連線，打 CTF 常用）、<strong>Decode As</strong>（協定跑在非標準埠時強制解析）、<strong>tshark</strong>（指令列版，封包多時快）。</div>
+</section>
+
+<section id="d2-attack">
+  <h2>2.2 Modbus 攻防 · 實作模擬</h2>
+  <p class="lead">這是整個課程的核心：對 PLC 發 Modbus 指令，讀出狀態、再寫值開關閥門，造成物理後果。下面是一座<strong>虛擬化工廠 + 指令終端機</strong>，你打的指令會真的改變閥門與壓力。</p>
+
+  <div class="sim">
+    <div class="simhead"><span class="dot" style="background:var(--ok)"></span>&nbsp;虛擬 PLC 控制台（192.168.95.2 · OpenPLC）</div>
+    <div class="plant">
+      <div>
+        <div id="valves"></div>
+      </div>
+      <div>
+        <div style="font-size:13px;color:var(--muted)">反應槽壓力</div>
+        <div class="gauge"><div class="fill" id="presFill"></div></div>
+        <div id="presVal" class="mono" style="font-size:20px;margin-top:6px">—</div>
+        <div id="presMsg" style="font-size:12.5px;margin-top:4px;color:var(--muted)">安全範圍</div>
+        <button class="btn sm" style="margin-top:10px" onclick="resetPlant()">重設工廠</button>
+      </div>
+    </div>
+  </div>
+
+  <h3>指令終端機（Kali 攻擊機）</h3>
+  <p style="font-size:14.5px;color:var(--muted)">試試看這些指令（打 <code>help</code> 看全部）。你讀/寫的結果會直接反映在上面的工廠：</p>
+  <table>
+    <tr><th>指令</th><th>作用</th></tr>
+    <tr><td><code>nmap --script modbus-discover -p 502 192.168.95.2</code></td><td>掃描，確認有沒有 Modbus</td></tr>
+    <tr><td><code>mbtget -r1 -a 1 -n 4 192.168.95.2</code></td><td>讀第 1~4 號 coil（看閥門狀態）</td></tr>
+    <tr><td><code>mbtget -w5 1 -a 1 192.168.95.2</code></td><td>寫 coil：把第 1 號閥門開啟（0=關）</td></tr>
+  </table>
+  <div class="sim">
+    <div class="simhead"><span class="dot" style="background:var(--danger)"></span><span class="dot" style="background:var(--warn)"></span><span class="dot" style="background:var(--ok)"></span>&nbsp;sol@kali:~$</div>
+    <div class="term">
+      <div class="out" id="termOut"></div>
+      <div class="inrow"><span>$</span><input id="termIn" autocomplete="off" spellcheck="false" placeholder="輸入指令後按 Enter（試試 help）"></div>
+    </div>
+  </div>
+  <div class="callout danger"><strong>攻擊挑戰：</strong>想辦法讓壓力衝到紅色（爆炸風險）。提示：打開兩個進料閥、關掉排氣閥。用 <code>mbtget -w5 1 -a 1</code>、<code>-a 2</code> 開進料，<code>mbtget -w5 0 -a 3</code> 關排氣。這正是真實工控攻擊的核心：寫一個 coil，造成物理災難。</div>
+  <div class="callout">同樣的事也能用 Metasploit（<code>use auxiliary/scanner/scada/modbusclient</code>）或自己寫 pymodbus（<code>client.write_coil(1, True, unit=1)</code>）。工具不同，原理一樣。</div>
+</section>
+
+<section id="d2-mitm">
+  <h2>2.3 中間人攻擊（ARP Spoofing / Ettercap）</h2>
+  <p class="lead">除了直接對 PLC 下指令，攻擊者還能站在 HMI 和 PLC 中間，偷看甚至竄改封包。原理是 ARP 欺騙：騙兩台機器「我才是對方」，讓流量都經過你。</p>
+  <div class="sim">
+    <div class="simhead">點按鈕看攻擊前後的流量路徑</div>
+    <div id="mitmDiagram" style="min-height:120px"></div>
+    <div style="margin-top:10px;display:flex;gap:8px">
+      <button class="btn sm" onclick="setMitm(false)">正常</button>
+      <button class="btn sm pri" onclick="setMitm(true)">啟動 ARP 欺騙</button>
+    </div>
+    <div id="mitmMsg" style="font-size:13px;color:var(--muted);margin-top:8px"></div>
+  </div>
+  <table>
+    <tr><th>步驟</th><th>指令 / 說明</th></tr>
+    <tr><td>開啟轉送</td><td><code>echo 1 &gt; /proc/sys/net/ipv4/ip_forward</code></td></tr>
+    <tr><td>ARP 欺騙</td><td><code>arpspoof -i ens33 192.168.95.5</code>（騙 HMI）</td></tr>
+    <tr><td>竄改封包</td><td>寫 Ettercap filter，把 <code>ff 00</code> 換成 <code>00 00</code>，編譯 <code>etterfilter</code> 後用 <code>ettercap</code> 執行</td></tr>
+  </table>
+  <div class="callout warn">防禦角度：這種攻擊之所以成立，是因為 Modbus 沒有加密與驗證。偵測方法之一是用 Wireshark 找「同一個 IP 卻有不同 MAC」的異常。</div>
+</section>
+
+<section id="d2-grass">
+  <h2>2.4 GRASSMARLIN（資產盤點）</h2>
+  <p class="lead">NSA 釋出的免費工具，丟一個 pcap 進去，它就畫出網路拓樸，並判斷哪台是 PLC、哪台是 HMI。資安的第一步永遠是「先知道網路上有什麼」。點節點看角色。</p>
+  <div class="sim">
+    <div class="simhead">模擬拓樸（來自 GRFICS 側錄的封包）</div>
+    <div class="topo" id="topo"></div>
+    <div id="topoMsg" style="font-size:13px;color:var(--muted);margin-top:10px">↑ 點一個節點看它是什麼。</div>
+  </div>
+</section>
+
+<section id="d2-triton">
+  <h2>2.5 TRITON / TRISIS</h2>
+  <p class="lead">TRITON（又叫 TRISIS）是 2017 年發現、目標是<strong>安全儀表系統 SIS</strong> 的真實工控惡意程式。SIS 是工廠最後一道安全關（出事時緊急停機），攻擊它代表有人想讓工廠在意外時「不會自動停下來」，極度危險。它走 Tristation 協定。</p>
+  <div class="sim">
+    <div class="simhead"><span class="dot" style="background:var(--danger)"></span>&nbsp;triconex honeypot 模擬器（練習用）</div>
+    <p style="font-size:13px;color:var(--muted);margin:0 0 8px">選一個攻擊動作執行，觀察它對 SIS 發出的 Tristation 指令：</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <select class="inp" id="tritonOpt" style="max-width:280px">
+        <option value="3">3 · Detect Operation Mode（偵測模式）</option>
+        <option value="5">5 · Program Upload（上傳程式）</option>
+        <option value="1">1 · Halt Program（停止程式）</option>
+        <option value="2">2 · Run Program（執行程式）</option>
+        <option value="6">6 · Download malicious code（植入惡意碼）</option>
+      </select>
+      <button class="btn sm pri" onclick="runTriton()">執行</button>
+    </div>
+    <div class="term" style="margin-top:10px"><div class="out" id="tritonOut" style="height:150px"></div></div>
+  </div>
+  <div class="callout warn">安全提醒：真實的 TRITON 腳本與模擬器只在課程的隔離虛擬機裡跑，絕不對外部或真實設備執行。課程的程式有加密壓縮（密碼 malware）就是怕被防毒誤刪，屬正常。</div>
+</section>
+
+<section id="d2-caldera">
+  <h2>2.6 OT Caldera（自動化對手模擬）</h2>
+  <p class="lead">MITRE 做的平台：把你前面手動打的攻擊寫成流程，按一下自動跑，還對應到 MITRE ATT&amp;CK for ICS。先認得五個詞，再模擬跑一次 operation。</p>
+  <table>
+    <tr><th>詞</th><th>意思</th></tr>
+    <tr><td>Agent</td><td>被 Caldera 控制、負責執行攻擊的機器</td></tr>
+    <tr><td>Ability</td><td>一個具體攻擊動作（等於一個 ATT&amp;CK 技術）</td></tr>
+    <tr><td>Adversary Profile</td><td>一堆 Ability 組成的整段攻擊流程</td></tr>
+    <tr><td>Operation</td><td>實際執行：選哪台 Agent 跑哪個 Profile</td></tr>
+    <tr><td>Fact</td><td>預先設好的變數（例如 modbus port=502）供 Ability 使用</td></tr>
+  </table>
+  <div class="sim">
+    <div class="simhead">模擬：執行一個 Operation（自動化 Modbus 攻擊鏈）</div>
+    <button class="btn pri" id="caldBtn" onclick="runCaldera()">▶ 開始 Operation</button>
+    <div class="term" style="margin-top:10px"><div class="out" id="caldOut" style="height:190px"></div></div>
+  </div>
+</section>
+
+<section id="d2-ext">
+  <h2>2.7 延伸知識（課程內外都涵蓋）</h2>
+  <div class="grid2">
+    <div class="card"><h3 style="margin-top:0">MITRE ATT&amp;CK for ICS</h3><p style="font-size:14px;color:var(--muted);margin:0">工控攻擊手法的「字典」，每個手法有編號。今天碰到的：<br><code>T0855</code> 未授權指令、<code>T0831</code> 竄改控制、<code>T0830</code> 中間人、<code>T0846</code> 遠端系統探索、<code>T0803</code> 阻斷指令訊息。</p></div>
+    <div class="card"><h3 style="margin-top:0">tshark（指令列 Wireshark）</h3><p style="font-size:14px;color:var(--muted);margin:0">封包太多時用它批次過濾：<br><code>tshark -r x.pcap -Y "modbus" -T fields -e modbus.func_code -e modbus.data</code></p></div>
+    <div class="card"><h3 style="margin-top:0">GeoLite（看 IP 地理位置）</h3><p style="font-size:14px;color:var(--muted);margin:0">Wireshark 載入 <code>.mmdb</code> 後，封包會顯示國家/城市。過濾：<code>ip.geoip.country_iso == "US"</code>。事件調查很好用。</p></div>
+    <div class="card"><h3 style="margin-top:0">其他工控協定</h3><p style="font-size:14px;color:var(--muted);margin:0">Modbus 只是入門。延伸還有 <code>DNP3</code>（電力）、<code>BACnet</code>（樓宇）、<code>Profinet</code>、<code>IEC-61850</code>（變電所）。Caldera 的 OT 外掛都支援。</p></div>
+  </div>
+</section>
+
+<hr>
+<section id="quiz">
+  <h2>期末小測驗</h2>
+  <p class="lead">檢查一下你學會了沒。選一個答案看對錯與解釋。</p>
+  <div id="quizBox"></div>
+  <div id="quizScore" style="margin-top:14px;font-size:15px"></div>
+</section>
+
+<section id="refs">
+  <h2>參考連結</h2>
+  <ul style="font-size:14.5px;line-height:2">
+    <li>課程主頁（Meet、簽到、各教材）：<a href="https://hackmd.io/HbDLor4XR5ewjcZGV3xUuA?view">hackmd.io/HbDLor4XR5ewjcZGV3xUuA</a></li>
+    <li>Wireshark：<a href="https://hackmd.io/@NjPXbRv6SmKbFYuLhuAqVQ/HktldwdX0">教材</a>　·　Modbus：<a href="https://hackmd.io/@NjPXbRv6SmKbFYuLhuAqVQ/HkYIszm40">教材</a></li>
+    <li>GRASSMARLIN：<a href="https://hackmd.io/@NjPXbRv6SmKbFYuLhuAqVQ/SJvM-KhQC">教材</a>　·　TRITON：<a href="https://hackmd.io/loz-ddX_Qs2ZAMjLN6uiCw">教材</a>　·　Caldera：<a href="https://hackmd.io/@NjPXbRv6SmKbFYuLhuAqVQ/rJFFVmmVA">教材</a></li>
+    <li>GRFICSv2：<a href="https://hackmd.io/hVLKqNIqTF6tc6CMQJqSDg">教材</a>　·　GRFICSv3：<a href="https://hackmd.io/@NjPXbRv6SmKbFYuLhuAqVQ/HkDIhZdpzx">教材</a></li>
+    <li>官方工具：<a href="https://www.wireshark.org/download.html">Wireshark</a>　·　<a href="https://github.com/sourceperl/mbtget">mbtget</a>　·　<a href="https://github.com/Fortiphyd/GRFICSv2">GRFICSv2 GitHub</a></li>
+  </ul>
+  <p style="color:var(--dim);font-size:13px">本站為學習模擬用途，所有攻擊模擬皆為虛構數據，請僅在合法授權的靶場環境練習真實工具。</p>
+</section>
+</main>
+</div>
+
+<script>
+// ---------- 1.2 role cards ----------
+var roles=[
+ {k:"PLC",t:"可程式邏輯控制器",d:"工廠的大腦，直接下指令給閥門、馬達。課程用 OpenPLC。通常沒有身分驗證，你能連上就能控制。"},
+ {k:"HMI",t:"人機介面",d:"操作員盯著看的螢幕，顯示溫度壓力、警報。課程用 ScadaBR / ScadaLTS。"},
+ {k:"Simulation",t:"現場裝置",d:"被控制的閥門與感測器：進料、排氣、液位、分析儀。"},
+ {k:"Kali",t:"攻擊機",d:"你下攻擊指令的地方，內建 nmap、mbtget、metasploit、ettercap 等工具。"}
+];
+var rc=document.getElementById("roleCards");
+roles.forEach(function(r){
+  var d=document.createElement("div");d.className="card";d.style.cursor="pointer";d.style.margin="0";
+  d.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center"><strong style="font-size:17px">'+r.k+'</strong><span class="tag">'+r.t+'</span></div><div class="rd" style="display:none;margin-top:8px;color:var(--muted);font-size:14px">'+r.d+'</div><div class="rh" style="margin-top:8px;color:var(--accent);font-size:13px">點我看說明</div>';
+  d.onclick=function(){var b=d.querySelector(".rd"),h=d.querySelector(".rh");var open=b.style.display==="none";b.style.display=open?"block":"none";h.textContent=open?"收合":"點我看說明";};
+  rc.appendChild(d);
+});
+
+// ---------- 1.4 modbus types ----------
+var mtypes=[
+ {n:"Coil",bits:"1 bit（開/關）",rw:"可讀可寫",ex:"閥門、泵浦的開關"},
+ {n:"Discrete Input",bits:"1 bit",rw:"只讀",ex:"按鈕/開關類感測器"},
+ {n:"Holding Register",bits:"16 bits（數值）",rw:"可讀可寫",ex:"設定值、溫度壓力"},
+ {n:"Input Register",bits:"16 bits",rw:"只讀",ex:"感測器讀數"}
+];
+var mt=document.getElementById("modbusTypes");
+var mtBtns='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">';
+mtypes.forEach(function(m,i){mtBtns+='<button class="btn sm" onclick="showMType('+i+')" id="mtb'+i+'">'+m.n+'</button>';});
+mtBtns+='</div><div id="mtBody"></div>';
+mt.innerHTML=mtBtns;
+function showMType(i){
+  var m=mtypes[i];
+  for(var j=0;j<mtypes.length;j++){document.getElementById("mtb"+j).classList.toggle("pri",j===i);}
+  var canWrite=m.rw.indexOf("寫")>=0;
+  document.getElementById("mtBody").innerHTML=
+   '<table style="margin:0"><tr><td style="width:90px;color:var(--muted)">型態</td><td><strong>'+m.n+'</strong></td></tr>'+
+   '<tr><td style="color:var(--muted)">大小</td><td>'+m.bits+'</td></tr>'+
+   '<tr><td style="color:var(--muted)">讀寫</td><td>'+(canWrite?'<span class="pill r">可寫 ← 攻擊者的目標</span>':'<span class="pill g">只讀</span>')+'</td></tr>'+
+   '<tr><td style="color:var(--muted)">用途</td><td>'+m.ex+'</td></tr></table>';
+}
+showMType(0);
+
+// ---------- 2.1 wireshark sim ----------
+var packets=[
+ {no:11,src:"192.168.95.190",dst:"192.168.95.2",proto:"ARP",info:"Who has 192.168.95.2? Tell 192.168.95.190",
+  det:[["ARP",0],["Opcode: request (1)",1],["Sender IP: 192.168.95.190",1],["Target IP: 192.168.95.2",1]]},
+ {no:12,src:"192.168.95.190",dst:"192.168.95.2",proto:"TCP",info:"54311 → 502 [SYN]",
+  det:[["TCP",0],["Dst Port: 502",1],["Flags: 0x002 (SYN)",1]]},
+ {no:13,src:"192.168.95.190",dst:"192.168.95.2",proto:"Modbus",info:"Query: Read Holding Registers",
+  det:[["Modbus/TCP",0],["Unit: 1",1],["Modbus",0],["Function Code: Read Holding Registers (3)|b",1],["Reference Number: 19",1],["Word Count: 1",1]]},
+ {no:14,src:"192.168.95.2",dst:"192.168.95.190",proto:"Modbus",info:"Response: Read Holding Registers",
+  det:[["Modbus/TCP",0],["Modbus",0],["Function Code: Read Holding Registers (3)|b",1],["Register 19: 2750",1]]},
+ {no:15,src:"192.168.95.190",dst:"192.168.95.2",proto:"Modbus",info:"Query: Write Single Coil",
+  det:[["Modbus/TCP",0],["Unit: 1",1],["Modbus",0],["Function Code: Write Single Coil (5)|b",1],["Reference Number: 40|y",1],["Data: ff 00  (ON)|r",1]]},
+ {no:16,src:"192.168.95.2",dst:"192.168.95.190",proto:"Modbus",info:"Response: Write Single Coil",
+  det:[["Modbus/TCP",0],["Modbus",0],["Function Code: Write Single Coil (5)|b",1],["Reference Number: 40",1]]}
+];
+function matchFilter(p,f){
+  f=f.trim().toLowerCase();if(!f)return true;
+  if(f==="modbus")return p.proto==="Modbus";
+  if(f==="arp")return p.proto==="ARP";
+  if(f==="tcp")return p.proto==="TCP"||p.proto==="Modbus";
+  if(f==="tcp.port == 502"||f==="tcp.port==502")return p.proto==="Modbus"||p.proto==="TCP";
+  var m=f.match(/ip\.addr\s*==\s*([0-9.]+)/);if(m)return p.src===m[1]||p.dst===m[1];
+  if(f.indexOf("tcp.flags.syn")>=0)return p.info.indexOf("SYN")>=0;
+  return (p.info+p.proto).toLowerCase().indexOf(f)>=0;
+}
+var wsCur=null;
+function renderWs(filter){
+  var box=document.getElementById("wsRows");box.innerHTML="";
+  packets.forEach(function(p){
+    if(filter && !matchFilter(p,filter))return;
+    var protoColor=p.proto==="Modbus"?"var(--accent)":p.proto==="ARP"?"var(--warn)":"var(--muted)";
+    var r=document.createElement("div");r.className="row"+(wsCur===p.no?" sel":"");
+    r.innerHTML='<span>'+p.no+'</span><span>'+p.src+'</span><span>'+p.dst+'</span><span style="color:'+protoColor+'">'+p.proto+'</span><span>'+p.info+'</span>';
+    r.onclick=function(){wsCur=p.no;renderWs(filter);showWsDet(p);};
+    box.appendChild(r);
+  });
+  if(!box.children.length)box.innerHTML='<div class="row" style="cursor:default;color:var(--dim)">（沒有符合的封包）</div>';
+}
+function showWsDet(p){
+  var h='<div class="ws"><div class="det">';
+  p.det.forEach(function(d){
+    var txt=d[0],lvl=d[1],cls="";
+    var parts=txt.split("|");if(parts.length>1){txt=parts[0];cls=parts[1];}
+    var span=cls?'<span class="hl '+cls+'">'+txt+'</span>':txt;
+    h+='<div class="'+(lvl?'ind':'')+'">'+(lvl?'':'▸ ')+span+'</div>';
+  });
+  h+='</div></div>';
+  var note="";
+  if(p.info.indexOf("Write")>=0)note='<div class="callout danger" style="margin:10px 0 0">找到了！這是「寫 coil」封包：有人把第 40 號點位設成 ON（ff00）。這就是攻擊訊號。</div>';
+  else if(p.info.indexOf("Read")>=0)note='<div class="callout" style="margin:10px 0 0">這是讀取（FC3），屬於正常監看行為。</div>';
+  document.getElementById("wsDetail").innerHTML=h+note;
+}
+function applyWsFilter(){renderWs(document.getElementById("wsFilter").value);}
+function clearWsFilter(){document.getElementById("wsFilter").value="";renderWs("");}
+document.getElementById("wsFilter").addEventListener("keydown",function(e){if(e.key==="Enter")applyWsFilter();});
+renderWs("");
+
+// ---------- 2.2 virtual plant + terminal ----------
+var coils={1:true,2:false,3:true,4:false}; // 1 feed1, 2 feed2, 3 purge, 4 product
+var valveMeta={1:{n:"Feed 1 進料閥"},2:{n:"Feed 2 進料閥"},3:{n:"Purge 排氣閥"},4:{n:"Product 出料閥"}};
+function pressure(){
+  var p=40+(coils[1]?20:0)+(coils[2]?20:0)-(coils[3]?30:0)-(coils[4]?10:0);
+  return Math.max(0,Math.min(120,p));
+}
+function renderPlant(){
+  var v=document.getElementById("valves");v.innerHTML="";
+  [1,2,3,4].forEach(function(a){
+    var on=coils[a];
+    var row=document.createElement("div");row.className="valve";
+    row.innerHTML='<span>'+valveMeta[a].n+' <span class="tag">coil '+a+'</span></span>'+
+      '<span style="display:flex;gap:8px;align-items:center"><span class="st" style="background:'+(on?"var(--ok-bg)":"var(--panel)")+';color:'+(on?"var(--ok)":"var(--dim)")+'">'+(on?"OPEN":"CLOSED")+'</span>'+
+      '<button class="btn sm" onclick="toggleCoil('+a+')">切換</button></span>';
+    v.appendChild(row);
+  });
+  var p=pressure();
+  var fill=document.getElementById("presFill");
+  fill.style.width=Math.min(100,p/120*100)+"%";
+  var col=p>90?"var(--danger)":p>75?"var(--warn)":"var(--ok)";
+  fill.style.background=col;
+  document.getElementById("presVal").textContent=p+" kPa";
+  document.getElementById("presVal").style.color=col;
+  var msg=p>90?"⚠ 壓力過高 · 爆炸風險！":p>75?"偏高，注意":"安全範圍";
+  document.getElementById("presMsg").textContent=msg;
+  document.getElementById("presMsg").style.color=col;
+}
+function toggleCoil(a){coils[a]=!coils[a];renderPlant();}
+function resetPlant(){coils={1:true,2:false,3:true,4:false};renderPlant();termPrint("工廠已重設為初始狀態。","c-dim");}
+renderPlant();
+
+// terminal
+var termOut=document.getElementById("termOut"),termIn=document.getElementById("termIn");
+function termPrint(t,cls){var d=document.createElement("div");if(cls)d.className=cls;d.textContent=t;termOut.appendChild(d);termOut.scrollTop=termOut.scrollHeight;}
+function termEcho(t){termPrint("$ "+t,"c-dim");}
+termPrint("模擬終端機已就緒。輸入 help 看可用指令。","c-dim");
+function handleCmd(raw){
+  var cmd=raw.trim();if(!cmd)return;termEcho(cmd);
+  var low=cmd.toLowerCase();
+  if(low==="help"){
+    termPrint("可用指令：","c-b");
+    termPrint("  nmap --script modbus-discover -p 502 192.168.95.2");
+    termPrint("  mbtget -r1 -a <起始> -n <數量> 192.168.95.2     讀 coil");
+    termPrint("  mbtget -w5 <0|1> -a <位址> 192.168.95.2        寫 coil");
+    termPrint("  clear                                          清畫面");
+    return;
+  }
+  if(low==="clear"){termOut.innerHTML="";return;}
+  if(low.indexOf("nmap")>=0){
+    termPrint("Starting Nmap ...","c-dim");
+    termPrint("PORT    STATE SERVICE");
+    termPrint("502/tcp open  modbus","c-ok");
+    termPrint("| modbus-discover:");
+    termPrint("|   sid 0x1: OpenPLC / Fortiphyd");
+    termPrint("發現 PLC！可以開始讀寫 coil 了。","c-b");
+    return;
+  }
+  var mr=low.match(/mbtget\s+-r1\s+-a\s+(\d+)\s+-n\s+(\d+)/);
+  if(mr){
+    var a=+mr[1],n=+mr[2];
+    termPrint("values:","c-dim");
+    for(var i=a;i<a+n;i++){var val=coils[i]?1:0;termPrint("  ["+i+"]  "+val+(valveMeta[i]?"   ("+valveMeta[i].n+")":""),coils[i]?"c-ok":"");}
+    return;
+  }
+  var mw=low.match(/mbtget\s+-w5\s+([01])\s+-a\s+(\d+)/);
+  if(mw){
+    var val=+mw[1],addr=+mw[2];
+    if(addr<1||addr>4){termPrint("write ok (coil "+addr+" = "+val+")，但此點位未接閥門，工廠無變化。","c-dim");return;}
+    coils[addr]=(val===1);renderPlant();
+    termPrint("write ok：coil "+addr+" = "+val+"  → "+valveMeta[addr].n+(val?" 開啟":" 關閉"),"c-warn");
+    var p=pressure();
+    if(p>90)termPrint("⚠ 反應槽壓力 "+p+" kPa — 已達爆炸風險！你成功示範了一次工控攻擊。","c-r");
+    return;
+  }
+  termPrint("找不到指令：'"+cmd+"'。輸入 help 看用法。","c-r");
+}
+termIn.addEventListener("keydown",function(e){if(e.key==="Enter"){handleCmd(termIn.value);termIn.value="";}});
+
+// ---------- 2.3 mitm ----------
+function setMitm(on){
+  var d=document.getElementById("mitmDiagram");
+  var node=function(t,c){return '<span class="n" style="border-color:'+(c||"var(--line)")+'">'+t+'</span>';};
+  if(!on){
+    d.innerHTML='<div class="flow">'+node("HMI 192.168.95.5")+'<span class="ar">↔ Modbus ↔</span>'+node("PLC 192.168.95.2")+'</div>';
+    document.getElementById("mitmMsg").textContent="正常情況：HMI 與 PLC 直接通訊。";
+  }else{
+    d.innerHTML='<div class="flow">'+node("HMI")+'<span class="ar">→</span>'+node("Kali 攻擊機","var(--danger)")+'<span class="ar">→</span>'+node("PLC")+'</div>'+
+      '<div class="flow">'+node("HMI")+'<span class="ar">←</span>'+node("Kali 攻擊機","var(--danger)")+'<span class="ar">←</span>'+node("PLC")+'</div>';
+    document.getElementById("mitmMsg").innerHTML="<span style='color:var(--danger)'>流量全部被導到攻擊機</span>：現在可以偷看、甚至把 ff00(開) 竄改成 0000(關)，而 HMI 螢幕渾然不覺。";
+  }
+}
+setMitm(false);
+
+// ---------- 2.4 topology ----------
+var nodes=[
+ {x:50,y:20,t:"Kali 攻擊機",ip:".190",role:"攻擊者的機器，從這裡發動 nmap 與 Modbus 攻擊。"},
+ {x:18,y:70,t:"HMI",ip:".5",role:"人機介面（ScadaBR）。走 Modbus、對外開 8080 網頁，是操作員監控畫面。"},
+ {x:50,y:78,t:"OpenPLC",ip:".2",role:"PLC 控制器。開 port 502(Modbus) 與 8080，是攻擊的主要目標。"},
+ {x:82,y:70,t:"Simulator",ip:".10-15",role:"現場模擬裝置（進料/排氣/液位/分析儀），透過 Modbus 被 PLC 控制。"}
+];
+var topo=document.getElementById("topo");
+nodes.forEach(function(nd,i){
+  var el=document.createElement("div");el.className="node";el.style.left=nd.x+"%";el.style.top=nd.y+"%";
+  el.innerHTML='<div class="box"><div>'+nd.t+'</div><div class="ip">192.168.95'+nd.ip+'</div></div>';
+  el.onclick=function(){document.getElementById("topoMsg").innerHTML='<strong>'+nd.t+'</strong>（192.168.95'+nd.ip+'）：'+nd.role;};
+  topo.appendChild(el);
+});
+
+// ---------- 2.5 triton ----------
+var tritonScripts={
+ "3":["> Detecting operation mode ...","keystate: PROGRAM","runstate: RUN","偵測到 SIS 處於可寫入狀態（高風險）。"],
+ "5":["> Uploading program from SIS ...","reading PROG TABLE ...","取得控制邏輯，攻擊者可分析如何繞過安全保護。"],
+ "1":["> Sending HALT ...","SIS program halted.","⚠ 安全系統已停止 — 出事時將不會自動停機。"],
+ "2":["> Sending RUN ...","SIS program running.","恢復執行（用於掩蓋攻擊痕跡）。"],
+ "6":["> Downloading malicious payload to PLC ...","appending program module ...","⚠ 惡意邏輯已植入，這正是 2017 真實攻擊的手法。"]
+};
+function runTriton(){
+  var o=document.getElementById("tritonOut");o.innerHTML="";
+  var opt=document.getElementById("tritonOpt").value;
+  var lines=tritonScripts[opt];
+  lines.forEach(function(l,i){
+    setTimeout(function(){var d=document.createElement("div");if(l.indexOf("⚠")>=0)d.className="c-r";else if(l[0]===">")d.className="c-dim";else d.className="c-warn";d.textContent=l;o.appendChild(d);o.scrollTop=o.scrollHeight;},i*450);
+  });
+}
+
+// ---------- 2.6 caldera ----------
+var caldSteps=[
+ ["[Operation] 啟動 Adversary Profile: ICS Modbus Attack","c-b"],
+ ["[Agent] splunkd 已連線 (192.168.95.190)","c-dim"],
+ ["[Ability] T0846 Remote System Discovery → nmap","c-dim"],
+ ["  502/tcp open modbus  (發現 PLC 192.168.95.2)","c-ok"],
+ ["[Ability] T0855 Unauthorized Command → mbtget -r1","c-dim"],
+ ["  讀到 coil 1~4 狀態","c-ok"],
+ ["[Ability] T0831 Manipulate Control → write_coil(1,ON)","c-warn"],
+ ["  閥門已開啟，壓力上升","c-warn"],
+ ["[Operation] 完成，產生 ATT&CK for ICS 報告","c-b"]
+];
+function runCaldera(){
+  var o=document.getElementById("caldOut");o.innerHTML="";
+  document.getElementById("caldBtn").disabled=true;
+  caldSteps.forEach(function(s,i){
+    setTimeout(function(){var d=document.createElement("div");d.className=s[1];d.textContent=s[0];o.appendChild(d);o.scrollTop=o.scrollHeight;
+      if(i===caldSteps.length-1)document.getElementById("caldBtn").disabled=false;},i*500);
+  });
+}
+
+// ---------- quiz ----------
+var quiz=[
+ {q:"工廠被 Modbus 攻擊，最嚴重的後果通常是什麼？",opts:["資料外洩","實體破壞或停產","帳號被盜","網站變慢"],a:1,fb:"OT 最在意可用性與實體安全，寫一個 coil 就可能造成物理災難。"},
+ {q:"在 Wireshark 看到 Function Code 5（Write Single Coil），代表？",opts:["正常讀取監看","有人在寫入、動了設備（攻擊訊號）","連線逾時","DNS 查詢"],a:1,fb:"FC 5/6/15/16 是寫入；讀取是 1/2/3/4。寫入代表有人在改變設備狀態。"},
+ {q:"Modbus 為什麼這麼好攻擊？",opts:["它加密太弱","它沒有身分驗證，誰都能發指令","它只能用 Wi-Fi","它封包太大"],a:1,fb:"Modbus 沒有驗證機制，連得上就能下指令，這是工控協定的通病。"},
+ {q:"TRITON/TRISIS 攻擊的目標 SIS 是什麼？",opts:["人機介面","工廠最後一道安全關（緊急停機系統）","資料庫","防火牆"],a:1,fb:"攻擊 SIS 代表要讓工廠在意外時不會自動停機，極度危險。"},
+ {q:"Caldera 裡的 Ability 指的是？",opts:["被控制的機器","一個具體攻擊動作（對應一個 ATT&CK 技術）","網路卡名稱","一個帳號"],a:1,fb:"Ability＝一個攻擊動作；一堆 Ability 組成 Adversary Profile。"}
+];
+var score=0,answered=0;
+var qb=document.getElementById("quizBox");
+quiz.forEach(function(item,qi){
+  var c=document.createElement("div");c.className="card quiz";
+  var h='<div style="font-weight:600;margin-bottom:6px">'+(qi+1)+". "+item.q+'</div>';
+  item.opts.forEach(function(o,oi){h+='<div class="opt" data-q="'+qi+'" data-o="'+oi+'">'+o+'</div>';});
+  h+='<div class="fb" style="display:none"></div>';
+  c.innerHTML=h;qb.appendChild(c);
+  c.querySelectorAll(".opt").forEach(function(opt){
+    opt.onclick=function(){
+      if(c.dataset.done)return;c.dataset.done="1";answered++;
+      var oi=+opt.dataset.o,correct=item.a;
+      c.querySelectorAll(".opt").forEach(function(x,xi){if(xi===correct)x.classList.add("correct");});
+      if(oi!==correct)opt.classList.add("wrong");else score++;
+      var fb=c.querySelector(".fb");fb.style.display="block";fb.textContent=(oi===correct?"✓ 正確！":"✗ ")+item.fb;
+      document.getElementById("quizScore").textContent="得分："+score+" / "+quiz.length+(answered===quiz.length?(score===quiz.length?"　滿分！你已經掌握今天的核心。":"　再回去複習錯的那幾題吧。"):"");
+    };
+  });
+});
+</script>
+</body>
+</html>
