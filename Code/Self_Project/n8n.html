@@ -1,5 +1,5 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
-<title>施工通知書自動派送流程</title>
+<title>施工計畫書自動派送流程</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -63,7 +63,7 @@ table{border-collapse:collapse;width:100%;font-size:.94rem}
 th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
 th{font-size:.82rem;letter-spacing:.06em;color:var(--muted);background:var(--teal-soft)}
 tr:last-child td{border-bottom:none}
-td code,p code,li code{font-family:var(--mono);font-size:.88em;background:var(--teal-soft);color:var(--teal);padding:1px 6px;border-radius:5px}
+td code,p code,li code{overflow-wrap:anywhere;font-family:var(--mono);font-size:.88em;background:var(--teal-soft);color:var(--teal);padding:1px 6px;border-radius:5px}
 pre{background:var(--term);color:var(--term-ink);font-family:var(--mono);font-size:.86rem;line-height:1.65;padding:16px 18px;border-radius:12px;overflow-x:auto;margin:12px 0}
 pre .c{color:var(--term-dim)} pre .k{color:var(--term-key)} pre .s{color:var(--term-str)}
 .term-h{display:flex;justify-content:space-between;align-items:center;background:var(--term);color:var(--term-dim);font-family:var(--mono);font-size:.76rem;padding:8px 18px 0;border-radius:12px 12px 0 0;margin-top:12px}
@@ -101,391 +101,1312 @@ ol.steps>li b{display:block}
 .foot{color:var(--muted);font-size:.86rem;border-top:1px solid var(--line);padding-top:20px;margin-top:20px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
 html{scroll-behavior:smooth}
+
+/* ---- v7: two-part layout ---- */
+:root{--l1:#15803d;--l1-soft:#e6f4ea;--l2:#12515a;--l2-soft:#e3eff0;--l3:#9a3412;--l3-soft:#fbede4}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--l1:#4ade80;--l1-soft:#11281a;--l2:#6cc3c9;--l2-soft:#16343a;--l3:#fb923c;--l3-soft:#33200f}}
+:root[data-theme="dark"]{--l1:#4ade80;--l1-soft:#11281a;--l2:#6cc3c9;--l2-soft:#16343a;--l3:#fb923c;--l3-soft:#33200f}
+.blk{min-width:0;margin:10px 0}
+.dbtn{font:inherit;font-size:.86rem;border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:99px;padding:5px 12px;cursor:pointer}
+.dbtn:focus-visible,.opt:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+.hero{padding-bottom:12px}
+.parts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:22px 0 8px}
+@media (max-width:640px){.parts{grid-template-columns:minmax(0,1fr)}}
+.pcard{display:block;text-decoration:none;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:16px 18px;border-top:5px solid var(--pc)}
+.pcard:hover{border-color:var(--pc)}
+.pcard b{display:block;font-family:var(--display);font-size:1.25rem;color:var(--pc)}
+.pcard span{font-size:.9rem;color:var(--muted)}
+.pcard.p1{--pc:var(--amber)} .pcard.p2{--pc:var(--teal)}
+.part{margin:40px 0 0;padding:22px 22px 18px;border-radius:16px;background:var(--pbg);border:1px solid var(--line)}
+.part.p1{--pbg:var(--amber-soft);--pc:var(--amber)} .part.p2{--pbg:var(--teal-soft);--pc:var(--teal)}
+.part .eyebrow{color:var(--pc)}
+.part h2{margin:.1em 0 .2em;font-size:2rem}
+.part p{margin:.2em 0;color:var(--ink)}
+.part + section{border-top:none;padding-top:28px}
+.toc .grp{font-size:.75rem;font-weight:700;letter-spacing:.1em;margin:14px 0 4px 10px}
+.toc .grp.p1{color:var(--amber)} .toc .grp.p2{color:var(--teal)}
+.url{display:flex;flex-wrap:wrap;gap:0;font-family:var(--mono);font-size:1rem;margin:14px 0;border-radius:10px;overflow:hidden;border:1px solid var(--line)}
+.url>div{padding:10px 12px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.url small{font-family:var(--body);font-size:.74rem;color:var(--muted)}
+.url .u1{background:var(--l1-soft)} .url .u2{background:var(--l2-soft)} .url .u3{background:var(--amber-soft)} .url .u4{background:var(--l3-soft)}
+.qa{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px 18px;margin:14px 0}
+.qa .q{font-weight:700;margin:0 0 8px}
+.opts{display:flex;flex-direction:column;gap:6px}
+.opt{font:inherit;text-align:left;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:10px;padding:8px 12px;cursor:pointer}
+.opt.right{border-color:var(--ok);background:var(--l1-soft)} .opt.wrong{border-color:var(--bad);background:var(--l3-soft)}
+.opt .why{display:block;font-size:.86rem;color:var(--muted);margin-top:4px}
+.opt[disabled]{cursor:default}
+.score{font-family:var(--mono);color:var(--teal);font-weight:600}
+dl.gl{display:grid;grid-template-columns:minmax(0,180px) minmax(0,1fr);gap:0;border:1px solid var(--line);border-radius:12px;background:var(--paper);overflow:hidden}
+dl.gl dt,dl.gl dd{margin:0;padding:9px 14px;border-bottom:1px solid var(--line)}
+dl.gl dt{font-weight:700;font-family:var(--mono);font-size:.9rem;background:var(--teal-soft);color:var(--teal)}
+@media (max-width:600px){dl.gl{grid-template-columns:minmax(0,1fr)}dl.gl dt{border-bottom:none}}
+.toc ol{max-height:calc(100vh - 80px);overflow:auto}
+.toc .n{font-family:var(--mono);font-size:.72rem;opacity:.7;margin-right:6px}
+ul.tight{margin:.4em 0;padding-left:1.3em} ul.tight li{margin:.2em 0}
+.kbd{font-family:var(--mono);font-size:.85em;border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:0 5px;background:var(--paper)}
+.node .s{display:none}
+.settings{margin:8px 0}
+.settings div{display:grid;grid-template-columns:minmax(0,150px) minmax(0,1fr);gap:8px;padding:6px 0;border-bottom:1px dashed var(--line);font-size:.9rem}
+.settings div span:first-child{color:var(--muted)}
+.settings code{font-family:var(--mono);font-size:.85em;background:var(--teal-soft);color:var(--teal);padding:1px 6px;border-radius:5px;word-break:break-all}
 </style>
 
 <div class="shell">
 <nav class="toc" aria-label="目錄">
   <b>目錄</b>
   <ol id="toc">
-    <li><a href="#overview">專案概述</a></li>
-    <li><a href="#n8n">n8n 是什麼</a></li>
-    <li><a href="#docker">搬上我的電腦</a></li>
-    <li><a href="#ollama">Ollama 與模型</a></li>
-    <li><a href="#connect">串接 n8n × Ollama</a></li>
-    <li><a href="#flows">流程逐節點</a></li>
-    <li><a href="#governance">治理設計</a></li>
-    <li><a href="#first-run">打開 n8n 之後</a></li>
-    <li><a href="#limits">限制與下一步</a></li>
+    <li class="grp p1">專案介紹</li>
+    <li><a href="#overview"><span class="n">01</span>專案概述</a></li>
+    <li><a href="#problem"><span class="n">02</span>要解決的問題</a></li>
+    <li><a href="#solution"><span class="n">03</span>解決方案</a></li>
+    <li><a href="#governance"><span class="n">04</span>把關設計</a></li>
+    <li><a href="#limits"><span class="n">05</span>限制與未來</a></li>
+    <li class="grp p2">技術介紹</li>
+    <li><a href="#web"><span class="n">01</span>網路基礎</a></li>
+    <li><a href="#docker"><span class="n">02</span>Docker</a></li>
+    <li><a href="#plansite"><span class="n">03</span>計畫書網站</a></li>
+    <li><a href="#fileserver"><span class="n">04</span>公司伺服器</a></li>
+    <li><a href="#n8n"><span class="n">05</span>n8n 基礎</a></li>
+    <li><a href="#flows"><span class="n">06</span>流程逐節點</a></li>
+    <li><a href="#discord"><span class="n">07</span>Discord Webhook</a></li>
+    <li><a href="#setup"><span class="n">08</span>建置步驟</a></li>
+    <li><a href="#debug"><span class="n">09</span>除錯手冊</a></li>
+    <li><a href="#prod"><span class="n">10</span>上線考量</a></li>
+    <li><a href="#glossary"><span class="n">附</span>名詞表</a></li>
   </ol>
 </nav>
 
 <main>
-<!-- ============ OVERVIEW ============ -->
-<section id="overview">
-  <div class="eyebrow">Project Overview</div>
-  <h1>施工通知書自動派送流程</h1>
-  <p class="byline">課程：當機器人來上班－未來職場的 AI 必修課 期末作業｜2026</p>
-  <p class="lede">我在一家正在數位轉型的病媒防治公司當行政工讀生。每位客戶的施工通知書建立好之後，我都要手動歸檔、到官方 LINE 找到客戶傳簽署連結、一直回去看客戶簽了沒、簽完再歸檔一次。這個專案用 <b>n8n</b> 把這段流程自動化，並在我的電腦上用 <b>Ollama</b> 跑一個本地 AI 模型，幫我檢查資料、草擬訊息；但訊息要我在 Discord 按下「核准」才會送出。</p>
 
-  <div class="facts">
-    <div class="fact"><div class="n">4</div><div class="l">條自動化流程<br>送審、發送、回簽、提醒</div></div>
-    <div class="fact"><div class="n">5</div><div class="l">個治理節點<br>揭露、把關、停機、紀錄、最小化</div></div>
-    <div class="fact"><div class="n">0</div><div class="l">筆真實客戶資料<br>公司與客戶全部虛構</div></div>
-    <div class="fact"><div class="n">3.09B</div><div class="l">參數的本地模型<br>qwen2.5:3b，不連外</div></div>
+
+<header class="hero" id="top">
+  <div class="eyebrow">AI 必修課期末專案 · n8n 自動化</div>
+  <h1>施工計畫書自動派送流程</h1>
+  <p class="byline">課程：當機器人來上班－未來職場的 AI 必修課 期末作業｜2026</p>
+  <p class="lede">我在一家正在數位轉型的公司當行政工讀生。每份施工計畫書建立好之後，我都要下載未簽署版本存到伺服器、到官方 LINE 找到客戶傳簽署連結、一直回去看客戶簽了沒、簽完再下載一次存檔。這個專案用 <b>n8n</b> 把建立之後的這一整段自動化：我只要把簽署連結貼進追蹤表、勾選「開始核可」，歸檔、傳送和追蹤回簽都交給流程。</p>
+  <nav class="parts" aria-label="兩大部分">
+    <a class="pcard p1" href="#project"><b>專案介紹</b><span>要解決什麼問題、怎麼解決、怎麼確保不出錯、還有哪些限制。不需要技術背景。</span></a>
+    <a class="pcard p2" href="#tech"><b>技術介紹</b><span>網路、Docker、自製網站、n8n 節點設定、建置步驟、除錯。照著做就能重現。</span></a>
+  </nav>
+</header>
+<div class="part p1" id="project"><div class="eyebrow">Part A</div><h2>專案介紹</h2><p>這個專案解決什麼問題、怎麼解決、怎麼確保不出錯。</p></div>
+
+<section id="overview">
+  <div class="eyebrow">專案介紹 · 01</div>
+  <h2>專案概述：一眼看懂整個系統</h2>
+<div class="facts">
+    <div class="fact"><div class="n">4</div><div class="l">個 Docker 容器<br>計畫書網站、檔案伺服器、n8n、Ollama</div></div>
+    <div class="fact"><div class="n">2</div><div class="l">條自動化流程<br>發送、收到回簽通知</div></div>
+    <div class="fact"><div class="n">1</div><div class="l">個人工把關點<br>勾選「開始核可」才發送</div></div>
+    <div class="fact"><div class="n">0</div><div class="l">筆真實資料<br>公司與客戶全部虛構</div></div>
   </div>
 
   <h3>一張圖看懂整個系統</h3>
-  <div class="diagram" role="img" aria-label="系統架構：我的電腦裡有 Docker，Docker 裡有 n8n 與 Ollama 兩個容器；n8n 連到 Google 雲端硬碟、Google 試算表、Google 表單與 Discord">
-    <svg viewBox="0 0 960 400">
-      <rect x="10" y="10" width="560" height="380" rx="16" fill="var(--teal-soft)" stroke="var(--teal)" stroke-dasharray="6 5"/>
+  <div class="diagram" role="img" aria-label="系統架構：我的電腦的 Docker 裡有計畫書網站、檔案伺服器與 n8n；檔案伺服器連到電腦上的公司伺服器資料夾；n8n 連到 Google 試算表與 Discord">
+    <svg viewBox="0 0 960 420">
+      <rect x="10" y="10" width="560" height="400" rx="16" fill="var(--teal-soft)" stroke="var(--teal)" stroke-dasharray="6 5"/>
       <text x="30" y="40" font-size="15" font-weight="700" fill="var(--teal)">我的電腦（Windows）</text>
-      <rect x="30" y="60" width="520" height="250" rx="14" fill="var(--paper)" stroke="var(--line)"/>
+      <rect x="30" y="60" width="520" height="270" rx="14" fill="var(--paper)" stroke="var(--line)"/>
       <text x="50" y="88" font-size="14" font-weight="700" fill="var(--muted)">Docker Desktop</text>
-      <rect x="55" y="105" width="210" height="150" rx="12" fill="var(--paper)" stroke="var(--teal)" stroke-width="2"/>
-      <text x="75" y="135" font-size="17" font-weight="700" fill="var(--ink)">n8n 容器</text>
-      <text x="75" y="160" font-size="13" fill="var(--muted)">流水線：串起每一步</text>
-      <text x="75" y="185" font-size="13" fill="var(--muted)" font-family="JetBrains Mono, monospace">port 5678</text>
-      <text x="75" y="210" font-size="13" fill="var(--muted)">資料存在 ./n8n_data</text>
-      <rect x="315" y="105" width="210" height="150" rx="12" fill="var(--paper)" stroke="var(--amber)" stroke-width="2"/>
-      <text x="335" y="135" font-size="17" font-weight="700" fill="var(--ink)">Ollama 容器</text>
-      <text x="335" y="160" font-size="13" fill="var(--muted)">本地 AI：qwen2.5:3b</text>
-      <text x="335" y="185" font-size="13" fill="var(--muted)" font-family="JetBrains Mono, monospace">port 11434</text>
-      <text x="335" y="210" font-size="13" fill="var(--muted)">模型存在 ollama volume</text>
-      <line x1="265" y1="180" x2="315" y2="180" stroke="var(--ink)" stroke-width="2"/>
-      <text x="268" y="172" font-size="11" fill="var(--muted)" font-family="JetBrains Mono, monospace">http://ollama</text>
-      <text x="55" y="285" font-size="12" fill="var(--muted)">兩個容器在 Docker 的同一個內部網路，用名字互相找到</text>
-      <rect x="30" y="325" width="520" height="50" rx="10" fill="var(--paper)" stroke="var(--line)"/>
-      <text x="50" y="356" font-size="14" fill="var(--ink)">瀏覽器 → <tspan font-family="JetBrains Mono, monospace">http://localhost:5678</tspan>（我畫流程的地方）</text>
-      <line x1="570" y1="180" x2="640" y2="180" stroke="var(--ink)" stroke-width="2" stroke-dasharray="5 4"/>
-      <text x="580" y="170" font-size="12" fill="var(--muted)">網際網路</text>
+      <rect x="55" y="100" width="210" height="105" rx="12" fill="var(--paper)" stroke="var(--amber)" stroke-width="2"/>
+      <text x="75" y="126" font-size="16" font-weight="700" fill="var(--ink)">plan-site 容器</text>
+      <text x="75" y="148" font-size="12" fill="var(--muted)">模擬公司計畫書系統</text>
+      <text x="75" y="168" font-size="12" fill="var(--muted)" font-family="JetBrains Mono, monospace">port 8080</text>
+      <text x="75" y="188" font-size="12" fill="var(--muted)">建立、簽署、PDF、API</text>
+      <rect x="55" y="215" width="210" height="105" rx="12" fill="var(--paper)" stroke="var(--ok)" stroke-width="2"/>
+      <text x="75" y="241" font-size="16" font-weight="700" fill="var(--ink)">file-server 容器</text>
+      <text x="75" y="263" font-size="12" fill="var(--muted)">模擬公司伺服器</text>
+      <text x="75" y="283" font-size="12" fill="var(--muted)" font-family="JetBrains Mono, monospace">port 8090</text>
+      <text x="75" y="303" font-size="12" fill="var(--muted)">檔案存在 .\公司伺服器</text>
+      <rect x="315" y="100" width="210" height="105" rx="12" fill="var(--paper)" stroke="var(--teal)" stroke-width="2"/>
+      <text x="335" y="126" font-size="16" font-weight="700" fill="var(--ink)">n8n 容器</text>
+      <text x="335" y="148" font-size="12" fill="var(--muted)">自動化流水線</text>
+      <text x="335" y="168" font-size="12" fill="var(--muted)" font-family="JetBrains Mono, monospace">port 5678</text>
+      <text x="335" y="188" font-size="12" fill="var(--muted)">流程存在 ./n8n_data</text>
+      <line x1="315" y1="152" x2="265" y2="152" stroke="var(--ink)" stroke-width="2"/>
+      <line x1="340" y1="205" x2="265" y2="262" stroke="var(--ink)" stroke-width="2"/>
+      <text x="300" y="250" font-size="11" fill="var(--muted)" font-family="JetBrains Mono, monospace">file-server:8090</text>
+      <text x="315" y="285" font-size="11" fill="var(--muted)">另有 ollama 容器（選配）</text>
+      <text x="315" y="303" font-size="11" fill="var(--muted)">容器之間用名字互相找到</text>
+      <rect x="30" y="345" width="520" height="50" rx="10" fill="var(--paper)" stroke="var(--line)"/>
+      <text x="44" y="376" font-size="13" fill="var(--ink)">瀏覽器 → <tspan font-family="JetBrains Mono, monospace">:8080</tspan> 計畫書、<tspan font-family="JetBrains Mono, monospace">:8090</tspan> 公司伺服器、<tspan font-family="JetBrains Mono, monospace">:5678</tspan> n8n</text>
+      <line x1="570" y1="152" x2="640" y2="152" stroke="var(--ink)" stroke-width="2" stroke-dasharray="5 4"/>
+      <text x="578" y="142" font-size="12" fill="var(--muted)">網際網路</text>
       <g font-size="14">
-        <rect x="640" y="30" width="300" height="62" rx="10" fill="var(--paper)" stroke="var(--line)"/>
-        <text x="656" y="56" font-weight="700" fill="var(--ink)">Google 雲端硬碟</text><text x="656" y="78" font-size="12" fill="var(--muted)">模擬公司伺服器：待發送＋客戶資料夾</text>
-        <rect x="640" y="110" width="300" height="62" rx="10" fill="var(--paper)" stroke="var(--line)"/>
-        <text x="656" y="136" font-weight="700" fill="var(--ink)">Google 試算表</text><text x="656" y="158" font-size="12" fill="var(--muted)">模擬公司行事曆＋審核紀錄</text>
-        <rect x="640" y="190" width="300" height="62" rx="10" fill="var(--paper)" stroke="var(--line)"/>
-        <text x="656" y="216" font-weight="700" fill="var(--ink)">Google 表單</text><text x="656" y="238" font-size="12" fill="var(--muted)">模擬電子簽署系統</text>
-        <rect x="640" y="270" width="300" height="62" rx="10" fill="var(--paper)" stroke="var(--line)"/>
-        <text x="656" y="296" font-weight="700" fill="var(--ink)">Discord</text><text x="656" y="318" font-size="12" fill="var(--muted)">#審核區（我）＋ #客戶聊天室（模擬 LINE）</text>
+        <rect x="640" y="80" width="300" height="70" rx="10" fill="var(--paper)" stroke="var(--line)"/>
+        <text x="656" y="108" font-weight="700" fill="var(--ink)">Google 試算表</text><text x="656" y="132" font-size="12" fill="var(--muted)">客戶簽署追蹤表：連結、核可、已回簽</text>
+        <rect x="640" y="170" width="300" height="70" rx="10" fill="var(--paper)" stroke="var(--line)"/>
+        <text x="656" y="198" font-weight="700" fill="var(--ink)">Discord Webhook</text><text x="656" y="222" font-size="12" fill="var(--muted)">模擬官方 LINE：每位客戶一個頻道</text>
       </g>
     </svg>
   </div>
+  <p class="cap">左邊虛線框裡的東西都在我自己的電腦上；右邊兩個是網路上的服務。</p>
 
-  <h3>一句話流程</h3>
-  <p>我建好通知書，放進「待發送」資料夾 → AI 對照行事曆檢查並草擬訊息 → 我在 Discord 回覆「核准」→ 自動歸檔並傳簽署連結給客戶 → 客戶簽完自動歸檔、回覆客戶並提醒我 → 每天傍晚提醒還沒簽的客戶。</p>
-
-  <div class="note"><b>範圍界定：</b>公司的通知書建立系統還沒開放外部串接，所以「看行事曆、輸入資料、建立通知書」這一步維持人工。自動化從通知書建立完成之後開始。因為涉及公司機密，作品中的公司「安心病媒防治」、客戶與施藥人員全部虛構，並用 Google 工具和 Discord 模擬公司的伺服器與官方 LINE。</div>
-</section>
-
-<!-- ============ N8N ============ -->
-<section id="n8n">
-  <div class="eyebrow">Part 1</div>
-  <h2>n8n 是什麼</h2>
-  <p>n8n 是一個<b>工作流程自動化</b>工具。你在畫面上把一個個方塊（節點）用線連起來，每個方塊做一件小事，資料就會從左邊流到右邊。不用從頭寫程式，也能把 Google、Discord、AI 模型串在一起。</p>
-  <p>可以把它想成工廠的流水線：觸發節點是門鈴，門鈴一響，流水線上的每個工人依序處理同一份資料。</p>
-
-  <h3>六個核心名詞</h3>
+  <h3>模擬對照表</h3>
+  <p>公司真正的系統不能拿來做作業（有機密、也沒有開放串接），所以每一個角色都用一個模擬品代替，但功能比照真實流程：</p>
   <div class="tbl"><table>
-    <tr><th>名詞</th><th>意思</th><th>在我的專案裡</th></tr>
-    <tr><td><b>Workflow</b><br>工作流</td><td>一整條流水線，存成一個 JSON 檔</td><td>流程 A～D 各是一條 workflow</td></tr>
-    <tr><td><b>Node</b><br>節點</td><td>流水線上的一個工人，做一件事</td><td>「讀試算表」「呼叫 AI」「發 Discord 訊息」</td></tr>
-    <tr><td><b>Trigger</b><br>觸發節點</td><td>流程的起點，決定什麼時候開始跑</td><td>資料夾有新檔案、Discord 收到訊息、每天 18:00</td></tr>
-    <tr><td><b>Item</b><br>資料項目</td><td>節點之間傳遞的資料，格式是 JSON</td><td>一位客戶的資料就是一個 item</td></tr>
-    <tr><td><b>Expression</b><br>運算式</td><td>用 <code>{{ }}</code> 取前面節點的資料</td><td><code>{{ $json.客戶名稱 }}</code> 會變成「王小明」</td></tr>
-    <tr><td><b>Credential</b><br>憑證</td><td>連到外部服務的帳號授權，存在 n8n 裡</td><td>Google 帳號、Discord 機器人、Ollama 網址</td></tr>
+    <tr><th>真實工作</th><th>作業裡的模擬</th><th>保留了什麼特性</th></tr>
+    <tr><td>公司施工計畫書系統</td><td><code>plan-site</code> 自己寫的網站</td><td>填資料建立計畫書、產生簽署連結、客戶線上簽名、簽署前後兩種 PDF</td></tr>
+    <tr><td>公司伺服器資料夾</td><td><code>file-server</code> 本機檔案伺服器</td><td>每位客戶一個資料夾、檔案可以用網址打開</td></tr>
+    <tr><td>官方 LINE 客戶聊天室</td><td>Discord，每位客戶一個頻道</td><td>用程式把訊息送到「特定客戶」的聊天室</td></tr>
+    <tr><td>公司追蹤表</td><td>Google 試算表</td><td>一列一位客戶，有核可與已回簽的勾選框</td></tr>
   </table></div>
+  <div class="note"><b>範圍界定：</b>公司「安心病媒防治」、所有客戶、地址與施藥人員都是虛構的，沒有任何真實資料進入這個系統。</div>
 
-  <h3>資料在節點之間長什麼樣子</h3>
-  <p>n8n 裡每個節點的輸出都是 JSON 陣列。下一個節點用運算式拿裡面的值。例如「讀行事曆」節點輸出：</p>
-  <div class="term-h"><span>行事曆節點的輸出（JSON）</span></div>
-<pre>[
-  {
-    <span class="k">"客戶編號"</span>: <span class="s">"C001"</span>,
-    <span class="k">"施工日期"</span>: <span class="s">"2026-12-01"</span>,
-    <span class="k">"施工時間"</span>: <span class="s">"09:00–11:00"</span>,
-    <span class="k">"客戶名稱"</span>: <span class="s">"王小明（假資料）"</span>,
-    <span class="k">"施工類別"</span>: <span class="s">"白蟻防治"</span>,
-    <span class="k">"施藥人員"</span>: <span class="s">"張師傅"</span>
-  }
-]</pre>
-  <p>下一個節點寫 <code>{{ $json["施工日期"] }}</code>，執行時就會被換成 <code>2026-12-01</code>。這就是課程 12.5「JSON 概念」在實際流程裡的用法。</p>
 </section>
 
-<!-- ============ DOCKER ============ -->
+<section id="problem">
+  <div class="eyebrow">專案介紹 · 02</div>
+  <h2>要解決的問題：一位客戶要切換四個地方</h2>
+
+<div class="blk">
+    <p>想像你是便利商店店員，每來一個包裹，你要：拍照存檔、打電話通知收件人、每隔一陣子打開記事本看對方來拿了沒、拿走後再拍一張存檔。一天十個包裹還好，五十個就一定會漏。</p>
+    <p>我的工作就是這樣，只是包裹換成「施工計畫書」，電話換成「官方 LINE」。每一步都不難，難的是<b>要在很多地方之間切換，而且要對準同一位客戶</b>。</p>
+  </div>
+
+  <div class="blk">
+    <p>手動處理一位客戶的步驟：</p>
+    <ol class="steps">
+      <li><b>建立計畫書</b>在公司系統照行事曆填客戶資料，產生簽署連結。</li>
+      <li><b>歸檔＋傳送</b>下載未簽署 PDF → 找到這位客戶的伺服器資料夾存進去 → 打開官方 LINE 找到客戶 → 貼上簽署要求文字和連結。</li>
+      <li><b>等待回簽</b>每隔一段時間回到系統查看簽了沒。</li>
+      <li><b>完成歸檔</b>簽了之後下載已簽署 PDF → 再找一次資料夾存進去 → 在追蹤表打勾。</li>
+    </ol>
+    <p>自動化之後，人只剩第 1 步，再加上「貼連結、勾選開始核可」這兩個動作；第 2～4 步交給 n8n。</p>
+  </div>
+
+  <div class="blk">
+    <p><b>為什麼選這一段自動化？</b>用顧客旅程圖分析，痛點最集中在「歸檔＋傳送」：這一步要跨三個系統（計畫書系統、伺服器、LINE）並且用人腦維持「這是同一位客戶」的對應關係。這種<b>跨系統、重複、規則明確</b>的工作，正是工作流程自動化（workflow automation）最適合的範圍。</p>
+    <p><b>為什麼不連「建立計畫書」也自動化？</b>建立計畫書需要判斷（施工類別、注意事項、派哪位師傅），而且錯了會直接影響現場施工。這一步保留給人，是刻意的<b>自動化邊界</b>設計：機器做重複的搬運，人做判斷與最後確認。</p>
+    <p><b>錯誤成本不對稱：</b>漏存一份檔案頂多補存；但把 A 客戶的計畫書傳給 B 客戶，是個資外洩。所以〈把關設計〉的重點放在「不要傳錯人」，而不是「跑得更快」。</p>
+  </div>
+
+</section>
+
+<section id="solution">
+  <div class="eyebrow">專案介紹 · 03</div>
+  <h2>解決方案：人做判斷，n8n 做搬運</h2>
+  <p>核心想法是<b>人做判斷，n8n 做搬運</b>：建立計畫書和「確認可以送出」留給人，其餘跨系統的下載、存檔、傳訊息、追蹤全部交給兩條自動化流程。</p>
+  <div class="blk">
+    <p><b>流程 1「發送」</b>：我一勾選，它就去確認連結沒貼錯人 → 下載未簽版 → 存到伺服器 → 傳訊息給客戶 → 在追蹤表寫「已發送」。</p>
+    <p><b>流程 2「收到回簽通知」</b>：客戶一簽完，計畫書網站就通知 n8n → n8n 再確認一次真的簽了、追蹤表對得上 → 下載已簽版 → 存到伺服器 → 追蹤表打勾 → 跟客戶說「收到了」。</p>
+    <p>兩條流程透過追蹤表的「狀態」欄接力：流程 1 寫入「已發送」，流程 2 只處理狀態是「已發送」的客戶，處理完改成「已完成」，就算同一則通知被重送，也不會重複處理。</p>
+  </div>
+  <h3>工作分配：以前 vs 現在</h3>
+  <div class="tbl"><table>
+    <tr><th>工作</th><th>以前</th><th>現在</th></tr>
+    <tr><td>建立計畫書、取得簽署連結</td><td>人</td><td>人（不變，需要判斷）</td></tr>
+    <tr><td>貼連結到追蹤表、勾選「開始核可」</td><td>—</td><td>人（新增的確認動作）</td></tr>
+    <tr><td>下載未簽署 PDF、找到客戶資料夾存檔</td><td>人</td><td>n8n 流程 1</td></tr>
+    <tr><td>打開 LINE 找到客戶、貼上簽署要求與連結</td><td>人</td><td>n8n 流程 1</td></tr>
+    <tr><td>一直回去查客戶簽了沒</td><td>人</td><td>不用查：客戶簽完，計畫書網站主動通知 n8n</td></tr>
+    <tr><td>下載已簽署 PDF、存檔、在追蹤表打勾</td><td>人</td><td>n8n 流程 2</td></tr>
+    <tr><td>回覆客戶「已收到簽署」</td><td>人</td><td>n8n 流程 2</td></tr>
+  </table></div>
+  <h3>使用者的操作只剩三步</h3>
+  <ol class="steps">
+    <li><b>在計畫書網站建立計畫書</b>照行事曆填客戶資料，按「製作計畫書」，複製簽署連結。</li>
+    <li><b>貼到追蹤表</b>貼到那位客戶那一列的「簽署連結」欄。</li>
+    <li><b>確認無誤後勾選「開始核可」</b>這一勾就是送出前的人工核准。之後歸檔、通知、追蹤回簽、再歸檔都自動完成，追蹤表會自己更新狀態。</li>
+  </ol>
+  <h3>用到的工具</h3>
+  <div class="tbl"><table>
+    <tr><th>工具</th><th>在專案裡的角色</th></tr>
+    <tr><td><b>n8n</b></td><td>自動化流程的主體，兩條流程都在這裡</td></tr>
+    <tr><td><b>Docker</b></td><td>在自己的電腦上一次架起 n8n、計畫書網站、檔案伺服器</td></tr>
+    <tr><td><b>自製計畫書網站</b>（Python）</td><td>模擬公司系統：建立計畫書、客戶線上簽名、產生 PDF、簽完通知 n8n</td></tr>
+    <tr><td><b>自製檔案伺服器</b>（Python）</td><td>模擬公司伺服器：每位客戶一個資料夾，檔案可用網址開啟</td></tr>
+    <tr><td><b>Google 試算表</b></td><td>追蹤表：人工勾選的地方，也是流程的狀態紀錄</td></tr>
+    <tr><td><b>Discord</b></td><td>模擬官方 LINE：每位客戶一個頻道</td></tr>
+    <tr><td><b>生成式 AI</b></td><td>協助規劃流程、撰寫網站程式與除錯（課程 14.7 的除錯方法）</td></tr>
+  </table></div>
+  <p>每個節點的設定與技術細節，見技術介紹的〈流程逐節點〉。</p>
+
+</section>
+
+<section id="governance">
+  <div class="eyebrow">專案介紹 · 04</div>
+  <h2>把關設計：自動化也要有人負責</h2>
+
+<div class="blk">
+    <p>自動化最可怕的不是做不到，而是<b>很快地把錯的事做很多次</b>。人傳錯一次會發現；流程設錯了，可能一下子傳錯十位客戶。所以我在流程裡放了幾個「關卡」，就像捷運的閘門：沒過關就不會往下走。</p>
+  </div>
+
+  <div class="blk">
+    <p>課程第 2 單元提到，治理要變成流程裡具體的步驟。這個流程有五個：</p>
+    <div class="tbl"><table>
+      <tr><th>原則</th><th>流程中的做法</th><th>對應課程</th></tr>
+      <tr><td><b>人工把關</b></td><td>我在追蹤表勾選「開始核可」，流程才會傳訊息給客戶</td><td>2.5 人類監督、Human in the Loop</td></tr>
+      <tr><td><b>停機</b></td><td>流程 1：連結裡的計畫書客戶編號和追蹤表那一列對不上，就停止並通知我。流程 2：通知對不上（沒簽、狀態不是已發送、連結不符）也停止並通知</td><td>2.6 停機機制</td></tr>
+      <tr><td><b>驗證來源</b></td><td>流程 2 的 Webhook 用 Header Auth 檢查密語，陌生人打這個網址會被 403 拒絕；收到通知後再回 API 確認</td><td>2.3 安全性</td></tr>
+      <tr><td><b>紀錄</b></td><td>追蹤表記下狀態、發送時間、回簽時間、兩份 PDF 在公司伺服器的網址；n8n 的 Executions 保留每次執行細節</td><td>2.3 可歸責</td></tr>
+      <tr><td><b>最小化</b></td><td>傳給客戶的訊息只有姓名、施工時間和連結；地址、施藥人員只在計畫書裡；API 不回傳簽名圖檔</td><td>2.3 資料最小化</td></tr>
+    </table></div>
+    <h3>親手驗證停機機制</h3>
+    <ol class="steps">
+      <li><b>製造錯誤</b>把 C002 林美美那一列的簽署連結，故意貼成 C001 王小明的連結。</li>
+      <li><b>勾選開始核可</b>等 1 分鐘。</li>
+      <li><b>檢查結果</b>林美美的頻道<b>不應該</b>收到任何訊息；你的通知頻道收到「⚠️ 編號不符，已停止」；追蹤表狀態仍是空的；伺服器資料夾沒有多出檔案。</li>
+    </ol>
+    <p>這段一定要錄進影片，它證明流程「會停」，而不只是「會跑」。</p>
+  </div>
+
+  <div class="blk">
+    <p><b>為什麼不做成「一貼上連結就自動傳」？</b>因為錯誤成本不對稱（〈要解決的問題〉）：多勾一下只花一秒，傳錯客戶是個資外洩。保留一個勾選動作，是在<b>效率</b>和<b>控制</b>之間刻意的取捨。</p>
+    <p><b>失敗安全（fail-safe）：</b>每個關卡在「不確定」時都選擇不做事。查不到計畫書（404）→ HTTP 節點報錯、流程中斷，不會繼續傳訊息；編號不符 → 走停機分支。失敗時的預設行為是「停」而不是「繼續」。</p>
+    <p><b>還可以加強的地方：</b></p>
+    <ul class="tight">
+      <li>n8n 的 <b>Error Workflow</b>：任何流程失敗時自動觸發另一條流程，把錯誤通知到我的頻道，不用自己去翻 Executions。</li>
+      <li>HTTP Request 的 <b>Retry On Fail</b>：網路偶爾斷線時自動重試 2～3 次，降低誤報。</li>
+      <li><b>部分失敗的處理</b>：如果歸檔成功、但傳 Discord 失敗，狀態仍是空的，下次重新勾選時會再歸檔一次（覆蓋同名檔案）並重傳，結果仍然正確。這是刻意讓「重做」安全的設計。</li>
+    </ul>
+  </div>
+
+</section>
+
+<section id="limits">
+  <div class="eyebrow">專案介紹 · 05</div>
+  <h2>限制與未來</h2>
+
+<div class="blk">
+    <p>這個作業是「模型」，像建築師的模型屋：結構和動線都是真的，但還不能住人。要真的給公司用，需要讓客戶從自己的手機打開連結、換成真的 LINE、確認簽名的人真的是客戶本人。</p>
+  </div>
+
+  <div class="blk">
+    <div class="tbl"><table>
+      <tr><th>目前的限制</th><th>影響</th><th>真實環境的做法</th></tr>
+      <tr><td>簽署連結是 localhost</td><td>只有我這台電腦打得開，客戶手機打不開</td><td>網站架在公開網址並啟用 HTTPS</td></tr>
+      <tr><td>Discord 代替 LINE</td><td>客戶不會真的收到</td><td>LINE Messaging API</td></tr>
+      <tr><td>通知最多重試 3 次</td><td>n8n 停機太久，通知會失敗，要人按「重送」</td><td>訊息佇列（message queue）保存未送達的通知，或每天跑一次補償檢查，把「已簽但未完成」的找出來補做</td></tr>
+      <tr><td>n8n 只在 Docker 內部網路收通知</td><td>外部系統打不進來</td><td>n8n 架在公開網址並啟用 HTTPS，Webhook 一定要有驗證</td></tr>
+      <tr><td>沒有身分驗證</td><td>拿到連結的人都能簽</td><td>簡訊或 LINE 驗證碼確認是本人</td></tr>
+      <tr><td>電腦關機就停</td><td>流程跟著停</td><td>放在公司伺服器或雲端主機 24 小時運作</td></tr>
+    </table></div>
+  </div>
+
+  <div class="blk">
+    <h3>可以延伸的方向</h3>
+    <ul class="tight">
+      <li><b>本地 AI 檢查（Ollama）：</b>發送前讓本地模型比對計畫書內容與行事曆是否一致（日期、施工類別），不一致就停機。用本地模型是因為資料不會離開公司電腦。</li>
+      <li><b>數據回饋（課程 17.5）：</b>每週自動統計平均回簽天數、哪類施工最常拖延，回頭改善流程。</li>
+      <li><b>自動提醒：</b>超過 48 小時未簽，自動傳一則溫和的提醒訊息。</li>
+    </ul>
+  </div>
+
+</section>
+
+<div class="part p2" id="tech"><div class="eyebrow">Part B</div><h2>技術介紹</h2><p>從網路基礎到每個節點的設定，照順序讀完就能自己重建這個專案。</p></div>
+
+<section id="web">
+  <div class="eyebrow">技術介紹 · 01</div>
+  <h2>網路基礎：網址、HTTP、JSON、API</h2>
+
+<p>整個專案其實只在做一件事：<b>幾個程式透過網址互相傳資料</b>。先把這一章弄懂，後面每一章都會變簡單。</p>
+
+  <div class="blk">
+    <p><b>網址就像地址。</b>「台北市中正區某某路 10 號 3 樓」是要找到一戶人家；網址是要找到一台電腦上的一個程式、裡面的一個東西。</p>
+    <p><b>HTTP 就像寄信的規則。</b>你寄出一封「請求」（我要看第 P0001 號計畫書），對方回你一封「回應」（好，內容在這裡），信封上還會蓋一個狀態章（200 成功、404 找不到）。</p>
+    <p><b>JSON 就像填好的表格。</b>大家約好用同一種格式寫資料，程式才看得懂對方寫什麼。</p>
+    <p><b>API 就像店家的點餐窗口。</b>網頁是給人看的店面，API 是專門給程式用的窗口：不用看漂亮畫面，直接拿資料。</p>
+  </div>
+
+  <div class="blk">
+    <h3>拆解一個網址</h3>
+    <div class="url" aria-label="網址拆解">
+      <div class="u1"><span>http://</span><small>協定：用什麼規則溝通</small></div>
+      <div class="u2"><span>localhost</span><small>主機：哪一台電腦</small></div>
+      <div class="u3"><span>:8080</span><small>埠號：電腦上的哪個程式</small></div>
+      <div class="u4"><span>/s/P0001-e7ff77</span><small>路徑：程式裡的哪個東西</small></div>
+    </div>
+    <ul class="tight">
+      <li><code>localhost</code> 的意思是「我自己這台電腦」。</li>
+      <li><b>埠號（port）</b>像大樓裡的分機號碼：同一台電腦上跑很多程式，用號碼區分。這個專案用了 8080（計畫書網站）、8090（檔案伺服器）、5678（n8n）。</li>
+      <li>路徑由網站自己決定。例如計畫書網站規定 <code>/s/編號</code> 是簽署頁、<code>/api/plans/編號</code> 是給程式查的資料。</li>
+    </ul>
+
+    <h3>兩種最常用的請求</h3>
+    <div class="tbl"><table>
+      <tr><th>方法</th><th>意思</th><th>這個專案裡的例子</th></tr>
+      <tr><td><code>GET</code></td><td>我要「拿」東西</td><td>n8n 查計畫書資料、下載 PDF；你在瀏覽器打開任何網址也是 GET</td></tr>
+      <tr><td><code>POST</code></td><td>我要「送」東西過去</td><td>n8n 把 PDF 送到檔案伺服器、把訊息送到 Discord；客戶按「送出簽署」；計畫書網站通知 n8n「有人簽了」</td></tr>
+    </table></div>
+
+    <h3>看得懂狀態碼</h3>
+    <div class="tbl"><table>
+      <tr><th>狀態碼</th><th>意思</th><th>你可能在哪裡看到</th></tr>
+      <tr><td><code>200</code></td><td>成功</td><td>查詢、下載、上傳都正常</td></tr>
+      <tr><td><code>204</code></td><td>成功，但沒有內容要回你</td><td>Discord Webhook 收到訊息後的回應</td></tr>
+      <tr><td><code>302</code></td><td>請改去另一個網址</td><td>按「製作計畫書」後被帶到完成頁</td></tr>
+      <tr><td><code>400</code></td><td>你送來的資料有問題</td><td>沒簽名就送出；上傳時少了檔案欄位</td></tr>
+      <tr><td><code>403</code></td><td>不准你這樣做</td><td>想用 <code>../</code> 跳出檔案伺服器的資料夾；通知 n8n 時密語（X-Webhook-Secret）不對</td></tr>
+      <tr><td><code>404</code></td><td>找不到</td><td>客戶還沒簽就去下載已簽署 PDF；計畫書編號打錯；n8n 的 Webhook 流程還沒啟用</td></tr>
+      <tr><td><code>500</code></td><td>對方程式自己出錯了</td><td>看 <code>docker compose logs</code> 找原因</td></tr>
+    </table></div>
+
+    <h3>讀懂 JSON</h3>
+<pre>{
+  <span class="k">"id"</span>: <span class="s">"P0001-e7ff77"</span>,      <span class="c">← 文字（字串）要用雙引號</span>
+  <span class="k">"status"</span>: <span class="s">"signed"</span>,
+  <span class="k">"ok"</span>: true,                 <span class="c">← 布林值：true / false</span>
+  <span class="k">"size"</span>: 505406,             <span class="c">← 數字不用引號</span>
+  <span class="k">"files"</span>: [<span class="s">"a.pdf"</span>, <span class="s">"b.pdf"</span>]  <span class="c">← 陣列：一串東西</span>
+}</pre>
+    <p>大括號 <code>{ }</code> 是一個物件，裡面是一對對「名稱: 值」。n8n 節點之間傳的資料全部都是這種格式。</p>
+  </div>
+
+  <div class="blk">
+    <h3>一個 HTTP 請求完整長什麼樣</h3>
+    <p>n8n 查詢計畫書時，實際送出和收到的文字大致如下：</p>
+    <div class="term-h"><span>Request（n8n → plan-site）</span></div>
+<pre><span class="k">GET</span> /api/plans/P0001-e7ff77 HTTP/1.1
+<span class="k">Host:</span> plan-site:8080
+<span class="k">Accept:</span> application/json</pre>
+    <div class="term-h"><span>Response（plan-site → n8n）</span></div>
+<pre>HTTP/1.1 <span class="s">200 OK</span>
+<span class="k">Content-Type:</span> application/json
+<span class="k">Content-Length:</span> 412
+
+{"id":"P0001-e7ff77","customer_id":"C001","status":"unsigned", ...}</pre>
+    <ul class="tight">
+      <li><b>Header（標頭）</b>是信封上的資訊。最重要的是 <code>Content-Type</code>：告訴對方內容是 JSON（<code>application/json</code>）、PDF（<code>application/pdf</code>）還是表單。n8n 下載 PDF 時要把 Response Format 設成 File，就是因為內容不是文字。</li>
+      <li><b>localhost 其實是 <code>127.0.0.1</code></b>，一個永遠指向「自己」的特殊位址（loopback）。這就是為什麼在容器裡寫 localhost 會連到容器自己（〈Docker〉）。</li>
+      <li><b>埠號範圍是 0～65535</b>，同一個位址的同一個埠同時只能有一個程式在聽。8080 被佔用時 Docker 會啟動失敗，這時把 compose 裡的 <code>"8080:8080"</code> 左邊改成別的號碼即可。</li>
+    </ul>
+
+    <h3>上傳檔案用的 multipart/form-data</h3>
+    <p>JSON 只能放文字，PDF 是二進位資料，所以上傳檔案改用 <code>multipart/form-data</code>：把一個請求切成好幾段，每段一個欄位，用一串隨機的分隔線（boundary）隔開。這也是網頁上「選擇檔案＋送出」表單的格式。</p>
+<pre><span class="k">POST</span> /api/upload HTTP/1.1
+<span class="k">Content-Type:</span> multipart/form-data; boundary=----n8nBoundary
+
+------n8nBoundary
+Content-Disposition: form-data; name="<span class="s">folder</span>"
+
+C001_王小明
+------n8nBoundary
+Content-Disposition: form-data; name="<span class="s">file</span>"; filename="C001_未簽署.pdf"
+Content-Type: application/pdf
+
+%PDF-1.4 ……（PDF 的二進位內容）……
+------n8nBoundary--</pre>
+
+    <h3>網址裡的中文：百分比編碼</h3>
+    <p>網址原本只允許英文字母、數字和少數符號。中文會先轉成 UTF-8 位元組，再把每個位元組寫成 <code>%XX</code>。例如「王」是三個位元組 E7 8E 8B，寫成 <code>%E7%8E%8B</code>。所以檔案伺服器回傳的網址會長這樣：</p>
+<pre>http://localhost:8090/C001_<span class="s">%E7%8E%8B%E5%B0%8F%E6%98%8E</span>/C001_<span class="s">%E6%9C%AA%E7%B0%BD%E7%BD%B2</span>.pdf
+                      <span class="c">└── 王小明 ──────────────┘      └── 未簽署 ──────────────┘</span></pre>
+    <p>瀏覽器網址列會自動顯示回中文，兩種寫法指向同一個檔案。</p>
+
+    <h3>API 設計風格</h3>
+    <p>這個專案的 API 採用 REST 的基本精神：用路徑表示「資源」（<code>/api/plans/P0001…</code> 是一份計畫書），用 HTTP 方法表示「動作」（GET 讀取、POST 新增或執行），回應用狀態碼表達結果。好處是任何會發 HTTP 請求的工具（n8n、curl、Python、瀏覽器）都能直接串接，不必綁定特定程式語言。</p>
+  </div>
+
+</section>
+
 <section id="docker">
-  <div class="eyebrow">Part 2</div>
-  <h2>n8n 怎麼搬到我的電腦上</h2>
-  <p>n8n 有雲端付費版，也可以自己架。我選擇用 <b>Docker</b> 在自己的電腦上架，原因有三個：免費、資料留在我電腦裡、跟課程 12.4 的示範一樣。</p>
+  <div class="eyebrow">技術介紹 · 02</div>
+  <h2>Docker：一個指令把四個程式架起來</h2>
 
-  <h3>Docker 用一個比喻講完</h3>
-  <p>正常安裝 n8n 要先裝 Node.js、對好版本、再裝一堆套件。Docker 的做法是：別人已經把 n8n 和它需要的一切裝進一個<b>便當盒</b>，我只要拿來加熱。</p>
-  <div class="tbl"><table>
-    <tr><th>Docker 名詞</th><th>比喻</th><th>技術上是什麼</th></tr>
-    <tr><td><b>Image</b> 映像檔</td><td>食譜＋材料包</td><td>唯讀的打包檔，例如 <code>n8nio/n8n</code>、<code>ollama/ollama</code>，從 Docker Hub 下載</td></tr>
-    <tr><td><b>Container</b> 容器</td><td>正在吃的便當</td><td>從 image 啟動的程式，有自己的檔案系統與網路，可以開關、刪除</td></tr>
-    <tr><td><b>Volume</b> 磁碟區</td><td>便當盒外的保鮮盒</td><td>容器外的儲存空間。容器刪掉，資料還在</td></tr>
-    <tr><td><b>Port mapping</b> 連接埠對應</td><td>取餐窗口號碼</td><td><code>5678:5678</code>＝電腦的 5678 埠轉到容器的 5678 埠</td></tr>
-    <tr><td><b>Compose</b></td><td>一張點餐單</td><td>用一個 YAML 檔描述多個容器，一個指令全部啟動</td></tr>
-  </table></div>
+<div class="blk">
+    <p>正常要在電腦上跑 n8n，要先裝 Node.js、對好版本、裝一堆套件；計畫書網站要裝 Python 和字型。每台電腦環境不同，常常「我電腦可以、你電腦不行」。</p>
+    <p>Docker 的做法是：把程式和它需要的一切<b>裝進一個便當盒</b>。便當盒到哪台電腦都一樣，加熱就能吃。</p>
+    <div class="tbl"><table>
+      <tr><th>Docker 名詞</th><th>比喻</th></tr>
+      <tr><td><b>Image</b> 映像檔</td><td>食譜＋材料包（還沒煮）</td></tr>
+      <tr><td><b>Container</b> 容器</td><td>照食譜做出來、正在吃的便當</td></tr>
+      <tr><td><b>Dockerfile</b></td><td>手寫食譜：自己做 image 的步驟</td></tr>
+      <tr><td><b>Volume / 掛載</b></td><td>保鮮盒：便當吃完丟掉，保鮮盒裡的東西還在</td></tr>
+      <tr><td><b>Port mapping</b></td><td>取餐窗口號碼：外面的人從幾號窗口拿到這個便當</td></tr>
+      <tr><td><b>Compose</b></td><td>一張點餐單：一次點四個便當，一個指令全部上桌</td></tr>
+    </table></div>
+  </div>
 
-  <h3>我的 docker-compose.yml，逐行解讀</h3>
-  <div class="term-h"><span>Downloads\n8n作業\docker-compose.yml</span></div>
-<pre><span class="k">services:</span>                       <span class="c"># 這張點餐單要開兩個容器</span>
-  <span class="k">ollama:</span>                       <span class="c"># 容器 1：本地 AI。這個名字也是它在內部網路的「門牌」</span>
-    <span class="k">image:</span> <span class="s">ollama/ollama:latest</span>   <span class="c"># 用哪個映像檔</span>
-    <span class="k">ports:</span> [<span class="s">"11434:11434"</span>]       <span class="c"># 電腦:容器，Ollama 的 API 埠</span>
-    <span class="k">volumes:</span> [<span class="s">"ollama:/root/.ollama"</span>]  <span class="c"># 下載的模型存進 volume，重開不用重下載</span>
-
-  <span class="k">n8n:</span>                          <span class="c"># 容器 2：自動化流水線</span>
-    <span class="k">image:</span> <span class="s">n8nio/n8n:latest</span>
-    <span class="k">ports:</span> [<span class="s">"5678:5678"</span>]          <span class="c"># 瀏覽器打 localhost:5678</span>
-    <span class="k">volumes:</span> [<span class="s">"./n8n_data:/home/node/.n8n"</span>]  <span class="c"># 我的流程與憑證存在旁邊的資料夾</span>
+  <div class="blk">
+    <h3>完整的 docker-compose.yml 逐行看</h3>
+    <div class="term-h"><span>Downloads\n8n作業\docker-compose.yml</span></div>
+<pre><span class="k">services:</span>
+  <span class="k">plan-site:</span>                               <span class="c"># 服務名稱，也是內部網路裡的「門牌」</span>
+    <span class="k">build:</span> <span class="s">./plan-site</span>                    <span class="c"># 不下載，照這個資料夾的 Dockerfile 自己做</span>
+    <span class="k">container_name:</span> <span class="s">plan-site</span>
+    <span class="k">ports:</span>
+      - <span class="s">"8080:8080"</span>                         <span class="c"># 電腦的 8080 → 容器的 8080</span>
+    <span class="k">volumes:</span>
+      - <span class="s">./plan_data:/data</span>                   <span class="c"># 計畫書資料存在電腦的 plan_data 資料夾</span>
     <span class="k">environment:</span>
-      - <span class="s">GENERIC_TIMEZONE=Asia/Taipei</span>   <span class="c"># 排程用台灣時間</span>
-    <span class="k">depends_on:</span> [<span class="s">ollama</span>]          <span class="c"># 先開 Ollama，再開 n8n</span>
+      - <span class="s">PUBLIC_URL=http://localhost:8080</span>    <span class="c"># 簽署連結的開頭</span>
+      - <span class="s">N8N_WEBHOOK_URL=http://n8n:5678/webhook/plan-signed</span>  <span class="c"># 客戶簽完通知 n8n</span>
+      - <span class="s">WEBHOOK_SECRET=anxin-demo-secret-2026</span>  <span class="c"># 通知時附上的密語</span>
+    <span class="k">restart:</span> <span class="s">unless-stopped</span>                 <span class="c"># 電腦重開後自動啟動</span>
+
+  <span class="k">file-server:</span>
+    <span class="k">build:</span> <span class="s">./file-server</span>
+    <span class="k">container_name:</span> <span class="s">file-server</span>
+    <span class="k">ports:</span>
+      - <span class="s">"8090:8090"</span>
+    <span class="k">volumes:</span>
+      - <span class="s">./公司伺服器:/srv</span>                    <span class="c"># 電腦上的資料夾 = 伺服器上的檔案</span>
+    <span class="k">environment:</span>
+      - <span class="s">PUBLIC_URL=http://localhost:8090</span>
+    <span class="k">restart:</span> <span class="s">unless-stopped</span>
+
+  <span class="k">ollama:</span>                                  <span class="c"># 本地 AI，選配，這次流程沒用到</span>
+    <span class="k">image:</span> <span class="s">ollama/ollama:latest</span>             <span class="c"># 從 Docker Hub 下載現成的</span>
+    <span class="k">ports:</span> [<span class="s">"11434:11434"</span>]
+    <span class="k">volumes:</span> [<span class="s">"ollama:/root/.ollama"</span>]       <span class="c"># 具名 volume，模型存在 Docker 自己管的地方</span>
+
+  <span class="k">n8n:</span>
+    <span class="k">image:</span> <span class="s">n8nio/n8n:latest</span>
+    <span class="k">ports:</span> [<span class="s">"5678:5678"</span>]
+    <span class="k">volumes:</span> [<span class="s">"./n8n_data:/home/node/.n8n"</span>]  <span class="c"># 帳號、流程、憑證都存在這</span>
+    <span class="k">environment:</span>
+      - <span class="s">GENERIC_TIMEZONE=Asia/Taipei</span>        <span class="c"># 排程用台灣時間</span>
+      - <span class="s">TZ=Asia/Taipei</span>
+    <span class="k">depends_on:</span> [<span class="s">plan-site</span>, <span class="s">file-server</span>, <span class="s">ollama</span>]
 
 <span class="k">volumes:</span>
-  <span class="k">ollama:</span>                       <span class="c"># 宣告上面用到的具名 volume</span></pre>
+  <span class="k">ollama:</span></pre>
+    <p class="cap">為了好讀，省略了幾個 n8n 的基本環境變數，部分欄位改成一行寫法，意思相同。實際檔案在你的資料夾裡。</p>
 
-  <div class="callout"><b>開發紀錄：課程原檔的兩個錯字</b><br>課程提供的 yml 直接執行會失敗：<code>./n8n data</code> 中間有空格，Docker 會把它當成兩個參數；<code>depends on</code> 少了底線，Docker 不認得這個欄位。我改成 <code>./n8n_data</code> 和 <code>depends_on</code> 後才成功啟動。</div>
-
-  <h3>啟動指令拆解</h3>
-  <div class="term-h"><span>在 Downloads\n8n作業 資料夾裡執行</span><button class="copy" data-copy="docker compose up -d">複製</button></div>
-<pre>docker compose up -d</pre>
-  <div class="tbl"><table>
-    <tr><th>字</th><th>意思</th></tr>
-    <tr><td><code>docker</code></td><td>呼叫 Docker 程式</td></tr>
-    <tr><td><code>compose</code></td><td>讀「目前資料夾」的 <code>docker-compose.yml</code></td></tr>
-    <tr><td><code>up</code></td><td>建立並啟動單子上所有容器；image 不在電腦裡就先下載</td></tr>
-    <tr><td><code>-d</code></td><td>detached，在背景執行，終端機視窗可以關</td></tr>
-  </table></div>
-
-  <h3>其他常用指令</h3>
-  <div class="tbl"><table>
-    <tr><th>指令</th><th>用途</th></tr>
-    <tr><td><code>docker compose ps</code></td><td>看兩個容器是不是 <code>running</code></td></tr>
-    <tr><td><code>docker compose logs n8n</code></td><td>看 n8n 的執行紀錄，出錯時找原因</td></tr>
-    <tr><td><code>docker compose down</code></td><td>停止並移除容器；volume 和 n8n_data 保留，流程不會不見</td></tr>
-    <tr><td><code>docker exec -it ollama ollama pull qwen2.5:3b</code></td><td>進到 Ollama 容器裡，下載模型</td></tr>
-  </table></div>
-</section>
-
-<!-- ============ OLLAMA ============ -->
-<section id="ollama">
-  <div class="eyebrow">Part 3</div>
-  <h2>Ollama 與我用的模型</h2>
-
-  <h3>Ollama 是什麼</h3>
-  <p>先分清楚兩個東西：<b>模型</b>是 AI 的大腦檔案，<b>Ollama</b> 是負責把這個大腦跑起來的程式。模型像食譜，Ollama 像廚師。Ollama 會下載模型、載入記憶體，然後開一個 HTTP 服務等別的程式來問問題。</p>
-
-  <div class="two">
-    <div class="card"><h4>雲端 AI（例如 ChatGPT）</h4><p>模型在別人公司的伺服器上跑，資料要傳過去，通常按用量付費，需要網路。</p></div>
-    <div class="card"><h4>Ollama 本地 AI</h4><p>模型在我自己的電腦上跑，資料不出我的電腦，不收費，下載完模型後可以離線使用。</p></div>
+    <h3>常用指令</h3>
+    <div class="term-h"><span>在 Downloads\n8n作業 裡執行（網址列輸入 cmd 按 Enter）</span><button class="copy" data-copy="docker compose up -d --build">複製</button></div>
+<pre>docker compose up -d --build</pre>
+    <div class="tbl"><table>
+      <tr><th>指令</th><th>用途</th></tr>
+      <tr><td><code>docker compose up -d --build</code></td><td>建立並啟動全部容器。<code>-d</code> 背景執行；<code>--build</code> 重新做自己寫的 image（改過程式要加）</td></tr>
+      <tr><td><code>docker compose ps</code></td><td>看四個容器是不是 running</td></tr>
+      <tr><td><code>docker compose logs plan-site</code></td><td>看某個容器的紀錄（加 <code>-f</code> 會持續顯示）</td></tr>
+      <tr><td><code>docker compose restart n8n</code></td><td>只重開一個容器</td></tr>
+      <tr><td><code>docker compose down</code></td><td>停止並移除容器；掛載的資料夾和 volume 都保留</td></tr>
+    </table></div>
+    <div class="callout"><b>開發紀錄：課程原檔的兩個錯字</b><br>課程提供的 yml 直接執行會失敗：<code>./n8n data</code> 中間有空格、<code>depends on</code> 少了底線。改成 <code>./n8n_data</code> 和 <code>depends_on</code> 才成功啟動。YAML 對空白和拼字非常敏感，縮排也必須用空格，不能用 Tab。</div>
   </div>
 
-  <h3>為什麼可以免費</h3>
-  <p>一、Ollama 是開源軟體。二、有些公司把模型權重公開讓人下載，例如阿里巴巴通義千問團隊的 Qwen 系列。三、運算用的是我自己的電腦和電費，沒有人需要替我付伺服器費用。代價是模型比雲端的小，能力有限，也會吃我電腦的記憶體和 CPU。</p>
+  <div class="blk">
+    <h3>容器跟虛擬機有什麼不同</h3>
+    <p>虛擬機（例如 VMware 裡的 Kali）模擬一整台電腦，有自己的作業系統核心，開機要幾十秒、佔好幾 GB。容器<b>共用主機的 Linux 核心</b>，只是用核心功能把程式隔開：</p>
+    <ul class="tight">
+      <li><b>namespaces</b>：讓容器以為自己有獨立的檔案系統、網路、行程編號。</li>
+      <li><b>cgroups</b>：限制容器能用多少 CPU 和記憶體。</li>
+    </ul>
+    <p>Windows 沒有 Linux 核心，所以 Docker Desktop 會在背景開一個輕量的 Linux 虛擬機（WSL 2），容器跑在它裡面。</p>
 
-  <h3>為什麼 Ollama 有網址：它是一個 API 服務</h3>
-  <p>Ollama 啟動後會在 11434 埠開一個 HTTP 服務，其他程式送一個請求過去，它就回傳 AI 的答案。這就是課程 12.6 講的 API。我可以自己用指令測試：</p>
-  <div class="term-h"><span>送一個請求給 Ollama</span><button class="copy" data-copy='curl http://localhost:11434/api/generate -d "{\"model\":\"qwen2.5:3b\",\"prompt\":\"用一句話介紹白蟻防治\",\"stream\":false}"'>複製</button></div>
-<pre>curl http://localhost:11434/api/generate -d '{
-  <span class="k">"model"</span>: <span class="s">"qwen2.5:3b"</span>,
-  <span class="k">"prompt"</span>: <span class="s">"用一句話介紹白蟻防治"</span>,
-  <span class="k">"stream"</span>: false
-}'</pre>
-  <div class="term-h"><span>Ollama 的回應（節錄）</span></div>
+    <h3>Dockerfile 逐行：計畫書網站怎麼被做出來</h3>
+<pre><span class="k">FROM</span> python:3.12-slim                <span class="c"># 從官方精簡版 Python 開始</span>
+<span class="k">RUN</span> apt-get update &amp;&amp; apt-get install -y --no-install-recommends fonts-wqy-zenhei \
+    &amp;&amp; rm -rf /var/lib/apt/lists/*     <span class="c"># 裝中文字型（PDF 才能顯示中文），清掉暫存縮小體積</span>
+<span class="k">WORKDIR</span> /app
+<span class="k">COPY</span> requirements.txt .
+<span class="k">RUN</span> pip install --no-cache-dir -r requirements.txt   <span class="c"># Flask、ReportLab、Pillow</span>
+<span class="k">COPY</span> app.py .                        <span class="c"># 程式碼最後才複製</span>
+<span class="k">ENV</span> DATA_DIR=/data PUBLIC_URL=http://localhost:8080
+<span class="k">EXPOSE</span> 8080
+<span class="k">CMD</span> [<span class="s">"python"</span>, <span class="s">"app.py"</span>]</pre>
+    <p>Image 是一層一層疊起來的（layer），每一行指令一層，Docker 會快取沒變的層。<b>先複製 requirements.txt 再裝套件、最後才複製 app.py</b>，是為了改程式時不用重裝套件：只有最後一層失效，重建幾秒就好。</p>
+
+    <h3>容器之間怎麼找到對方：內建 DNS</h3>
+    <p>Compose 會替同一個檔案裡的服務建立一個私人網路（名稱類似 <code>n8n作業_default</code>），並提供內建的 DNS：在這個網路裡，<b>服務名稱就是主機名稱</b>。所以 n8n 寫 <code>http://plan-site:8080</code>，DNS 會把 <code>plan-site</code> 解析成那個容器的內部 IP。</p>
+    <div class="diagram" role="img" aria-label="瀏覽器用 localhost:8080 開網站；n8n 容器要用 plan-site:8080">
+      <svg viewBox="0 0 760 230">
+        <rect x="10" y="20" width="200" height="80" rx="12" fill="var(--paper)" stroke="var(--line)"/>
+        <text x="30" y="55" font-size="15" font-weight="700" fill="var(--ink)">我和客戶的瀏覽器</text>
+        <text x="30" y="80" font-size="12" fill="var(--muted)">在 Windows 上</text>
+        <rect x="10" y="130" width="200" height="80" rx="12" fill="var(--paper)" stroke="var(--teal)" stroke-width="2"/>
+        <text x="30" y="165" font-size="15" font-weight="700" fill="var(--ink)">n8n 容器</text>
+        <text x="30" y="190" font-size="12" fill="var(--muted)">在 Docker 網路裡</text>
+        <rect x="540" y="75" width="200" height="80" rx="12" fill="var(--paper)" stroke="var(--amber)" stroke-width="2"/>
+        <text x="560" y="110" font-size="15" font-weight="700" fill="var(--ink)">plan-site 容器</text>
+        <text x="560" y="135" font-size="12" fill="var(--muted)" font-family="JetBrains Mono, monospace">:8080</text>
+        <line x1="210" y1="60" x2="540" y2="105" stroke="var(--ok)" stroke-width="2"/>
+        <text x="250" y="62" font-size="13" fill="var(--ok)" font-family="JetBrains Mono, monospace">✓ http://localhost:8080（經過 port mapping）</text>
+        <line x1="210" y1="170" x2="540" y2="125" stroke="var(--ok)" stroke-width="2"/>
+        <text x="250" y="190" font-size="13" fill="var(--ok)" font-family="JetBrains Mono, monospace">✓ http://plan-site:8080（內部 DNS）</text>
+        <text x="250" y="215" font-size="12" fill="var(--bad)" font-family="JetBrains Mono, monospace">✗ localhost 在這裡指 n8n 容器自己</text>
+      </svg>
+    </div>
+    <p>方向反過來也一樣：計畫書網站要通知 n8n 時，寫的是 <code>http://n8n:5678/…</code>，不是 localhost。</p>
+    <p>而瀏覽器在 Windows 上，不在 Docker 網路裡，認不得 <code>plan-site</code> 這個名字，只能走 port mapping 用 <code>localhost:8080</code>。<b>同一個網站有兩個網址，要看「誰在連」</b>，這是整個專案最容易搞混的地方。</p>
+
+    <h3>兩種保存資料的方式</h3>
+    <div class="tbl"><table>
+      <tr><th></th><th>Bind mount（綁定掛載）</th><th>Named volume（具名磁碟區）</th></tr>
+      <tr><td>寫法</td><td><code>./公司伺服器:/srv</code>（左邊是路徑）</td><td><code>ollama:/root/.ollama</code>（左邊是名字）</td></tr>
+      <tr><td>資料在哪</td><td>你看得到的資料夾</td><td>Docker 自己管理的位置</td></tr>
+      <tr><td>適合</td><td>要自己打開看、要備份的檔案</td><td>很大、不需要手動看的資料（AI 模型）</td></tr>
+      <tr><td>本專案</td><td>plan_data、公司伺服器、n8n_data</td><td>ollama</td></tr>
+    </table></div>
+    <p><b>depends_on 的限制：</b>它只保證「啟動順序」，不保證對方已經準備好接收請求。流程是人勾選後才觸發，那時網站早就啟動了，所以這裡夠用；正式系統會再加 <code>healthcheck</code>。</p>
+    <p><b>關於 <code>:latest</code>：</b>每次重新下載可能拿到新版本，畫面或節點名稱可能改變。正式環境會固定版本號（例如 <code>n8nio/n8n:1.x.x</code>），讓結果可以重現。</p>
+  </div>
+
+</section>
+
+<section id="plansite">
+  <div class="eyebrow">技術介紹 · 03</div>
+  <h2>模擬計畫書網站 plan-site</h2>
+
+<div class="blk">
+    <p>這是我寫來代替公司系統的小網站。它做四件事：</p>
+    <ol class="tight">
+      <li>讓我填客戶資料、按「製作計畫書」。</li>
+      <li>給我一個<b>簽署連結</b>，這個連結就是要傳給客戶的東西。</li>
+      <li>客戶打開連結，看計畫書內容，在最下面用手指或滑鼠簽名。</li>
+      <li>隨時可以下載兩種 PDF：<b>簽名前</b>的和<b>簽名後</b>（印著客戶簽名）的。</li>
+    </ol>
+    <p>它同時有一個給程式用的窗口（API）讓 n8n 查資料、下載 PDF。而且客戶一簽完，它會<b>主動打電話給 n8n</b>說「P0001 簽好了」，n8n 不用一直來問。</p>
+  </div>
+
+  <div class="blk">
+    <h3>所有網址一覽</h3>
+    <div class="tbl"><table>
+      <tr><th>網址</th><th>給誰</th><th>做什麼</th></tr>
+      <tr><td><code>GET /</code></td><td>我</td><td>填表單建立計畫書，下方列出所有計畫書與狀態</td></tr>
+      <tr><td><code>POST /create</code></td><td>我（按按鈕）</td><td>存下資料，轉到完成頁</td></tr>
+      <tr><td><code>GET /done/編號</code></td><td>我</td><td>顯示簽署連結和「複製連結」按鈕</td></tr>
+      <tr><td><code>GET /s/編號</code></td><td>客戶</td><td>簽署頁：計畫書預覽、PDF 下載、簽名板、同意勾選</td></tr>
+      <tr><td><code>POST /s/編號/sign</code></td><td>客戶（按送出）</td><td>存下簽名，狀態改成已簽署</td></tr>
+      <tr><td><code>GET /s/編號/unsigned.pdf</code></td><td>客戶、n8n</td><td>未簽署 PDF</td></tr>
+      <tr><td><code>GET /s/編號/signed.pdf</code></td><td>客戶、n8n</td><td>已簽署 PDF（還沒簽回 404）</td></tr>
+      <tr><td><code>GET /api/plans/編號</code></td><td>n8n</td><td>一份計畫書的 JSON</td></tr>
+      <tr><td><code>GET /api/plans</code></td><td>n8n</td><td>全部計畫書的 JSON 清單</td></tr>
+      <tr><td><code>POST /s/編號/notify</code></td><td>我（清單上的「重送」按鈕）</td><td>再通知 n8n 一次</td></tr>
+      <tr><td><code>POST /api/plans/編號/notify</code></td><td>程式</td><td>同上，回傳通知結果 JSON；還沒簽回 409</td></tr>
+      <tr><td>（網站主動送出）<code>POST http://n8n:5678/webhook/plan-signed</code></td><td>n8n</td><td>客戶一簽完就自動送出「已簽署」通知</td></tr>
+    </table></div>
+
+    <h3>API 回應長這樣</h3>
+    <div class="term-h"><span>GET http://plan-site:8080/api/plans/P0001-e7ff77</span></div>
 <pre>{
-  <span class="k">"model"</span>: <span class="s">"qwen2.5:3b"</span>,
-  <span class="k">"response"</span>: <span class="s">"白蟻防治是透過藥劑與環境處理，防止白蟻蛀蝕建築木材的工作。"</span>,
-  <span class="k">"done"</span>: true
+  <span class="k">"id"</span>: <span class="s">"P0001-e7ff77"</span>,
+  <span class="k">"customer_id"</span>: <span class="s">"C001"</span>,          <span class="c">← n8n 用來核對有沒有貼錯客戶</span>
+  <span class="k">"customer"</span>: <span class="s">"王小明"</span>,
+  <span class="k">"category"</span>: <span class="s">"白蟻防治"</span>,
+  <span class="k">"date"</span>: <span class="s">"2026-12-01"</span>, <span class="k">"time"</span>: <span class="s">"09:00–11:00"</span>,
+  <span class="k">"status"</span>: <span class="s">"signed"</span>,              <span class="c">← unsigned 或 signed，n8n 看這個判斷</span>
+  <span class="k">"signer"</span>: <span class="s">"王小明"</span>,
+  <span class="k">"signed_at"</span>: <span class="s">"2026-11-30 14:05:12"</span>,
+  <span class="k">"sign_url"</span>: <span class="s">"http://localhost:8080/s/P0001-e7ff77"</span>,
+  <span class="k">"unsigned_pdf"</span>: <span class="s">"/s/P0001-e7ff77/unsigned.pdf"</span>,
+  <span class="k">"signed_pdf"</span>: <span class="s">"/s/P0001-e7ff77/signed.pdf"</span>
 }</pre>
-  <p class="cap">回應內容每次會略有不同。n8n 的 Ollama 節點背後做的就是同一件事，只是幫我包成方塊。</p>
-
-  <h3>我選的模型：qwen2.5:3b</h3>
-  <div class="tbl"><table>
-    <tr><th>項目</th><th>規格</th><th>對專案的意義</th></tr>
-    <tr><td>開發者</td><td>阿里巴巴 Qwen 團隊</td><td>中文訓練資料多，繁體中文輸出穩定</td></tr>
-    <tr><td>參數量</td><td>3.09B（約 30.9 億）</td><td>筆電跑得動；越大越聰明但越慢</td></tr>
-    <tr><td>層數／注意力頭</td><td>36 層；GQA，Q 16 個、KV 2 個</td><td>GQA 讓推論時的記憶體用量較低</td></tr>
-    <tr><td>上下文長度</td><td>32,768 tokens</td><td>一位客戶的資料加提示詞遠遠用不完</td></tr>
-    <tr><td>Ollama 下載大小</td><td>約 1.9 GB（量化版）</td><td>量化是把數字精度降低以縮小檔案，品質略降但能在一般電腦執行</td></tr>
-    <tr><td>授權</td><td>Qwen Research License</td><td>可下載使用於研究與課程作業；若要商用需另看授權條款</td></tr>
-  </table></div>
-  <div class="note"><b>為什麼只讓小模型做簡單的事：</b>3B 模型會犯錯，也可能編造資料（課程 1.4 幻覺）。所以我只讓它做兩件事：檢查欄位齊不齊、寫 60 字以內的訊息；而且輸出一定要經過我核准。</div>
-</section>
-
-<!-- ============ CONNECT ============ -->
-<section id="connect">
-  <div class="eyebrow">Part 4</div>
-  <h2>我怎麼把 n8n 和 Ollama 串起來</h2>
-
-  <h3>關鍵：容器裡的 localhost 不是你的電腦</h3>
-  <div class="diagram" role="img" aria-label="從瀏覽器用 localhost:11434 找 Ollama；從 n8n 容器裡要用 ollama:11434">
-    <svg viewBox="0 0 760 230">
-      <rect x="10" y="20" width="200" height="80" rx="12" fill="var(--paper)" stroke="var(--line)"/>
-      <text x="30" y="55" font-size="15" font-weight="700" fill="var(--ink)">我的瀏覽器</text>
-      <text x="30" y="80" font-size="12" fill="var(--muted)">在 Windows 上</text>
-      <rect x="10" y="130" width="200" height="80" rx="12" fill="var(--paper)" stroke="var(--teal)" stroke-width="2"/>
-      <text x="30" y="165" font-size="15" font-weight="700" fill="var(--ink)">n8n 容器</text>
-      <text x="30" y="190" font-size="12" fill="var(--muted)">在 Docker 網路裡</text>
-      <rect x="540" y="75" width="200" height="80" rx="12" fill="var(--paper)" stroke="var(--amber)" stroke-width="2"/>
-      <text x="560" y="110" font-size="15" font-weight="700" fill="var(--ink)">Ollama 容器</text>
-      <text x="560" y="135" font-size="12" fill="var(--muted)" font-family="JetBrains Mono, monospace">:11434</text>
-      <line x1="210" y1="60" x2="540" y2="105" stroke="var(--ok)" stroke-width="2"/>
-      <text x="260" y="62" font-size="13" fill="var(--ok)" font-family="JetBrains Mono, monospace">✓ http://localhost:11434</text>
-      <line x1="210" y1="170" x2="540" y2="125" stroke="var(--ok)" stroke-width="2"/>
-      <text x="260" y="190" font-size="13" fill="var(--ok)" font-family="JetBrains Mono, monospace">✓ http://ollama:11434</text>
-      <text x="260" y="215" font-size="12" fill="var(--bad)" font-family="JetBrains Mono, monospace">✗ localhost 在這裡指 n8n 自己</text>
-    </svg>
+    <h3>自己先玩一次</h3>
+    <ol class="steps">
+      <li><b>打開 http://localhost:8080</b>填 C001 王小明的資料，按「製作計畫書」。</li>
+      <li><b>複製簽署連結</b>完成頁上的連結長得像 <code>http://localhost:8080/s/P0001-xxxxxx</code>。</li>
+      <li><b>開新分頁看 API</b>把連結的 <code>/s/</code> 改成 <code>/api/plans/</code>，就會看到上面那種 JSON，<code>status</code> 是 unsigned。</li>
+      <li><b>打開簽署連結簽名</b>簽完再重新整理 API 頁，<code>status</code> 變成 signed。（正式測試流程時先不要簽，留給 n8n 偵測。）</li>
+    </ol>
   </div>
-  <p>Docker Compose 會把同一份檔案裡的容器放進同一個內部網路，並用服務名稱當作主機名稱。所以 n8n 要找 Ollama，網址寫 <code>http://ollama:11434</code>。</p>
 
-  <h3>在 n8n 裡的設定步驟</h3>
-  <ol class="steps">
-    <li><b>建立 Ollama 憑證</b>左側選單 Credentials → 新增 → 搜尋 Ollama → Base URL 填 <code>http://ollama:11434</code> → 儲存後顯示連線成功</li>
-    <li><b>加入 Basic LLM Chain 節點</b>這是「把提示詞送給語言模型並拿回答案」的節點</li>
-    <li><b>在它底下掛 Ollama Chat Model</b>選剛剛的憑證，模型選 <code>qwen2.5:3b</code>（課程 13.6 教的「換模型」就是改這裡）</li>
-    <li><b>寫提示詞，要求只回傳 JSON</b>這樣下一個節點才能用 <code>{{ $json.完整 }}</code> 判斷要不要停機</li>
-  </ol>
+  <div class="blk">
+    <h3>技術組成</h3>
+    <ul class="tight">
+      <li><b>Flask</b>：Python 的輕量網頁框架，用 <code>@app.get("/路徑")</code> 把網址對應到函式。</li>
+      <li><b>資料儲存</b>：每份計畫書一個 JSON 檔，存在容器的 <code>/data</code>，也就是電腦上的 <code>plan_data</code> 資料夾。量少時比資料庫簡單、打開就能看。</li>
+      <li><b>PDF</b>：用 ReportLab 在<b>每次請求時即時產生</b>，不存檔。所以簽名一存進去，下一次下載就是已簽版。字型用文泉驛正黑（TTC 字型集的第 0 個字型），找不到時改用 ReportLab 內建的 CID 中文字型，避免中文變成方塊。</li>
+    </ul>
 
-  <div class="term-h"><span>提示詞（Prompt）</span></div>
-<pre>你是病媒防治公司的行政助理。請檢查以下施工資料是否完整，並草擬給客戶的 LINE 通知。
-必要欄位：客戶名稱、施工日期、施工時間、施工類別。
-資料：<span class="s">{{ JSON.stringify($json) }}</span>
+    <h3>簽名是怎麼變成 PDF 上的圖</h3>
+<pre>客戶在 &lt;canvas&gt; 上畫 → 送出時 canvas.toDataURL('image/png')
+  → 得到 "data:image/png;base64,iVBORw0KGgo…"（圖片變成一長串文字）
+  → 放進隱藏欄位，跟表單一起 POST 到 /s/編號/sign
+  → 伺服器用正規表示式檢查格式，存進 JSON 的 signature_png
+  → 產生 PDF 時 base64 解碼回圖片，畫在「客戶簽名」欄位</pre>
+    <p><b>Base64</b> 是把任意位元組轉成 64 種安全字元的編碼，讓圖片可以放進表單或 JSON 這種只吃文字的地方。代價是體積變大約三分之一。</p>
 
-只回傳 JSON，不要加任何其他文字：
-{<span class="k">"完整"</span>: true 或 false, <span class="k">"缺漏欄位"</span>: <span class="s">""</span>, <span class="k">"草稿"</span>: <span class="s">"60 字以內、禮貌的繁體中文。不可編造資料中沒有的內容"</span>}</pre>
-  <p>「不可編造」和「只回傳 JSON」是針對小模型最常出的兩種問題：自己補資料、回答格式跑掉。格式跑掉時，後面的 If 節點會判定為不完整，流程就停下來通知我，不會把壞掉的訊息傳給客戶。</p>
+    <h3>狀態機：只能往前走</h3>
+<pre>  建立 ──▶ <span class="s">unsigned</span> ──(客戶簽名)──▶ <span class="s">signed</span>
+                                   │
+            再簽一次 ───────────────┘ 直接轉回簽署頁，不覆蓋</pre>
+    <p>狀態只有兩個、只能單向前進。已簽署後再 POST 簽名會被忽略，第一次簽署的紀錄不會被改掉。這讓 n8n 的判斷很單純：看到 signed 就一定是最終結果。</p>
+
+    <h3>簽完主動通知 n8n：Webhook 發送端</h3>
+    <p>客戶按下送出後，網站做三件事：存簽名 → <b>開一個背景執行緒</b>去通知 n8n → 立刻把客戶轉回簽署頁。通知放在背景，是因為 n8n 慢或掛掉時，客戶不該卡在轉圈圈。</p>
+<pre><span class="c"># 送出的請求</span>
+<span class="k">POST</span> http://n8n:5678/webhook/plan-signed
+<span class="k">Content-Type:</span> application/json; charset=utf-8
+<span class="k">X-Webhook-Secret:</span> anxin-demo-secret-2026
+
+{ <span class="k">"event"</span>: <span class="s">"plan.signed"</span>, <span class="k">"id"</span>: <span class="s">"P0001-e7ff77"</span>, <span class="k">"customer_id"</span>: <span class="s">"C001"</span>,
+  <span class="k">"status"</span>: <span class="s">"signed"</span>, <span class="k">"signed_at"</span>: <span class="s">"2026-11-30 14:05:12"</span>, <span class="k">"sent_at"</span>: <span class="s">"…"</span>, … }</pre>
+    <div class="tbl"><table>
+      <tr><th>機制</th><th>做法</th><th>為什麼</th></tr>
+      <tr><td><b>重試</b></td><td>失敗最多試 3 次，間隔 2、4 秒（越等越久，叫 backoff）</td><td>n8n 剛好在重啟、網路短暫不通時，不會就這樣漏掉</td></tr>
+      <tr><td><b>正式／測試網址自動切換</b></td><td>先送 <code>/webhook/</code>，回 404 就改送 <code>/webhook-test/</code></td><td>n8n 流程還沒啟用時正式網址不存在；這樣開發和上線都不用改設定</td></tr>
+      <tr><td><b>結果寫回</b></td><td>每份計畫書的 <code>notify</code> 欄記下成功或失敗、送到哪個網址、試了幾次、錯誤原因</td><td>可追蹤；清單頁直接顯示，失敗一眼看得到</td></tr>
+      <tr><td><b>手動重送</b></td><td>清單上的「重送」按鈕、<code>POST /api/plans/編號/notify</code></td><td>3 次都失敗（例如 n8n 關機一整晚）時的補救</td></tr>
+      <tr><td><b>密語標頭</b></td><td>每次附 <code>X-Webhook-Secret</code>，n8n 用 Header Auth 檢查</td><td>n8n 的 Webhook 網址等於一扇對外的門，沒有密語的人敲門會被 403 拒絕</td></tr>
+    </table></div>
+    <p class="cap">通知只說「誰簽了」，不帶簽名圖片；n8n 收到後會再回頭向 API 確認（〈把關設計〉「不信任通知內容」）。</p>
+
+    <h3>資安設計</h3>
+    <div class="tbl"><table>
+      <tr><th>設計</th><th>防的是什麼</th></tr>
+      <tr><td>編號 = 流水號 + 6 位隨機十六進位（<code>secrets.token_hex(3)</code>），約 1,677 萬種組合</td><td><b>IDOR</b>（不安全的直接物件參照）：如果連結只是 <code>/s/2</code>，客戶把 2 改成 3 就看到別人的計畫書</td></tr>
+      <tr><td>編號必須完全符合 <code>P\d{4}-[a-z0-9]{6}</code> 才去讀檔</td><td><b>路徑穿越</b>：防止有人傳 <code>../../etc/passwd</code> 這種編號去讀系統檔案</td></tr>
+      <tr><td>API 回應移除 <code>signature_png</code></td><td><b>資料最小化</b>：n8n 只需要知道簽了沒，不需要簽名圖檔本身</td></tr>
+      <tr><td>建立與簽署時用 <code>threading.Lock</code></td><td><b>競態條件</b>：兩個請求同時進來時，流水號重複或簽名互相覆蓋</td></tr>
+      <tr><td>輸出到 HTML 前一律跳脫（escape）</td><td><b>XSS</b>：客戶名稱欄位如果被填入 <code>&lt;script&gt;</code>，不會被當成程式執行</td></tr>
+    </table></div>
+    <p class="cap">這是模擬用的網站，沒有登入機制，知道連結的人就能簽。真實的電子簽署系統還需要身分驗證（例如簡訊驗證碼）、時間戳記與防竄改的簽章，見〈上線考量〉。</p>
+  </div>
+
 </section>
 
-<!-- ============ FLOWS ============ -->
+<section id="fileserver">
+  <div class="eyebrow">技術介紹 · 04</div>
+  <h2>公司伺服器 file-server：本機資料夾＋伺服器網址</h2>
+
+<div class="blk">
+    <p>想像一個<b>有兩扇門的抽屜</b>：一扇門在你房間（檔案總管裡的 <code>公司伺服器</code> 資料夾），一扇門開在走廊（網址 <code>http://localhost:8090</code>）。不管從哪扇門放東西進去，另一扇門打開都看得到，因為裡面是同一個抽屜。</p>
+    <p>n8n 從走廊那扇門把 PDF 放進去，你從房間那扇門直接看到。真實公司的檔案伺服器（NAS、共用磁碟）也是這個概念：檔案放在某台機器的硬碟上，大家透過網路去開。</p>
+  </div>
+
+  <div class="blk">
+    <div class="tbl"><table>
+      <tr><th>網址</th><th>做什麼</th></tr>
+      <tr><td><code>GET /</code></td><td>列出所有客戶資料夾</td></tr>
+      <tr><td><code>GET /C001_王小明/</code></td><td>列出這位客戶的檔案，顯示大小和修改時間</td></tr>
+      <tr><td><code>GET /C001_王小明/C001_未簽署.pdf</code></td><td>直接在瀏覽器打開 PDF</td></tr>
+      <tr><td><code>POST /api/upload</code></td><td>存檔（給 n8n 用）</td></tr>
+      <tr><td><code>GET /api/list/C001_王小明</code></td><td>回傳這個資料夾的檔名清單（JSON）</td></tr>
+    </table></div>
+    <h3>n8n 上傳時要送的三個欄位</h3>
+    <div class="tbl"><table>
+      <tr><th>欄位</th><th>類型</th><th>內容</th></tr>
+      <tr><td><code>file</code></td><td>檔案（n8n Binary File）</td><td>上一個節點下載的 PDF，放在 binary 的 <code>data</code> 欄位</td></tr>
+      <tr><td><code>folder</code></td><td>文字</td><td>客戶資料夾名稱，例如 <code>C001_王小明</code>，從追蹤表讀來；不存在會自動建立</td></tr>
+      <tr><td><code>filename</code></td><td>文字</td><td>存檔名稱，例如 <code>C001_未簽署.pdf</code></td></tr>
+    </table></div>
+    <div class="term-h"><span>伺服器回應（200）</span></div>
+<pre>{
+  <span class="k">"ok"</span>: true,
+  <span class="k">"folder"</span>: <span class="s">"C001_王小明"</span>,
+  <span class="k">"filename"</span>: <span class="s">"C001_未簽署.pdf"</span>,
+  <span class="k">"size"</span>: 505406,
+  <span class="k">"saved_at"</span>: <span class="s">"2026-11-30 10:12"</span>,
+  <span class="k">"url"</span>: <span class="s">"http://localhost:8090/C001_%E7%8E%8B…/C001_%E6%9C%AA…pdf"</span>,  <span class="c">← 寫進試算表</span>
+  <span class="k">"folder_url"</span>: <span class="s">"http://localhost:8090/C001_%E7%8E%8B…/"</span>
+}</pre>
+    <p>下一個節點用 <code>{{ $('歸檔未簽署').item.json.url }}</code> 拿到這個網址，寫進追蹤表的「未簽PDF」欄，點了就能開。</p>
+  </div>
+
+  <div class="blk">
+    <h3>為什麼用 HTTP 上傳，而不是讓 n8n 直接寫檔</h3>
+    <p>n8n 有「Read/Write Files from Disk」節點可以直接寫檔，但較新版本預設<b>限制 n8n 只能存取特定資料夾</b>（安全考量），還要處理容器使用者權限、資料夾不存在等問題。改成「伺服器提供上傳 API」有三個好處：</p>
+    <ul class="tight">
+      <li><b>職責分離</b>：n8n 只負責流程，檔案怎麼存、存哪裡由伺服器決定。</li>
+      <li><b>跟真實環境一樣</b>：公司的檔案系統、雲端硬碟、文件管理系統幾乎都是透過 API 上傳。</li>
+      <li><b>可以集中把關</b>：檔名清理、路徑檢查都寫在伺服器一個地方。</li>
+    </ul>
+
+    <h3>防止路徑穿越（Path Traversal）</h3>
+    <p>如果有人把 folder 填成 <code>../../etc</code>，天真的程式會把檔案寫到伺服器資料夾外面，覆蓋系統檔案。file-server 用兩道防線：</p>
+<pre><span class="c"># 第一道：清理每一段名稱</span>
+拿掉 / 和 \ 前面的部分、控制字元、Windows 不允許的 &lt; &gt; : " | ? *
+丟掉 "." 和 ".."
+
+<span class="c"># 第二道：算出絕對路徑後檢查</span>
+full = os.path.abspath(os.path.join(ROOT, rel))
+if not full.startswith(ROOT + os.sep):  →  回 403 Forbidden</pre>
+    <p>第一道把明顯的攻擊字串洗掉，第二道不管第一道漏了什麼，最終路徑只要不在 <code>/srv</code> 底下就拒絕。這種「多層防禦」（defense in depth）是資安的基本原則：不要只靠一道檢查。</p>
+    <p class="cap">實測：上傳時 folder 填 <code>../../etc</code>、filename 填 <code>../x.pdf</code>，結果檔案被安全地存到 <code>/srv/etc/x.pdf</code>；直接用網址 <code>/..%2f..%2fetc/passwd</code> 讀檔則回 403。</p>
+
+    <h3>中文檔名的處理</h3>
+    <p>常見的 <code>secure_filename()</code> 函式會把中文全部刪掉（「王小明.pdf」變成「.pdf」），所以這裡自己寫清理規則，只移除危險字元、保留中文。回傳網址時用 <code>urllib.parse.quote</code> 做百分比編碼（〈網路基礎〉），確保網址在任何地方都合法。</p>
+  </div>
+
+</section>
+
+<section id="n8n">
+  <div class="eyebrow">技術介紹 · 05</div>
+  <h2>n8n：把工作畫成流水線</h2>
+
+<div class="blk">
+    <p>n8n 是一個<b>工作流程自動化</b>工具。在畫面上把一個個方塊（節點）用線連起來，每個方塊做一件小事，資料就從左流到右。</p>
+    <p>把它想成工廠流水線：<b>觸發節點是門鈴</b>，門鈴一響，流水線上的工人依序處理同一份資料。有的工人負責查資料，有的負責判斷「要不要繼續」，有的負責送東西出去。</p>
+    <p>名字 n8n 是 nodemation（node + automation）的縮寫：n 和 n 中間有 8 個字母。</p>
+  </div>
+
+  <div class="blk">
+    <h3>七個核心名詞</h3>
+    <div class="tbl"><table>
+      <tr><th>名詞</th><th>意思</th><th>在我的專案裡</th></tr>
+      <tr><td><b>Workflow</b> 工作流</td><td>一整條流水線</td><td>流程 1 發送、流程 2 收到回簽通知</td></tr>
+      <tr><td><b>Node</b> 節點</td><td>流水線上的一個工人</td><td>「下載 PDF」「存到伺服器」「發 Discord 訊息」</td></tr>
+      <tr><td><b>Trigger</b> 觸發節點</td><td>決定流程什麼時候開始</td><td>追蹤表有列被勾選、計畫書網站送來「已簽署」通知</td></tr>
+      <tr><td><b>Item</b> 資料項目</td><td>節點之間傳的一筆資料（JSON）</td><td>追蹤表一列＝一位客戶＝一個 item</td></tr>
+      <tr><td><b>Expression</b> 運算式</td><td>用 <code>{{ }}</code> 拿前面的資料</td><td><code>{{ $json["客戶名稱"] }}</code> → 王小明</td></tr>
+      <tr><td><b>Credential</b> 憑證</td><td>連外部服務的授權</td><td>Google 帳號</td></tr>
+      <tr><td><b>Execution</b> 執行紀錄</td><td>每跑一次留下的紀錄</td><td>失敗時從這裡找是哪個節點出錯</td></tr>
+    </table></div>
+
+    <h3>運算式速查</h3>
+    <div class="tbl"><table>
+      <tr><th>寫法</th><th>意思</th><th>結果範例</th></tr>
+      <tr><td><code>{{ $json["客戶編號"] }}</code></td><td>上一個節點輸出的某個欄位</td><td><code>C001</code></td></tr>
+      <tr><td><code>{{ $json.status }}</code></td><td>同上，欄位名是英文時可以用點</td><td><code>signed</code></td></tr>
+      <tr><td><code>{{ $('取出計畫書ID').item.json["客戶編號"] }}</code></td><td>指定某個節點的輸出（不一定是上一個）</td><td><code>C001</code></td></tr>
+      <tr><td><code>{{ $json["簽署連結"].split("/s/")[1] }}</code></td><td>用 <code>/s/</code> 切開，取第 2 段</td><td><code>P0001-e7ff77</code></td></tr>
+      <tr><td><code>{{ $now.toFormat("yyyy-MM-dd HH:mm") }}</code></td><td>現在時間，指定格式</td><td><code>2026-11-30 10:12</code></td></tr>
+    </table></div>
+    <p><b>為什麼要用 <code>$('節點名')</code>？</b>每經過一個節點，<code>$json</code> 就會變成那個節點的輸出。例如「下載 PDF」之後，<code>$json</code> 已經不是追蹤表那一列了。要拿回客戶名稱，就要指名「去『取出計畫書ID』那個節點拿」。所以<b>節點名稱要照指南取</b>，運算式才找得到。</p>
+
+    <h3>畫面導覽</h3>
+    <ul class="tight">
+      <li><b>畫布</b>：中間的大區域，節點拖拉、連線。按節點右邊的 <span class="kbd">+</span> 接下一個。</li>
+      <li><b>節點設定視窗</b>：雙擊節點打開。左邊 INPUT（收到什麼）、中間 Parameters（設定）、右邊 OUTPUT（產出什麼）。</li>
+      <li><b>Execute step</b>：只跑這個節點，最常用的除錯按鈕。</li>
+      <li><b>Execute workflow</b>：整條跑一次。</li>
+      <li><b>運算式欄位</b>：欄位旁切到 Expression，可以直接把左邊 INPUT 的欄位拖進來，自動產生運算式。</li>
+    </ul>
+  </div>
+
+  <div class="blk">
+    <h3>資料模型：items 陣列＋逐項執行</h3>
+    <p>每個節點的輸入輸出都是一個<b>陣列</b>，每個元素是一個 item：</p>
+<pre>[
+  { <span class="k">"json"</span>: { "客戶編號": "C001", ... }, <span class="k">"binary"</span>: { } },
+  { <span class="k">"json"</span>: { "客戶編號": "C002", ... }, <span class="k">"binary"</span>: { } }
+]</pre>
+    <p>大多數節點會<b>對每個 item 各做一次</b>。流程 2 讀到三位「已發送」的客戶，後面的 HTTP Request 就會自動發三次請求，不用自己寫迴圈。<code>json</code> 放一般資料，<code>binary</code> 放檔案（PDF、圖片），兩者分開存放，所以下載 PDF 後要指定「binary 裡的 data 欄位」才能上傳。</p>
+    <p><code>$('節點名').item</code> 能找到「同一位客戶在那個節點的資料」，是因為 n8n 會記錄每個 item 從哪個 item 來（paired item）。如果中間節點打亂了對應關係，這個運算式就會報錯，這時改用 <code>.first()</code> 或 <code>.all()</code>。</p>
+    <p>運算式 <code>{{ }}</code> 裡面其實就是 <b>JavaScript</b>，所以可以用 <code>.split()</code>、<code>.trim()</code>、三元運算子等語法。<code>$now</code> 是 Luxon 函式庫的時間物件，<code>toFormat</code> 用的是 Luxon 的格式代號（<code>MM</code> 月、<code>mm</code> 分，大小寫意思不同）。</p>
+
+    <h3>三種觸發方式的取捨</h3>
+    <div class="tbl"><table>
+      <tr><th>方式</th><th>原理</th><th>優點</th><th>缺點</th><th>本專案</th></tr>
+      <tr><td><b>輪詢</b> Polling</td><td>n8n 每隔一段時間主動去問「有變化嗎」</td><td>對方不用做任何設定</td><td>有延遲；沒變化也一直在問</td><td>Google Sheets Trigger（每分鐘）</td></tr>
+      <tr><td><b>排程</b> Schedule</td><td>時間到就執行，跟有沒有變化無關</td><td>簡單、可預測</td><td>要自己判斷有沒有事要做</td><td>本專案沒用（舊版流程 2 曾用每 2 分鐘）</td></tr>
+      <tr><td><b>推播</b> Webhook</td><td>對方有事時主動打 n8n 的網址</td><td>即時、不浪費</td><td>對方系統要支援、n8n 要能被連到</td><td><b>流程 2</b>：客戶簽完，計畫書網站 POST 到 n8n</td></tr>
+    </table></div>
+    <p><b>為什麼流程 2 從輪詢改成推播？</b>舊版每 2 分鐘問一次，一天 720 次，絕大多數答案都是「還沒簽」；客戶簽完最多還要等 2 分鐘。改成 Webhook 後，<b>有事才觸發、簽完幾秒內就處理</b>，Executions 裡每一筆都是真的有人簽了，紀錄也乾淨很多。</p>
+    <p>流程 1 還是用輪詢，因為 Google 試算表不會主動通知外部網址（要另外寫 Apps Script 才行），每分鐘查一次對「人工勾選」來說已經夠快。</p>
+    <h3>n8n Webhook 節點的兩個網址</h3>
+    <div class="tbl"><table>
+      <tr><th></th><th>網址</th><th>什麼時候有效</th><th>用途</th></tr>
+      <tr><td>測試</td><td><code>/webhook-test/plan-signed</code></td><td>按下 Listen for test event 之後，只收<b>一次</b></td><td>建流程時抓一筆真實資料來接節點</td></tr>
+      <tr><td>正式</td><td><code>/webhook/plan-signed</code></td><td>流程 Active／Publish 之後一直有效</td><td>上線後自動執行</td></tr>
+    </table></div>
+    <p>Webhook 節點收到的資料會包成 <code>{ headers, params, query, body }</code>，對方送來的 JSON 在 <code>body</code> 裡，所以要寫 <code>{{ $json.body.id }}</code>。</p>
+
+    <h3>憑證存在哪裡</h3>
+    <p>Google 的 OAuth 憑證存在 <code>n8n_data</code> 裡，用一把加密金鑰加密（金鑰在同資料夾的 config 檔）。所以 <b><code>n8n_data</code> 資料夾等於你的帳號鑰匙</b>，不要上傳到 GitHub 或分享給別人。</p>
+  </div>
+
+</section>
+
 <section id="flows">
-  <div class="eyebrow">Part 5</div>
-  <h2>四條流程，逐節點拆解</h2>
-  <p>點選左邊的節點，可以看到它做什麼、輸出什麼資料。標了橘色標籤的是治理節點。</p>
-  <div class="tabs" role="tablist" id="tabs"></div>
-  <div class="explorer">
-    <div class="nodes" id="nodes"></div>
-    <div class="detail" id="detail"></div>
+  <div class="eyebrow">技術介紹 · 06</div>
+  <h2>流程逐節點：兩條流程拆開看</h2>
+  <p>兩條流程在做什麼，整理在專案介紹的〈解決方案〉。這裡用時序圖看它們跟誰溝通，再逐一拆開每個節點的設定。</p>
+
+
+
+  <div class="blk">
+    <h3>流程 1 的時序圖：誰在什麼時候跟誰講話</h3>
+    <p>實線是請求，虛線是回應。可以看到 n8n 是整個系統的「指揮」，其他服務彼此之間完全不認識，只跟 n8n 溝通。這種架構叫做<b>編排（orchestration）</b>：好處是每個服務都很單純，壞處是 n8n 停了全部停。</p>
+    <div class="diagram" role="img" aria-label="流程 1 時序圖：n8n 依序與試算表、計畫書網站、檔案伺服器、Discord 溝通">
+<svg viewBox="0 0 900 547">
+<rect x="8" y="16" width="124" height="40" rx="10" fill="var(--paper)" stroke="var(--line)" stroke-width="2"/><text x="70" y="41" text-anchor="middle" font-size="14" font-weight="700" fill="var(--ink)">試算表</text>
+<line x1="70" y1="56" x2="70" y2="537" stroke="var(--line)" stroke-width="2" stroke-dasharray="4 4"/>
+<rect x="158" y="16" width="124" height="40" rx="10" fill="var(--paper)" stroke="var(--teal)" stroke-width="2"/><text x="220" y="41" text-anchor="middle" font-size="14" font-weight="700" fill="var(--ink)">n8n</text>
+<line x1="220" y1="56" x2="220" y2="537" stroke="var(--line)" stroke-width="2" stroke-dasharray="4 4"/>
+<rect x="308" y="16" width="124" height="40" rx="10" fill="var(--paper)" stroke="var(--line)" stroke-width="2"/><text x="370" y="41" text-anchor="middle" font-size="14" font-weight="700" fill="var(--ink)">plan-site</text>
+<line x1="370" y1="56" x2="370" y2="537" stroke="var(--line)" stroke-width="2" stroke-dasharray="4 4"/>
+<rect x="458" y="16" width="124" height="40" rx="10" fill="var(--paper)" stroke="var(--line)" stroke-width="2"/><text x="520" y="41" text-anchor="middle" font-size="14" font-weight="700" fill="var(--ink)">file-server</text>
+<line x1="520" y1="56" x2="520" y2="537" stroke="var(--line)" stroke-width="2" stroke-dasharray="4 4"/>
+<rect x="608" y="16" width="124" height="40" rx="10" fill="var(--paper)" stroke="var(--line)" stroke-width="2"/><text x="670" y="41" text-anchor="middle" font-size="14" font-weight="700" fill="var(--ink)">Discord</text>
+<line x1="670" y1="56" x2="670" y2="537" stroke="var(--line)" stroke-width="2" stroke-dasharray="4 4"/>
+<rect x="758" y="16" width="124" height="40" rx="10" fill="var(--paper)" stroke="var(--line)" stroke-width="2"/><text x="820" y="41" text-anchor="middle" font-size="14" font-weight="700" fill="var(--ink)">客戶</text>
+<line x1="820" y1="56" x2="820" y2="537" stroke="var(--line)" stroke-width="2" stroke-dasharray="4 4"/>
+<line x1="220" y1="95" x2="72" y2="95" stroke="var(--ink)" stroke-width="2"/>
+<polygon points="70,95 79,90 79,100" fill="var(--ink)"/>
+<text x="145.0" y="88" text-anchor="middle" font-size="12" fill="var(--ink)">① 每分鐘問：有變動嗎？</text>
+<line x1="70" y1="131" x2="218" y2="131" stroke="var(--muted)" stroke-width="2" stroke-dasharray="6 4"/>
+<polygon points="220,131 211,126 211,136" fill="var(--muted)"/>
+<text x="145.0" y="124" text-anchor="middle" font-size="12" fill="var(--muted)">② C001 那一列（JSON）</text>
+<line x1="220" y1="167" x2="368" y2="167" stroke="var(--ink)" stroke-width="2"/>
+<polygon points="370,167 361,162 361,172" fill="var(--ink)"/>
+<text x="295.0" y="160" text-anchor="middle" font-size="12" fill="var(--ink)">③ GET /api/plans/…</text>
+<line x1="370" y1="203" x2="222" y2="203" stroke="var(--muted)" stroke-width="2" stroke-dasharray="6 4"/>
+<polygon points="220,203 229,198 229,208" fill="var(--muted)"/>
+<text x="295.0" y="196" text-anchor="middle" font-size="12" fill="var(--muted)">④ 200 customer_id=C001</text>
+<path d="M220 231 h34 v16 h-34" fill="none" stroke="var(--amber)" stroke-width="2"/><text x="262" y="243" font-size="12" fill="var(--amber)" font-weight="700">⑤ If：編號相符 → 繼續</text>
+<line x1="220" y1="275" x2="368" y2="275" stroke="var(--ink)" stroke-width="2"/>
+<polygon points="370,275 361,270 361,280" fill="var(--ink)"/>
+<text x="295.0" y="268" text-anchor="middle" font-size="12" fill="var(--ink)">⑥ GET …/unsigned.pdf</text>
+<line x1="370" y1="311" x2="222" y2="311" stroke="var(--muted)" stroke-width="2" stroke-dasharray="6 4"/>
+<polygon points="220,311 229,306 229,316" fill="var(--muted)"/>
+<text x="295.0" y="304" text-anchor="middle" font-size="12" fill="var(--muted)">⑦ 200 application/pdf</text>
+<line x1="220" y1="347" x2="518" y2="347" stroke="var(--ink)" stroke-width="2"/>
+<polygon points="520,347 511,342 511,352" fill="var(--ink)"/>
+<text x="370.0" y="340" text-anchor="middle" font-size="12" fill="var(--ink)">⑧ POST /api/upload（multipart）</text>
+<line x1="520" y1="383" x2="222" y2="383" stroke="var(--muted)" stroke-width="2" stroke-dasharray="6 4"/>
+<polygon points="220,383 229,378 229,388" fill="var(--muted)"/>
+<text x="370.0" y="376" text-anchor="middle" font-size="12" fill="var(--muted)">⑨ 200 { url }</text>
+<line x1="220" y1="419" x2="668" y2="419" stroke="var(--ink)" stroke-width="2"/>
+<polygon points="670,419 661,414 661,424" fill="var(--ink)"/>
+<text x="445.0" y="412" text-anchor="middle" font-size="12" fill="var(--ink)">⑩ POST Webhook { content }</text>
+<line x1="670" y1="455" x2="818" y2="455" stroke="var(--ink)" stroke-width="2"/>
+<polygon points="820,455 811,450 811,460" fill="var(--ink)"/>
+<text x="745.0" y="448" text-anchor="middle" font-size="12" fill="var(--ink)">⑪ 頻道出現簽署要求</text>
+<line x1="220" y1="491" x2="72" y2="491" stroke="var(--ink)" stroke-width="2"/>
+<polygon points="70,491 79,486 79,496" fill="var(--ink)"/>
+<text x="145.0" y="484" text-anchor="middle" font-size="12" fill="var(--ink)">⑫ Update Row：狀態＝已發送</text>
+</svg>
+    </div>
+    <h3>流程 2 的時序圖：由計畫書網站先開口</h3>
+    <p>橘色粗線 ③ 是這次的關鍵：<b>方向反過來了</b>。流程 1 是 n8n 主動去問別人；流程 2 是計畫書網站主動打給 n8n。n8n 收到後仍然回頭再查一次（⑤），不直接相信通知的內容。</p>
+    <div class="diagram" role="img" aria-label="流程 2 時序圖：客戶簽名後計畫書網站主動通知 n8n，n8n 再確認並歸檔">
+<svg viewBox="0 0 900 583">
+<rect x="8" y="16" width="124" height="40" rx="10" fill="var(--paper)" stroke="var(--line)" stroke-width="2"/><text x="70" y="41" text-anchor="middle" font-size="14" font-weight="700" fill="var(--ink)">客戶</text>
+<line x1="70" y1="56" x2="70" y2="573" stroke="var(--line)" stroke-width="2" stroke-dasharray="4 4"/>
+<rect x="158" y="16" width="124" height="40" rx="10" fill="var(--paper)" stroke="var(--amber)" stroke-width="2"/><text x="220" y="41" text-anchor="middle" font-size="14" font-weight="700" fill="var(--ink)">plan-site</text>
+<line x1="220" y1="56" x2="220" y2="573" stroke="var(--line)" stroke-width="2" stroke-dasharray="4 4"/>
+<rect x="308" y="16" width="124" height="40" rx="10" fill="var(--paper)" stroke="var(--teal)" stroke-width="2"/><text x="370" y="41" text-anchor="middle" font-size="14" font-weight="700" fill="var(--ink)">n8n</text>
+<line x1="370" y1="56" x2="370" y2="573" stroke="var(--line)" stroke-width="2" stroke-dasharray="4 4"/>
+<rect x="458" y="16" width="124" height="40" rx="10" fill="var(--paper)" stroke="var(--line)" stroke-width="2"/><text x="520" y="41" text-anchor="middle" font-size="14" font-weight="700" fill="var(--ink)">試算表</text>
+<line x1="520" y1="56" x2="520" y2="573" stroke="var(--line)" stroke-width="2" stroke-dasharray="4 4"/>
+<rect x="608" y="16" width="124" height="40" rx="10" fill="var(--paper)" stroke="var(--line)" stroke-width="2"/><text x="670" y="41" text-anchor="middle" font-size="14" font-weight="700" fill="var(--ink)">file-server</text>
+<line x1="670" y1="56" x2="670" y2="573" stroke="var(--line)" stroke-width="2" stroke-dasharray="4 4"/>
+<rect x="758" y="16" width="124" height="40" rx="10" fill="var(--paper)" stroke="var(--line)" stroke-width="2"/><text x="820" y="41" text-anchor="middle" font-size="14" font-weight="700" fill="var(--ink)">Discord</text>
+<line x1="820" y1="56" x2="820" y2="573" stroke="var(--line)" stroke-width="2" stroke-dasharray="4 4"/>
+<line x1="70" y1="95" x2="218" y2="95" stroke="var(--ink)" stroke-width="2"/>
+<polygon points="220,95 211,90 211,100" fill="var(--ink)"/>
+<text x="145.0" y="88" text-anchor="middle" font-size="12" fill="var(--ink)">① 按「送出簽署」</text>
+<line x1="220" y1="131" x2="72" y2="131" stroke="var(--muted)" stroke-width="2" stroke-dasharray="6 4"/>
+<polygon points="70,131 79,126 79,136" fill="var(--muted)"/>
+<text x="145.0" y="124" text-anchor="middle" font-size="12" fill="var(--muted)">② 302 回簽署頁</text>
+<line x1="220" y1="167" x2="368" y2="167" stroke="var(--amber)" stroke-width="3"/>
+<polygon points="370,167 361,162 361,172" fill="var(--amber)"/>
+<text x="295.0" y="160" text-anchor="middle" font-size="12" fill="var(--amber)" font-weight="700">③ POST /webhook/plan-signed</text>
+<line x1="370" y1="203" x2="222" y2="203" stroke="var(--muted)" stroke-width="2" stroke-dasharray="6 4"/>
+<polygon points="220,203 229,198 229,208" fill="var(--muted)"/>
+<text x="295.0" y="196" text-anchor="middle" font-size="12" fill="var(--muted)">④ 200 收到</text>
+<line x1="370" y1="239" x2="222" y2="239" stroke="var(--ink)" stroke-width="2"/>
+<polygon points="220,239 229,234 229,244" fill="var(--ink)"/>
+<text x="295.0" y="232" text-anchor="middle" font-size="12" fill="var(--ink)">⑤ GET /api/plans/…（再確認）</text>
+<line x1="220" y1="275" x2="368" y2="275" stroke="var(--muted)" stroke-width="2" stroke-dasharray="6 4"/>
+<polygon points="370,275 361,270 361,280" fill="var(--muted)"/>
+<text x="295.0" y="268" text-anchor="middle" font-size="12" fill="var(--muted)">⑥ status=signed</text>
+<line x1="370" y1="311" x2="518" y2="311" stroke="var(--ink)" stroke-width="2"/>
+<polygon points="520,311 511,306 511,316" fill="var(--ink)"/>
+<text x="445.0" y="304" text-anchor="middle" font-size="12" fill="var(--ink)">⑦ Get Row(s) C001</text>
+<line x1="520" y1="347" x2="372" y2="347" stroke="var(--muted)" stroke-width="2" stroke-dasharray="6 4"/>
+<polygon points="370,347 379,342 379,352" fill="var(--muted)"/>
+<text x="445.0" y="340" text-anchor="middle" font-size="12" fill="var(--muted)">⑧ 狀態=已發送</text>
+<path d="M370 375 h34 v16 h-34" fill="none" stroke="var(--amber)" stroke-width="2"/><text x="412" y="387" font-size="12" fill="var(--amber)" font-weight="700">⑨ If：三項核對都通過</text>
+<line x1="370" y1="419" x2="222" y2="419" stroke="var(--ink)" stroke-width="2"/>
+<polygon points="220,419 229,414 229,424" fill="var(--ink)"/>
+<text x="295.0" y="412" text-anchor="middle" font-size="12" fill="var(--ink)">⑩ GET …/signed.pdf</text>
+<line x1="370" y1="455" x2="668" y2="455" stroke="var(--ink)" stroke-width="2"/>
+<polygon points="670,455 661,450 661,460" fill="var(--ink)"/>
+<text x="520.0" y="448" text-anchor="middle" font-size="12" fill="var(--ink)">⑪ POST /api/upload</text>
+<line x1="370" y1="491" x2="518" y2="491" stroke="var(--ink)" stroke-width="2"/>
+<polygon points="520,491 511,486 511,496" fill="var(--ink)"/>
+<text x="445.0" y="484" text-anchor="middle" font-size="12" fill="var(--ink)">⑫ Update Row：已完成</text>
+<line x1="370" y1="527" x2="818" y2="527" stroke="var(--ink)" stroke-width="2"/>
+<polygon points="820,527 811,522 811,532" fill="var(--ink)"/>
+<text x="595.0" y="520" text-anchor="middle" font-size="12" fill="var(--ink)">⑬ POST「已收到您的簽署」</text>
+</svg>
+    </div>
+  </div>
+
+  <div class="blk">
+    <h3>互動拆解：點節點看設定和輸出</h3>
+    <p>點左邊的節點，右邊會顯示它的作用、<b>要填的設定</b>和輸出的資料。標橘色標籤的是把關節點。節點名稱請照這裡取，後面的運算式才找得到。</p>
+    <div class="tabs" role="tablist" id="tabs"></div>
+    <div class="explorer">
+      <div class="nodes" id="nodes"></div>
+      <div class="detail" id="detail" aria-live="polite"></div>
+    </div>
+  </div>
+
+  <div class="blk">
+    <h3>為什麼這樣設計</h3>
+    <div class="tbl"><table>
+      <tr><th>設計</th><th>理由</th></tr>
+      <tr><td>Filter 同時要求「已勾選」和「狀態是空的」</td><td><b>冪等性（idempotency）</b>：同一件事做兩次結果要跟一次一樣。觸發節點可能因為同一列其他欄位被改而再次送出這列，沒有「狀態是空的」這個條件就會重複傳訊息給客戶</td></tr>
+      <tr><td>n8n 不直接用追蹤表的網址，而是切出編號再自己組網址</td><td>追蹤表裡的網址是給客戶用的（localhost），n8n 要走內部網址（plan-site）。另外，只取編號也避免有人在試算表貼一個惡意網址，讓 n8n 去下載不明的東西</td></tr>
+      <tr><td>先核對客戶編號，再做任何對外動作</td><td>「先驗證、後動作」：歸檔和傳訊息都是有副作用的動作，必須放在檢查之後</td></tr>
+      <tr><td>流程 2 收到通知後，仍回頭向 API 查一次</td><td><b>不信任外部輸入</b>：通知可能被偽造、重送或內容過時。以資料的「原始來源」（計畫書網站的 API）為準，通知只當作「該去看一下了」的信號</td></tr>
+      <tr><td>流程 2 核對「狀態必須是已發送」</td><td>冪等性：同一則通知被重送兩次，第二次狀態已是「已完成」，會走停機分支而不是再歸檔、再回覆一次；也擋掉「沒經過流程 1 就跑來的通知」</td></tr>
+      <tr><td>讀追蹤表打開 Always Output Data</td><td>找不到這位客戶時，Get Row(s) 預設會「什麼都不輸出」，流程默默結束、沒人知道。打開後會輸出一筆空資料，讓 If 判斷失敗、走停機通知</td></tr>
+    </table></div>
+  </div>
+
+</section>
+
+<section id="discord">
+  <div class="eyebrow">技術介紹 · 07</div>
+  <h2>Discord Webhook：模擬官方 LINE</h2>
+
+<div class="blk">
+    <p><b>Webhook 是一個專屬的投遞口。</b>Discord 給你一個很長的網址，任何程式只要把訊息「投」進這個網址，訊息就會出現在那個頻道。不用建機器人、不用登入。</p>
+    <p>我幫每位客戶開一個頻道（<code>#王小明</code>、<code>#林美美</code>…），每個頻道一個投遞口，網址寫在追蹤表那位客戶的那一列。這樣 n8n 只要讀那一列，就知道訊息要送去哪裡，<b>不可能送錯頻道</b>。</p>
+  </div>
+
+  <div class="blk">
+    <ol class="steps">
+      <li><b>建立伺服器</b>Discord 左側 <span class="kbd">+</span> → 自己建立 → 命名「安心病媒 LINE 模擬」。</li>
+      <li><b>建三個文字頻道</b><code>#王小明</code>、<code>#林美美</code>、<code>#陳大華</code>。</li>
+      <li><b>建 Webhook</b>頻道名稱旁齒輪 → 整合 → Webhook → 新 Webhook → 名稱改「安心病媒防治」→ 複製 Webhook 網址。</li>
+      <li><b>貼到追蹤表</b>貼到那位客戶的「LINE模擬_DC_Webhook」欄。</li>
+      <li><b>在 n8n 設 HTTP Request</b>Method 選 POST，URL 用運算式讀那一欄，Send Body 打開，Body Content Type 選 JSON，內容如下。</li>
+    </ol>
+    <div class="term-h"><span>傳LINE簽署要求｜JSON Body</span></div>
+<pre>{
+  <span class="k">"content"</span>: <span class="s">"{{ $('取出計畫書ID').item.json['客戶名稱'] }} 您好：\n這裡是安心病媒防治。您預約的「{{ $('取出計畫書ID').item.json['施工類別'] }}」將於 {{ $('取出計畫書ID').item.json['施工日期'] }} {{ $('取出計畫書ID').item.json['施工時間'] }} 到府施工。\n請點以下連結閱讀施工計畫書並完成簽署：\n{{ $('取出計畫書ID').item.json['簽署連結'] }}\n簽署完成後我們會再通知您，謝謝！"</span>
+}</pre>
+    <p>客戶在頻道裡看到的樣子：</p>
+<pre>安心病媒防治  <span class="c">BOT</span>
+王小明（假資料） 您好：
+這裡是安心病媒防治。您預約的「白蟻防治」將於 2026-12-01 09:00–11:00 到府施工。
+請點以下連結閱讀施工計畫書並完成簽署：
+http://localhost:8080/s/P0001-e7ff77
+簽署完成後我們會再通知您，謝謝！</pre>
+    <p><code>\n</code> 是換行。運算式裡的欄位名用單引號 <code>['客戶名稱']</code>，因為外面的 JSON 字串已經用了雙引號。</p>
+  </div>
+
+  <div class="blk">
+    <ul class="tight">
+      <li><b>回應碼：</b>Discord 成功收到會回 <code>204 No Content</code>（沒有內容要回你）。網址最後加 <code>?wait=true</code> 會改回 200 和訊息的 JSON，可用來記錄訊息編號。</li>
+      <li><b>長度限制：</b><code>content</code> 最多 2000 字元，制式訊息遠低於此。</li>
+      <li><b>Webhook 網址就是密碼。</b>網址裡包含一段 token，拿到網址的人就能用公司名義發訊息。所以追蹤表不能公開分享；如果外流，到 Discord 刪掉那個 Webhook 重建即可。</li>
+      <li><b>JSON 跳脫：</b>如果客戶名稱裡有雙引號 <code>"</code>，直接塞進 JSON 會讓格式壞掉。較穩的寫法是把 Body 改成用 Expression 產生整個物件：<code>{{ { content: "…" + $('取出計畫書ID').item.json['客戶名稱'] + "…" } }}</code>，讓 n8n 負責跳脫。</li>
+      <li><b>換成真的 LINE：</b>LINE 官方帳號要用 Messaging API 的 push message：POST 到 <code>https://api.line.me/v2/bot/message/push</code>，標頭帶 channel access token，Body 指定客戶的 userId。概念和 Webhook 一樣，只是多了身分驗證，而且免費方案有每月訊息數量限制。</li>
+    </ul>
+  </div>
+
+</section>
+
+<section id="setup">
+  <div class="eyebrow">技術介紹 · 08</div>
+  <h2>建置步驟：從零開始做一次</h2>
+
+<p>總時間約 1.5～2 小時。每一步做完都有「怎麼確認成功」，確認了再往下。</p>
+
+  <div class="blk">
+    <p>順序是：<b>先把機器開起來（Docker）→ 準備資料（試算表、Discord）→ 最後才畫流程（n8n）</b>。流程要讀試算表、要傳 Discord，所以這些東西要先存在。</p>
+  </div>
+
+  <div class="blk">
+    <h3>A. 啟動容器（約 10 分鐘）</h3>
+    <ol class="steps">
+      <li><b>打開 Docker Desktop</b>等左下角顯示 Engine running。</li>
+      <li><b>開終端機</b>到 <code>Downloads\n8n作業</code>，在檔案總管網址列輸入 <code>cmd</code> 按 Enter。</li>
+      <li><b>如果之前開過，先關掉</b><code>docker compose down</code></li>
+      <li><b>啟動</b><code>docker compose up -d --build</code>，等看到四個容器都是 Started。</li>
+      <li><b>確認</b>瀏覽器打開 localhost:8080（建立施工計畫書）、localhost:8090（公司檔案伺服器）、localhost:5678（n8n）三個都打得開；資料夾裡多了 <code>公司伺服器</code>。</li>
+    </ol>
+
+    <h3>B. Google 試算表（約 10 分鐘）</h3>
+    <ol class="steps">
+      <li><b>新增試算表</b>命名「客戶簽署追蹤表」。</li>
+      <li><b>匯入範本</b>檔案 → 匯入 → 上傳 <code>客戶簽署追蹤表_範本.csv</code> → 取代目前的工作表。</li>
+      <li><b>做勾選框</b>選「開始核可」欄第 2 列以下 → 插入 → 核取方塊；「已回簽」欄也一樣。</li>
+      <li><b>確認</b>伺服器資料夾欄是 <code>C001_王小明</code> 這種名稱；勾選框點得動。</li>
+    </ol>
+
+    <h3>C. Discord（約 10 分鐘）</h3>
+    <ol class="steps">
+      <li><b>建伺服器和三個客戶頻道</b>見〈Discord Webhook〉。另外建一個 <code>#系統通知</code> 給停機訊息用，也建一個 Webhook。</li>
+      <li><b>把 Webhook 網址貼進試算表</b>每位客戶那一列。</li>
+      <li><b>確認</b>網址都以 <code>https://discord.com/api/webhooks/</code> 開頭。</li>
+    </ol>
+
+    <h3>D. 建一份測試計畫書（約 3 分鐘）</h3>
+    <ol class="steps">
+      <li><b>localhost:8080 建立 C001 的計畫書</b>客戶編號一定要填 <code>C001</code>，跟試算表一致。</li>
+      <li><b>複製簽署連結貼到試算表 C001 那一列</b>先不要勾選、不要簽名。</li>
+    </ol>
+
+    <h3>E. n8n（約 60 分鐘）</h3>
+    <ol class="steps">
+      <li><b>第一次打開建立擁有者帳號</b>帳號只存在你電腦的 <code>n8n_data</code>。</li>
+      <li><b>建立憑證</b>左側 Credentials → Add：① Google Sheets OAuth2 API，照課程 13.1 完成授權；② Header Auth，Name 填 <code>X-Webhook-Secret</code>，Value 填 <code>anxin-demo-secret-2026</code>（和 docker-compose.yml 一樣）。</li>
+      <li><b>建流程 1</b>Create Workflow → 命名「流程1_發送」→ 照〈流程逐節點〉互動拆解的「流程 1」逐一加節點、照抄設定與名稱。</li>
+      <li><b>一節點一測試</b>每加一個就按 Execute step，看 OUTPUT 跟〈流程逐節點〉的示意一不一樣，一樣再加下一個。</li>
+      <li><b>整條測試</b>到試算表勾 C001 的開始核可 → 回 n8n 按 Execute workflow，或等觸發節點。</li>
+      <li><b>確認</b>localhost:8090 出現 <code>C001_王小明/C001_未簽署.pdf</code>；<code>#王小明</code> 收到簽署要求；試算表狀態變「已發送」。</li>
+      <li><b>建流程 2 的第一個節點</b>命名「流程2_收到回簽」，加 Webhook 節點（POST、Path <code>plan-signed</code>、Header Auth、Respond Immediately）。</li>
+      <li><b>抓一筆真實通知</b>在 Webhook 節點按 <b>Listen for test event</b> → 點 Discord 裡的連結簽名送出。n8n 會立刻收到資料（網站發現正式網址還沒啟用，自動改送測試網址）。</li>
+      <li><b>往下接節點</b>照〈流程逐節點〉「流程 2」。要再測時：再按一次 Listen，然後到 localhost:8080 清單按那份計畫書的「重送」，不用重新簽。</li>
+      <li><b>確認</b>幾秒內：出現 <code>C001_已簽署.pdf</code>、已回簽打勾、狀態「已完成」、<code>#王小明</code> 收到「已收到您的簽署」；8080 清單顯示「已通知」。</li>
+      <li><b>啟用</b>兩條流程右上角 Active／Publish 打開，之後不用開著 n8n 畫面也會自動跑。再建一份新計畫書從頭跑一次，8080 清單應顯示「已通知・正式網址」。</li>
+      <li><b>測停機</b>照〈把關設計〉故意貼錯連結。</li>
+    </ol>
+  </div>
+
+  <div class="blk">
+    <p><b>增量開發：</b>一次只加一個節點、立刻測試，是除錯成本最低的做法。一口氣接完九個節點才測，出錯時要同時懷疑九個地方。</p>
+    <p><b>測試資料隔離：</b>正式錄影前，可以把 plan_data 和公司伺服器資料夾清空，再從 P0001 開始重做一次，畫面比較乾淨。清空前先 <code>docker compose down</code>，避免檔案正被使用。</p>
+    <p><b>Pin data：</b>n8n 可以把某個節點的輸出「釘住」（Pin），之後測試後面的節點時不用每次重新觸發前面的流程，在調整 Discord 訊息格式時特別省時間。記得正式啟用前取消釘選。</p>
+  </div>
+
+</section>
+
+<section id="debug">
+  <div class="eyebrow">技術介紹 · 09</div>
+  <h2>除錯手冊：壞掉的時候怎麼辦</h2>
+
+<div class="blk">
+    <p>除錯就是<b>沿著資料走過的路，一站一站檢查</b>：資料到哪一站還是對的、到哪一站變錯了，問題就在那兩站之間。n8n 很適合除錯，因為每一站（節點）收到什麼、送出什麼，都能直接打開來看。</p>
+  </div>
+
+  <div class="blk">
+    <h3>三個看問題的地方</h3>
+    <div class="tbl"><table>
+      <tr><th>地方</th><th>看什麼</th></tr>
+      <tr><td>n8n 左側 <b>Executions</b></td><td>每次執行一列，紅色是失敗。點進去，紅框節點就是出錯的那個，打開看錯誤訊息和 INPUT</td></tr>
+      <tr><td><code>docker compose logs plan-site</code></td><td>網站收到哪些請求、回了什麼狀態碼。例如看到 <code>GET /api/plans/P0001… 404</code> 就知道編號錯了</td></tr>
+      <tr><td><code>docker compose logs file-server</code></td><td>上傳有沒有進來、回了 200 還是 400</td></tr>
+    </table></div>
+
+    <h3>症狀對照表</h3>
+    <div class="tbl"><table>
+      <tr><th>症狀</th><th>最可能的原因</th><th>解法</th></tr>
+      <tr><td>localhost:8080 或 8090 打不開</td><td>容器沒在跑</td><td><code>docker compose ps</code> 看狀態；不是 running 就看 logs</td></tr>
+      <tr><td>啟動時說 port is already allocated</td><td>埠號被其他程式佔用</td><td>關掉那個程式，或把 compose 裡 <code>"8080:8080"</code> 左邊改成 8081</td></tr>
+      <tr><td>HTTP 節點 ECONNREFUSED</td><td>網址寫成 localhost</td><td>改成 <code>http://plan-site:8080</code> 或 <code>http://file-server:8090</code></td></tr>
+      <tr><td>HTTP 節點 ENOTFOUND plan-site</td><td>n8n 不在同一個 compose 網路</td><td>確認 n8n 是用同一個 docker-compose.yml 啟動的</td></tr>
+      <tr><td>勾了沒反應</td><td>觸發節點每分鐘才查一次；或流程沒啟用</td><td>等 1 分鐘；確認 Active；在 n8n 手動按 Execute workflow 測</td></tr>
+      <tr><td>Filter 永遠不通過</td><td>勾選框的值是文字 <code>"TRUE"</code> 或布林 <code>true</code>，型別對不上</td><td>打開 Filter 看 INPUT 的實際值；條件改用 String 比對 TRUE，或 Boolean is true</td></tr>
+      <tr><td>查詢計畫書 404</td><td>簽署連結貼錯、多了空白，或計畫書被刪了</td><td>看「取出計畫書ID」的輸出是不是 <code>P0001-xxxxxx</code> 格式</td></tr>
+      <tr><td>上傳回「缺少 file 欄位」</td><td>file 參數類型不對，或 binary 欄位名不是 data</td><td>file 的 Type 選 n8n Binary File；Input Data Field Name 跟下載節點的輸出欄位一致</td></tr>
+      <tr><td>簽完了流程 2 沒動</td><td>通知沒送到 n8n</td><td>看 localhost:8080 清單的「通知 n8n」欄寫什麼（下面三列）</td></tr>
+      <tr><td>通知失敗：HTTP 404</td><td>流程 2 沒啟用，也沒按 Listen for test event</td><td>按 Listen 後按「重送」；或把流程 Active</td></tr>
+      <tr><td>通知失敗：HTTP 403</td><td>Header Auth 的值和 compose 的 <code>WEBHOOK_SECRET</code> 不同</td><td>兩邊改成一樣；改 compose 後要 <code>docker compose up -d</code></td></tr>
+      <tr><td>通知失敗：ConnectionRefused</td><td>n8n 容器沒在跑</td><td><code>docker compose ps</code>，啟動 n8n 後按「重送」</td></tr>
+      <tr><td>Listen 只收到一次</td><td>測試網址本來就只收一次</td><td>每次測試前重按 Listen</td></tr>
+      <tr><td>運算式 <code>$json.id</code> 是空的</td><td>Webhook 的資料包在 body 裡</td><td>改成 <code>$json.body.id</code></td></tr>
+      <tr><td>Discord 400</td><td>JSON 格式壞了（常見：多一個逗號、引號沒配對）</td><td>Body 先只放 <code>{"content":"測試"}</code>，成功後再加運算式</td></tr>
+      <tr><td>Discord 404 / 401</td><td>Webhook 網址不完整或已刪除</td><td>重新複製整串網址</td></tr>
+      <tr><td>Update Row 找不到列</td><td>Column to Match On 的值不對</td><td>確認比對值是 <code>C001</code>，不是整列物件或多了空白</td></tr>
+      <tr><td>已回簽寫入後顯示文字 TRUE，不是打勾</td><td>寫入格式被當成純文字</td><td>Google Sheets 節點 Options → Cell Format 選 Let Google Sheets format</td></tr>
+      <tr><td>運算式顯示紅字 Referenced node doesn't exist</td><td>節點名稱跟運算式不一致</td><td>節點名稱要跟〈流程逐節點〉一字不差，例如「取出計畫書ID」的 ID 是大寫半形</td></tr>
+      <tr><td>PDF 中文變方塊</td><td>image 沒有裝到字型</td><td><code>docker compose up -d --build</code> 重做 image</td></tr>
+    </table></div>
+  </div>
+
+  <div class="blk">
+    <h3>二分法定位</h3>
+    <p>流程有九個節點時，不要從第一個慢慢看。先看中間（第 5 個）的 INPUT 對不對：對，問題在後半；不對，問題在前半。每次排除一半，最多看 4 次就能定位。這就是二分搜尋用在除錯上。</p>
+    <h3>用 curl 繞過 n8n 測試</h3>
+    <p>懷疑是網站還是 n8n 的問題時，直接在終端機發請求，排除 n8n：</p>
+<pre><span class="c"># 查計畫書（在 Windows 上，所以用 localhost）</span>
+curl http://localhost:8080/api/plans/P0001-e7ff77
+
+<span class="c"># 模擬 n8n 上傳</span>
+curl -F "file=@test.pdf" -F "folder=C001_王小明" -F "filename=test.pdf" http://localhost:8090/api/upload
+
+<span class="c"># 手動重送「已簽署」通知給 n8n，回傳結果</span>
+curl -X POST http://localhost:8080/api/plans/P0001-e7ff77/notify
+
+<span class="c"># 從 n8n 容器裡面測（驗證內部網址）</span>
+docker exec -it n8n wget -qO- http://plan-site:8080/api/plans/P0001-e7ff77</pre>
+    <p>curl 成功、n8n 失敗 → 問題在 n8n 節點設定；curl 也失敗 → 問題在網站或網路。</p>
+    <h3>請 AI 幫忙除錯的好問法（課程 14.7）</h3>
+<pre>我在 n8n 的「歸檔未簽署」節點（HTTP Request, POST, Form-Data）出錯。
+錯誤訊息：（整段貼上）
+這個節點的 INPUT：（貼 JSON，個資先換成假資料）
+我的設定：file = n8n Binary File / data，folder = {{ ... }}
+預期：回傳 {"ok": true, "url": ...}</pre>
+    <p>給 AI <b>錯誤訊息＋輸入＋設定＋預期結果</b>四樣東西，比只說「壞了」有效十倍。</p>
+  </div>
+
+</section>
+
+<section id="prod">
+  <div class="eyebrow">技術介紹 · 10</div>
+  <h2>上線考量：變成正式系統還差什麼</h2>
+  <div class="blk">
+    <p>把這個雛型變成公司真正能用的系統，技術上還需要處理以下事項（目前的限制整理在專案介紹的〈限制與未來〉）。</p>
+    <h3>上線檢查清單</h3>
+    <ul class="tight">
+      <li><b>HTTPS：</b>簽署頁傳輸姓名、地址、簽名圖檔，必須加密。常見做法是在前面放反向代理（Nginx、Caddy）自動申請憑證。</li>
+      <li><b>電子簽章的法律效力：</b>台灣有《電子簽章法》，要讓電子簽名在爭議時站得住，通常需要確認簽署人身分、保存簽署時間與 IP、讓文件簽後無法被竄改（例如對 PDF 做數位簽章或存雜湊值）。這部分應該交給專業的電子簽署服務或公司法務評估。</li>
+      <li><b>機密管理：</b>Webhook 網址、LINE token、Google 憑證不能寫死在流程裡或放在共用試算表，要放在 n8n Credentials 或環境變數。</li>
+      <li><b>權限最小化：</b>n8n 的 Google 帳號只授權這一份試算表需要的範圍；檔案伺服器的上傳 API 要加 API key，避免任何人都能往裡面丟檔案。</li>
+      <li><b>備份：</b><code>n8n_data</code>（流程與憑證）、<code>plan_data</code>（計畫書與簽名）、<code>公司伺服器</code>（PDF）三個資料夾定期備份。</li>
+      <li><b>版本固定：</b>image 從 <code>latest</code> 改成固定版本號，升級前先在測試環境試過。</li>
+      <li><b>監控：</b>Error Workflow 通知、定期檢查「已發送超過 3 天未簽」的客戶並提醒承辦。</li>
+      <li><b>Webhook 簽章：</b>正式系統常用 HMAC 簽章取代固定密語：發送端用金鑰對「內容＋時間戳」算出簽章放在標頭，接收端重算比對，並拒絕太舊的時間戳。這樣就算有人截到一則通知，也無法竄改內容或拿去重播。</li>
+    </ul>
   </div>
 </section>
 
-<!-- ============ GOVERNANCE ============ -->
-<section id="governance">
-  <div class="eyebrow">Part 6</div>
-  <h2>治理設計：把課程的原則變成節點</h2>
-  <p>課程第 2 單元提到，治理不是背法條，而是把原則翻成流程裡的具體步驟。我在流程中放了五個：</p>
-  <div class="tbl"><table>
-    <tr><th>原則</th><th>流程中的做法</th><th>對應</th></tr>
-    <tr><td><b>揭露</b></td><td>客戶訊息最後固定加上「本訊息由 AI 協助草擬，並經專人確認後發送」</td><td>2.4 EU AI Act 透明告知、2.8 揭露聲明</td></tr>
-    <tr><td><b>把關</b></td><td>AI 草稿先送到 #審核區，我回覆「核准」才會發給客戶</td><td>2.5 人類監督、Human in the Loop</td></tr>
-    <tr><td><b>停機</b></td><td>行事曆找不到客戶、或 AI 判定資料不完整，流程停止並通知我</td><td>2.6 停機機制</td></tr>
-    <tr><td><b>紀錄</b></td><td>試算表記下 AI 檢查結果、審核人、審核時間、發送時間</td><td>2.3 可歸責、1.3 出事算誰的</td></tr>
-    <tr><td><b>最小化</b></td><td>只把客戶名稱、日期、時間、類別交給 AI；施藥人員、資料夾 ID 不送</td><td>2.3 GDPR 資料最小化</td></tr>
-  </table></div>
-  <p>為什麼不讓 AI 直接傳給客戶？課程 3.5 提到 automation bias：人容易相信機器的輸出而不檢查。小模型可能把日期寫錯，一旦傳錯，客戶就會在錯的時間等施工人員。所以最後一步一定由人確認。</p>
+
+<section id="glossary">
+  <div class="eyebrow">附錄</div>
+  <h2>名詞表</h2>
+
+<dl class="gl">
+    <dt>API</dt><dd>給程式用的窗口。網頁給人看，API 回傳 JSON 給程式讀。</dd>
+    <dt>Base64</dt><dd>把任意資料（例如圖片）轉成純文字的編碼方式，體積約多三分之一。</dd>
+    <dt>Bind mount</dt><dd>把電腦上的資料夾掛進容器，兩邊是同一份檔案。</dd>
+    <dt>Binary（n8n）</dt><dd>n8n item 裡放檔案的地方，和放一般資料的 json 分開。</dd>
+    <dt>Container 容器</dt><dd>從 image 啟動、正在執行的程式，有自己隔離的檔案系統和網路。</dd>
+    <dt>Content-Type</dt><dd>HTTP 標頭，說明內容的格式，例如 application/json、application/pdf。</dd>
+    <dt>Credential（n8n）</dt><dd>連接外部服務的授權資料，加密存在 n8n_data。</dd>
+    <dt>DNS</dt><dd>把名字翻譯成 IP 位址的服務。Docker 內建 DNS 讓服務名稱可以當網址。</dd>
+    <dt>Docker Compose</dt><dd>用一個 YAML 檔描述多個容器，一個指令一起啟動。</dd>
+    <dt>Dockerfile</dt><dd>自己做 image 的步驟清單。</dd>
+    <dt>Expression 運算式</dt><dd>n8n 中用 <code>{{ }}</code> 包住的 JavaScript，用來讀取前面節點的資料。</dd>
+    <dt>Fail-safe</dt><dd>失敗安全：出錯或不確定時，預設選擇「不做」而不是「繼續做」。</dd>
+    <dt>GET / POST</dt><dd>HTTP 方法：GET 拿資料，POST 送資料。</dd>
+    <dt>HTTP 狀態碼</dt><dd>回應的結果代號：200 成功、204 成功無內容、302 轉址、400 請求有誤、403 禁止、404 找不到、500 伺服器錯誤。</dd>
+    <dt>Human in the Loop</dt><dd>在自動化流程中保留人工確認的步驟。</dd>
+    <dt>IDOR</dt><dd>不安全的直接物件參照：改網址裡的編號就能看到別人的資料。用隨機編號與權限檢查防範。</dd>
+    <dt>Idempotency 冪等性</dt><dd>同一個操作做一次和做很多次，結果一樣。防止重複發送。</dd>
+    <dt>Image 映像檔</dt><dd>容器的範本，唯讀，由一層層的 layer 疊成。</dd>
+    <dt>Item（n8n）</dt><dd>節點之間傳遞的一筆資料。大多數節點會對每個 item 各做一次。</dd>
+    <dt>JSON</dt><dd>用大括號、名稱與值表示資料的文字格式，程式之間交換資料的通用語言。</dd>
+    <dt>localhost</dt><dd>「自己這台電腦」，即 127.0.0.1。在容器裡指的是容器自己。</dd>
+    <dt>multipart/form-data</dt><dd>可以同時傳文字欄位和檔案的請求格式，用分隔線切成多段。</dd>
+    <dt>Node 節點</dt><dd>n8n 流程中做一件事的方塊。</dd>
+    <dt>Orchestration 編排</dt><dd>由一個中心（n8n）依序指揮各服務的架構。</dd>
+    <dt>Path traversal</dt><dd>路徑穿越攻擊：用 <code>../</code> 跳出允許的資料夾去讀寫其他檔案。</dd>
+    <dt>Polling 輪詢</dt><dd>定時主動去問有沒有變化。本專案流程 1 使用。</dd>
+    <dt>Header Auth</dt><dd>在 HTTP 標頭放一組約定好的密語，接收端核對一致才處理。本專案用 <code>X-Webhook-Secret</code>。</dd>
+    <dt>Backoff</dt><dd>重試時一次比一次等更久，避免對方還沒恢復就被連續狂打。</dd>
+    <dt>Port 埠號</dt><dd>同一台電腦上區分不同程式的號碼，0～65535。</dd>
+    <dt>Port mapping</dt><dd>把電腦的埠號轉到容器的埠號，例如 8080:8080。</dd>
+    <dt>REST</dt><dd>用網址表示資源、用 HTTP 方法表示動作的 API 設計風格。</dd>
+    <dt>Trigger 觸發節點</dt><dd>決定 n8n 流程什麼時候開始執行的節點。</dd>
+    <dt>URL 編碼</dt><dd>把中文等字元轉成 <code>%XX</code> 形式，讓網址合法。</dd>
+    <dt>Volume</dt><dd>容器外的儲存空間，容器刪除後資料仍在。</dd>
+    <dt>Webhook</dt><dd>一個專屬網址，對方把資料 POST 過來就會觸發動作，是「有事才通知」的推播方式。本專案用在兩處：n8n → Discord 傳訊息、計畫書網站 → n8n 通知已簽署。</dd>
+    <dt>XSS</dt><dd>跨站腳本攻擊：把程式碼藏在輸入資料裡，讓別人的瀏覽器執行。輸出前跳脫可防範。</dd>
+  </dl>
+  <p class="foot">n8n 與 Docker 架設方式參考 <a href="https://github.com/n8n-io/self-hosted-ai-starter-kit" target="_blank" rel="noopener">n8n Self-hosted AI Starter Kit</a> 與課程 12.4。<br>本頁中的公司、客戶、施藥人員與所有資料皆為虛構，僅供課程作業展示。</p>
+
 </section>
 
-<!-- ============ FIRST RUN ============ -->
-<section id="first-run">
-  <div class="eyebrow">Part 7</div>
-  <h2>打開 localhost:5678 之後怎麼操作</h2>
-  <p>啟動容器後，瀏覽器打開 <code>http://localhost:5678</code>。以下是從第一次打開到流程能自動執行的順序。n8n 改版很快，按鈕名稱可能和這裡略有不同，以畫面為準。</p>
-  <ol class="steps">
-    <li><b>建立擁有者帳號（只有第一次）</b>填 email、姓名、密碼。這個帳號只存在你電腦的 n8n_data 資料夾裡，不會上傳。</li>
-    <li><b>進入 Overview 首頁</b>這裡會列出所有 workflow、憑證和執行紀錄。</li>
-    <li><b>先建立憑證（Credentials）</b>依序新增：Ollama（<code>http://ollama:11434</code>）、Google（課程 13.1、13.2 的 OAuth 憑證）、Discord（課程 14.3 的機器人 Token）。先建好，之後加節點時直接選。</li>
-    <li><b>Create Workflow，替流程命名</b>例如「流程 A：送審」。</li>
-    <li><b>按畫布中間的 ＋ 加觸發節點</b>搜尋 Google Drive Trigger，選「檔案新增到資料夾」，指定「待發送」資料夾。</li>
-    <li><b>按節點右邊的 ＋ 接下一個節點</b>依照 Part 5 的順序一個一個加。每加一個，就用運算式從前一個節點拿資料。</li>
-    <li><b>測試：Execute step／Execute workflow</b>單獨執行一個節點，打開節點會看到左邊 INPUT、右邊 OUTPUT 的 JSON。輸出不對就在這裡修。</li>
-    <li><b>存檔</b>右上角 Save（或 Ctrl＋S）。</li>
-    <li><b>啟用流程</b>測試都通過後，把右上角的 Active／Publish 打開。啟用後觸發節點才會在背景持續監聽，不需要你一直開著畫面。</li>
-    <li><b>看執行紀錄（Executions）</b>每次自動執行都會留下紀錄，失敗的會標紅。點進去能看到是哪個節點出錯、錯誤訊息是什麼，把這段複製給 AI 協助除錯（課程 14.7）。</li>
-  </ol>
-  <div class="callout"><b>容易卡住的三個地方</b><br>1. Ollama 憑證填成 <code>localhost</code> → 連不上，改成 <code>http://ollama:11434</code>。<br>2. 第一次呼叫模型很慢 → 模型要先載入記憶體，第二次就會變快。<br>3. 流程測試會跑、但平常不會自己跑 → 忘記把流程設為 Active。</div>
-</section>
 
-<!-- ============ LIMITS ============ -->
-<section id="limits">
-  <div class="eyebrow">Part 8</div>
-  <h2>限制與下一步</h2>
-  <div class="two">
-    <div class="card"><h4>目前的限制</h4>
-      <p>建立通知書仍是人工，因為公司系統尚未開放串接。</p>
-      <p>用 Discord 和 Google 表單模擬官方 LINE 與電子簽署，真實環境需要換成 LINE Messaging API 與公司的簽署系統。</p>
-      <p>3B 小模型偶爾格式不穩，靠 If 節點停機和人工核准兜底。</p>
-    </div>
-    <div class="card"><h4>如果公司系統建好之後</h4>
-      <p>把觸發點往前移：行事曆新增客戶就自動產生通知書草稿。</p>
-      <p>Discord 換成官方 LINE 的 Messaging API。</p>
-      <p>每日提醒升級成週報表，統計每位客戶平均回簽天數（課程 17.5）。</p>
-    </div>
-  </div>
-  <p class="foot">模型規格來源：<a href="https://huggingface.co/Qwen/Qwen2.5-3B" target="_blank" rel="noopener">Qwen2.5-3B 模型卡（Hugging Face）</a>、<a href="https://qwenlm.github.io/blog/qwen2.5-llm" target="_blank" rel="noopener">Qwen2.5 官方介紹</a>；n8n 與 Ollama 的 Docker 架設方式參考 <a href="https://github.com/n8n-io/self-hosted-ai-starter-kit" target="_blank" rel="noopener">n8n Self-hosted AI Starter Kit</a> 與課程 12.4、13.5。<br>本頁中的公司、客戶、施藥人員與所有資料皆為虛構，僅供課程作業展示。</p>
-</section>
 </main>
 </div>
 
+
 <script>
+const ID="$('取出計畫書ID').item.json", ID2="$('確認簽署狀態').item.json", RW="$('讀追蹤表').item.json";
 const FLOWS={
- A:{name:'A 送審',desc:'通知書放進待發送資料夾 → AI 檢查草擬 → 送到 #審核區',nodes:[
-  {t:'新檔案觸發',k:'Google Drive Trigger',d:'監看「待發送」資料夾。我把建好的通知書 PDF 放進來，流程就開始。',o:{name:'C001_施工計畫通知書.pdf',id:'1AbC…xyz',mimeType:'application/pdf'}},
-  {t:'取出客戶編號',k:'Edit Fields (Set)',d:'檔名規則是「客戶編號_施工計畫通知書.pdf」，用運算式切出編號。',code:"{{ $json.name.split('_')[0] }}",o:{客戶編號:'C001',檔案ID:'1AbC…xyz'}},
-  {t:'對照行事曆',k:'Google Sheets: Get Rows',d:'在模擬行事曆的試算表，用客戶編號找出這位客戶。',o:{客戶編號:'C001',施工日期:'2026-12-01',施工時間:'09:00–11:00',客戶名稱:'王小明（假資料）',施工類別:'白蟻防治',施藥人員:'張師傅',資料夾ID:'1FoL…der'}},
-  {t:'只留必要欄位',k:'Edit Fields (Set)',gov:'最小化',d:'施藥人員、資料夾 ID 不交給 AI，只留 AI 需要的四個欄位。',o:{客戶名稱:'王小明（假資料）',施工日期:'2026-12-01',施工時間:'09:00–11:00',施工類別:'白蟻防治'}},
-  {t:'AI 檢查＋草擬',k:'Basic LLM Chain + Ollama (qwen2.5:3b)',d:'送提示詞給本地模型，要求只回傳 JSON。',o:{完整:true,缺漏欄位:'',草稿:'王小明您好，我們將於 12/1 09:00–11:00 到府進行白蟻防治，請點連結確認簽署，謝謝！'}},
-  {t:'資料完整嗎？',k:'If',gov:'停機',d:'找不到客戶，或「完整」不是 true，就走停機分支：通知 #審核區，流程結束，客戶什麼都收不到。',o:{分支:'true → 繼續送審'}},
-  {t:'送到 #審核區',k:'Discord: Send Message',gov:'把關',d:'把草稿送給我看，等我回覆「核准 C001」。',o:{channel:'#審核區',content:'📝 C001 草稿如下，回覆「核准 C001」才會發送：\n王小明您好，我們將於 12/1…'}},
-  {t:'寫入紀錄',k:'Google Sheets: Update Row',gov:'紀錄',d:'把 AI 檢查結果與草稿寫回試算表，狀態改為「待審核」。',o:{客戶編號:'C001',狀態:'待審核',AI檢查結果:'完整'}}
+ H:{name:'人工步驟',desc:'流程開始前我要做的事（不是 n8n 節點）',nodes:[
+  {t:'建立計畫書',k:'計畫書網站 localhost:8080',d:'照行事曆填客戶資料，按「製作計畫書」。客戶編號必須和試算表一致。',s:[['客戶編號','C001'],['施工類別','白蟻防治'],['施工日期／時間','2026-12-01 / 09:00–11:00']],o:{id:'P0001-e7ff77',customer_id:'C001',status:'unsigned'}},
+  {t:'複製簽署連結',k:'計畫書網站 /done/…',d:'建立完成頁會顯示簽署連結，按「複製連結」。',o:{簽署連結:'http://localhost:8080/s/P0001-e7ff77'}},
+  {t:'貼到追蹤表',k:'Google 試算表',d:'貼到該客戶那一列的「簽署連結」欄。先確認是同一位客戶。',o:{客戶編號:'C001',簽署連結:'http://localhost:8080/s/P0001-e7ff77'}},
+  {t:'勾選開始核可',k:'Google 試算表核取方塊',gov:'人工把關',d:'確認資料無誤後才勾選，這一勾就是送出前的人工核准。',o:{開始核可:'TRUE'}}
  ]},
- B:{name:'B 核准發送',desc:'我回覆「核准」→ 歸檔 PDF → 傳簽署連結給客戶',nodes:[
-  {t:'收到 Discord 訊息',k:'Discord Trigger',d:'監聽 #審核區，訊息開頭是「核准」才處理（課程 14.5 接收訊息）。',o:{author:'行政工讀生',content:'核准 C001',timestamp:'2026-11-30T10:12:03+08:00'}},
-  {t:'取出客戶編號',k:'Edit Fields (Set)',d:'從「核准 C001」切出 C001。',code:"{{ $json.content.replace('核准','').trim() }}",o:{客戶編號:'C001',審核人:'行政工讀生'}},
-  {t:'讀取客戶資料',k:'Google Sheets: Get Rows',d:'拿到資料夾 ID 與 AI 草稿。',o:{客戶編號:'C001',資料夾ID:'1FoL…der',AI草稿:'王小明您好，我們將於 12/1…'}},
-  {t:'歸檔未簽 PDF',k:'Google Drive: Move',d:'把待發送資料夾裡的 PDF 移到 C001 的客戶資料夾。',o:{name:'C001_施工計畫通知書.pdf',parent:'C001_王小明'}},
-  {t:'傳給客戶',k:'Discord: Send Message',gov:'揭露',d:'發到 #客戶聊天室（模擬官方 LINE），附簽署表單連結與 AI 揭露句。',o:{channel:'#客戶聊天室',content:'王小明您好，我們將於 12/1…\n簽署連結：https://forms.gle/…\n（本訊息由 AI 協助草擬，並經專人確認後發送）'}},
-  {t:'寫入紀錄',k:'Google Sheets: Update Row',gov:'紀錄',d:'狀態改「已發送」，記下審核人、審核時間、發送時間。',o:{狀態:'已發送',審核人:'行政工讀生',審核時間:'2026-11-30 10:12',發送時間:'2026-11-30 10:12'}}
+ A:{name:'流程 1 發送',desc:'偵測勾選 → 核對 → 歸檔未簽版 → 傳簽署要求 → 更新追蹤表',nodes:[
+  {t:'偵測核可',k:'Google Sheets Trigger',d:'每分鐘檢查一次追蹤表，「開始核可」欄有變動的列會被送出來，一列一個 item。',
+   s:[['Credential','Google Sheets OAuth2'],['Trigger On','Row Updated'],['Document','客戶簽署追蹤表'],['Sheet','第一個工作表'],['Columns to Watch','開始核可'],['Poll Times','Every Minute']],
+   o:{客戶編號:'C001',客戶名稱:'王小明（假資料）',施工類別:'白蟻防治',簽署連結:'http://localhost:8080/s/P0001-e7ff77',伺服器資料夾:'C001_王小明',LINE模擬_DC_Webhook:'https://discord.com/api/webhooks/…',開始核可:'TRUE',狀態:''}},
+  {t:'篩選待處理',k:'Filter',d:'只留下「開始核可是 TRUE」而且「狀態是空的」的列。取消勾選或已處理過的列會被擋下，避免重複發送。',
+   s:[['條件 1','{{ $json["開始核可"] }}  is equal to  TRUE'],['條件 2','{{ $json["狀態"] }}  is empty'],['Combine','AND（兩個都要成立）']],
+   o:{客戶編號:'C001',開始核可:'TRUE',狀態:'','…':'其餘欄位原樣通過'}},
+  {t:'取出計畫書ID',k:'Edit Fields (Set)',d:'從簽署連結切出計畫書編號，並保留原本所有欄位，後面的節點都從這裡拿客戶資料。',
+   s:[['Mode','Manual Mapping'],['新欄位名稱','計畫書ID（String）'],['值','{{ $json["簽署連結"].split("/s/")[1].trim() }}'],['Include Other Input Fields','開啟（All）']],
+   code:'"http://localhost:8080/s/P0001-e7ff77".split("/s/")\n→ ["http://localhost:8080", "P0001-e7ff77"]\n→ [1] 取第二段 → "P0001-e7ff77"',
+   o:{客戶編號:'C001',客戶名稱:'王小明（假資料）',計畫書ID:'P0001-e7ff77','…':'其餘欄位'}},
+  {t:'查詢計畫書',k:'HTTP Request（GET）',d:'向計畫書網站的 API 查這份計畫書，確認它存在並取得它屬於哪位客戶。查不到（404）流程就會中斷。',
+   s:[['Method','GET'],['URL','http://plan-site:8080/api/plans/{{ $json["計畫書ID"] }}']],
+   o:{id:'P0001-e7ff77',customer_id:'C001',customer:'王小明',status:'unsigned'}},
+  {t:'客戶編號相符？',k:'If',gov:'停機',d:'計畫書裡的 customer_id 必須等於追蹤表這一列的客戶編號。true 往下走；false 接到「停機通知」，不做任何對外動作。',
+   s:[['Value 1','{{ $json.customer_id }}'],['Operation','String → is equal to'],['Value 2',`{{ ${ID}["客戶編號"] }}`],['true 分支','接「下載未簽署PDF」'],['false 分支','接「停機通知」']],
+   o:{結果:'true → 繼續'}},
+  {t:'└ 停機通知',k:'HTTP Request（POST）｜接在 If 的 false',gov:'停機',d:'傳到「我自己」的通知頻道，不是客戶頻道。之後什麼都不做，流程停在這裡。',
+   s:[['Method','POST'],['URL','#系統通知 頻道的 Webhook 網址'],['Body (JSON)',`{"content": "⚠️ {{ ${ID}['客戶編號'] }} 的簽署連結對應到別的客戶，已停止，請檢查"}`]],
+   o:{'Discord 回應':'204 No Content'}},
+  {t:'下載未簽署PDF',k:'HTTP Request（Response: File）',d:'下載未簽署版。因為回應是 PDF 不是文字，要把 Response Format 設成 File，檔案會放在 binary 的 data 欄位。',
+   s:[['Method','GET'],['URL',`http://plan-site:8080/s/{{ ${ID}["計畫書ID"] }}/unsigned.pdf`],['Options → Response','Response Format：File'],['Put Output in Field','data']],
+   o:{binary:{data:{fileName:'C001_P0001-e7ff77_未簽署.pdf',mimeType:'application/pdf',fileSize:'約 500 kB'}}}},
+  {t:'歸檔未簽署',k:'HTTP Request（POST Form-Data）',gov:'紀錄',d:'把 PDF 上傳到公司伺服器裡追蹤表寫的客戶資料夾。電腦上的「公司伺服器」資料夾會同時出現這個檔案。',
+   s:[['Method','POST'],['URL','http://file-server:8090/api/upload'],['Send Body','開啟'],['Body Content Type','Form-Data'],['參數 1','Type：n8n Binary File｜Name：file｜Input Data Field Name：data'],['參數 2',`Type：Form Data｜Name：folder｜Value：{{ ${ID}["伺服器資料夾"] }}`],['參數 3',`Type：Form Data｜Name：filename｜Value：{{ ${ID}["客戶編號"] }}_未簽署.pdf`]],
+   o:{ok:true,folder:'C001_王小明',filename:'C001_未簽署.pdf',url:'http://localhost:8090/C001_王小明/C001_未簽署.pdf'}},
+  {t:'傳LINE簽署要求',k:'HTTP Request（POST Webhook）',d:'把制式簽署要求和連結傳到該客戶的 Discord 頻道（模擬官方 LINE）。完整 JSON 見〈Discord Webhook〉。',
+   s:[['Method','POST'],['URL',`{{ ${ID}["LINE模擬_DC_Webhook"] }}`],['Send Body','開啟'],['Body Content Type','JSON'],['JSON','{"content": "…您好：…請點以下連結…"}']],
+   o:{'Discord 回應':'204 No Content','頻道':'#王小明 出現簽署要求'}},
+  {t:'更新追蹤表',k:'Google Sheets: Update Row',gov:'紀錄',d:'狀態改「已發送」，寫入未簽 PDF 的伺服器網址與發送時間。流程 2 之後就會開始追蹤這位客戶。',
+   s:[['Operation','Update Row'],['Column to Match On','客戶編號'],['比對值',`{{ ${ID}["客戶編號"] }}`],['狀態','已發送'],['未簽PDF',"{{ $('歸檔未簽署').item.json.url }}"],['發送時間','{{ $now.toFormat("yyyy-MM-dd HH:mm") }}']],
+   o:{客戶編號:'C001',狀態:'已發送',未簽PDF:'http://localhost:8090/C001_王小明/C001_未簽署.pdf',發送時間:'2026-11-30 10:12'}}
  ]},
- C:{name:'C 回簽歸檔',desc:'客戶填表簽署 → 歸檔 → 回覆客戶 → 提醒我',nodes:[
-  {t:'表單新回覆',k:'Google Sheets Trigger',d:'Google 表單的回覆會寫進「簽署回覆」試算表，新增一列就觸發。',o:{時間戳記:'2026-11-30 14:05',客戶編號:'C001',簽署人姓名:'王小明',同意:'同意'}},
-  {t:'找客戶資料夾',k:'Google Sheets: Get Rows',d:'用客戶編號找資料夾 ID。',o:{客戶編號:'C001',資料夾ID:'1FoL…der'}},
-  {t:'歸檔簽署紀錄',k:'Google Docs + Drive',d:'在客戶資料夾建立「C001_簽署紀錄」，內容含簽署人與時間。',o:{name:'C001_簽署紀錄',parent:'C001_王小明'}},
-  {t:'回覆客戶',k:'Discord: Send Message',d:'「已收到您的簽署，我們會準時到府施工，謝謝！」',o:{channel:'#客戶聊天室'}},
-  {t:'提醒我',k:'Discord: Send Message',d:'在 #審核區通知我這位客戶已完成。',o:{channel:'#審核區',content:'🔔 C001 已回簽並歸檔'}},
-  {t:'更新狀態',k:'Google Sheets: Update Row',gov:'紀錄',d:'狀態改為「已完成」。',o:{狀態:'已完成'}}
- ]},
- D:{name:'D 每日提醒',desc:'每天 18:00 找出超過 2 天沒回簽的客戶',nodes:[
-  {t:'每天 18:00',k:'Schedule Trigger',d:'依台灣時區（compose 裡設定的 GENERIC_TIMEZONE）每天觸發。',o:{timestamp:'2026-12-02T18:00:00+08:00'}},
-  {t:'讀取已發送客戶',k:'Google Sheets: Get Rows',d:'篩出狀態是「已發送」的列。',o:[{客戶編號:'C002',發送時間:'2026-11-29 09:30'},{客戶編號:'C004',發送時間:'2026-12-02 11:00'}]},
-  {t:'超過 2 天的',k:'Filter',d:'發送時間距今超過 48 小時才留下。',code:"{{ $now.diff(DateTime.fromSQL($json.發送時間), 'hours').hours > 48 }}",o:[{客戶編號:'C002',發送時間:'2026-11-29 09:30'}]},
-  {t:'提醒追蹤',k:'Discord: Send Message',d:'在 #審核區列出需要追蹤的客戶。',o:{channel:'#審核區',content:'🔔 以下客戶超過 2 天未回簽：C002，請追蹤'}}
+ B:{name:'流程 2 收到回簽',desc:'網站通知 → 再確認 → 核對追蹤表 → 歸檔已簽版 → 打勾 → 回覆',nodes:[
+  {t:'收到簽署通知',k:'Webhook',gov:'驗證來源',d:'客戶簽完後，計畫書網站會 POST 到這裡。Header Auth 檢查密語，不對直接回 403；對方送的 JSON 放在 body 裡。',
+   s:[['HTTP Method','POST'],['Path','plan-signed'],['Authentication','Header Auth（Name：X-Webhook-Secret）'],['Respond','Immediately'],['測試網址','http://n8n:5678/webhook-test/plan-signed（按 Listen 後收一次）'],['正式網址','http://n8n:5678/webhook/plan-signed（Active 後）']],
+   o:{headers:{'x-webhook-secret':'anxin-demo-secret-2026','content-type':'application/json; charset=utf-8'},body:{event:'plan.signed',id:'P0001-e7ff77',customer_id:'C001',status:'signed',signer:'王小明',signed_at:'2026-11-30 14:05:12'}}},
+  {t:'確認簽署狀態',k:'HTTP Request（GET）',gov:'驗證來源',d:'不直接相信通知內容，回到計畫書網站的 API 再查一次。編號不存在會 404，流程中斷。',
+   s:[['Method','GET'],['URL','http://plan-site:8080/api/plans/{{ $json.body.id }}']],
+   o:{id:'P0001-e7ff77',customer_id:'C001',status:'signed',signer:'王小明',signed_at:'2026-11-30 14:05:12'}},
+  {t:'讀追蹤表',k:'Google Sheets: Get Row(s)',d:'找出這位客戶在追蹤表的那一列，拿到伺服器資料夾、Discord 網址和目前狀態。',
+   s:[['Operation','Get Row(s)'],['Document','客戶簽署追蹤表'],['Filters','客戶編號 = {{ $json.customer_id }}'],['Settings 分頁','Always Output Data：開啟']],
+   o:[{客戶編號:'C001',簽署連結:'http://localhost:8080/s/P0001-e7ff77',伺服器資料夾:'C001_王小明',狀態:'已發送',LINE模擬_DC_Webhook:'https://discord.com/api/webhooks/…'}]},
+  {t:'核對無誤？',k:'If（AND）',gov:'停機',d:'三個條件都成立才往下：網站說已簽、追蹤表狀態是已發送、追蹤表的連結就是這份計畫書。任何一項不符走 false，通知 #系統通知並停止。',
+   s:[['條件 ①',`{{ ${ID2}.status }}  is equal to  signed`],['條件 ②','{{ $json["狀態"] }}  is equal to  已發送'],['條件 ③',`{{ $json["簽署連結"] }}  contains  {{ ${ID2}.id }}`],['Options','Convert types where required：開啟'],['false 分支','HTTP POST 到 #系統通知：⚠️ 收到一則對不上的簽署通知']],
+   o:{結果:'true → 繼續'}},
+  {t:'下載已簽署PDF',k:'HTTP Request（Response: File）',d:'下載印有客戶簽名、簽署人與簽署時間的版本。',
+   s:[['Method','GET'],['URL',`http://plan-site:8080/s/{{ ${ID2}.id }}/signed.pdf`],['Response Format','File'],['Put Output in Field','data']],
+   o:{binary:{data:{fileName:'C001_P0001-e7ff77_已簽署.pdf',mimeType:'application/pdf'}}}},
+  {t:'歸檔已簽署',k:'HTTP Request（POST Form-Data）',gov:'紀錄',d:'存到公司伺服器的同一個客戶資料夾。',
+   s:[['URL','http://file-server:8090/api/upload'],['Body Content Type','Form-Data'],['file','n8n Binary File｜data'],['folder',`{{ ${RW}["伺服器資料夾"] }}`],['filename',`{{ ${RW}["客戶編號"] }}_已簽署.pdf`]],
+   o:{ok:true,folder:'C001_王小明',filename:'C001_已簽署.pdf',url:'http://localhost:8090/C001_王小明/C001_已簽署.pdf'}},
+  {t:'更新追蹤表',k:'Google Sheets: Update Row',gov:'紀錄',d:'「已回簽」打勾、狀態「已完成」、寫入已簽 PDF 網址與回簽時間。狀態改掉後，重送的通知也不會再被處理。',
+   s:[['Column to Match On','客戶編號'],['比對值',`{{ ${RW}["客戶編號"] }}`],['已回簽','TRUE'],['狀態','已完成'],['已簽PDF',"{{ $('歸檔已簽署').item.json.url }}"],['回簽時間',`{{ ${ID2}.signed_at }}`]],
+   o:{已回簽:'TRUE',狀態:'已完成',回簽時間:'2026-11-30 14:05:12'}},
+  {t:'回覆已收到',k:'HTTP Request（POST Webhook）',d:'在客戶頻道回覆收到簽署。',
+   s:[['Method','POST'],['URL',`{{ ${RW}["LINE模擬_DC_Webhook"] }}`],['JSON','{"content": "已收到您的簽署，我們會準時到府施工，謝謝！"}']],
+   o:{'Discord 回應':'204 No Content'}}
  ]}
 };
-let cur='A', sel=0;
+
 const $=id=>document.getElementById(id);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 function hl(o){return esc(JSON.stringify(o,null,2)).replace(/(&quot;[^&]*?&quot;)(\s*:)/g,'<span class="k">$1</span>$2').replace(/:\s(&quot;.*?&quot;)/g,': <span class="s">$1</span>');}
-function renderTabs(){
-  $('tabs').innerHTML='';
-  Object.entries(FLOWS).forEach(([k,f])=>{const b=document.createElement('button');b.className='tab';b.role='tab';b.id='tab-'+k;b.setAttribute('aria-selected',k===cur);b.textContent=f.name;b.onclick=()=>{cur=k;sel=0;render();};$('tabs').appendChild(b);});
-}
+
+/* flow explorer */
+let cur='A', sel=0;
 function render(){
-  renderTabs();
+  const tabs=$('tabs'); tabs.innerHTML='';
+  Object.entries(FLOWS).forEach(([k,f])=>{const b=document.createElement('button');b.className='tab';b.setAttribute('role','tab');b.setAttribute('aria-selected',k===cur);b.textContent=f.name;b.onclick=()=>{cur=k;sel=0;render();};tabs.appendChild(b);});
   const f=FLOWS[cur]; const n=$('nodes'); n.innerHTML='';
-  f.nodes.forEach((x,i)=>{const b=document.createElement('button');b.className='node'+(x.gov?' gov':'');if(x.gov)b.dataset.gov=x.gov;b.setAttribute('aria-pressed',i===sel);
+  f.nodes.forEach((x,i)=>{const b=document.createElement('button');b.className='node';b.setAttribute('aria-pressed',i===sel);
     b.innerHTML=`<span class="i">${String(i+1).padStart(2,'0')}</span><span><span class="t">${esc(x.t)}</span>${x.gov?`<span class="badge">${esc(x.gov)}</span>`:''}<br><span class="k">${esc(x.k)}</span></span>`;b.onclick=()=>{sel=i;render();};n.appendChild(b);});
   const x=f.nodes[sel];
   $('detail').innerHTML=`<p class="cap" style="margin-top:0">${esc(f.desc)}</p><h4>${esc(x.t)}</h4><div class="type">${esc(x.k)}</div><p>${esc(x.d)}</p>`+
-    (x.code?`<div class="term-h"><span>運算式</span></div><pre>${esc(x.code)}</pre>`:'')+
-    `<div class="term-h"><span>這個節點的輸出（示意資料）</span></div><pre>${hl(x.o)}</pre>`;
+    (x.s?`<div class="settings" aria-label="設定">${x.s.map(([a,b])=>`<div><span>${esc(a)}</span><span><code>${esc(b)}</code></span></div>`).join('')}</div>`:'')+
+    (x.code?`<div class="term-h"><span>運算過程</span></div><pre>${esc(x.code)}</pre>`:'')+
+    `<div class="term-h"><span>輸出（示意資料）</span></div><pre>${hl(x.o)}</pre>`;
 }
 render();
+
+/* quiz */
+let answered=0, right=0;
+function buildQuiz(){
+  answered=0;right=0;$('score').textContent=`0 / ${QUIZ.length}`;
+  const box=$('quizbox'); box.innerHTML='';
+  QUIZ.forEach((item,qi)=>{
+    const d=document.createElement('div');d.className='qa';
+    d.innerHTML=`<p class="q">${qi+1}. ${esc(item.q)}</p><div class="opts"></div>`;
+    const opts=d.querySelector('.opts');
+    item.o.forEach(([text,why],oi)=>{
+      const b=document.createElement('button');b.className='opt';b.innerHTML=`${String.fromCharCode(65+oi)}. ${esc(text)}<span class="why" hidden>${esc(why)}</span>`;
+      b.onclick=()=>{
+        opts.querySelectorAll('.opt').forEach((o,k)=>{o.disabled=true;o.querySelector('.why').hidden=false;if(k===item.a)o.classList.add('right');});
+        if(oi!==item.a)b.classList.add('wrong'); else right++;
+        answered++; $('score').textContent=`${right} / ${QUIZ.length}`+(answered===QUIZ.length?(right===QUIZ.length?'　全對！':'　看完解析可以按重做'):'');
+      };
+      opts.appendChild(b);
+    });
+    box.appendChild(d);
+  });
+}
+$('reset').onclick=buildQuiz; buildQuiz();
+
+/* copy */
 document.querySelectorAll('.copy').forEach(b=>b.addEventListener('click',async()=>{
   const t=b.dataset.copy; try{await navigator.clipboard.writeText(t);b.textContent='已複製';}catch(e){const r=document.createRange();r.selectNodeContents(b.parentElement.nextElementSibling);const s=getSelection();s.removeAllRanges();s.addRange(r);b.textContent='已選取';}
   setTimeout(()=>b.textContent='複製',1500);
 }));
+
+/* toc highlight */
 const links=[...document.querySelectorAll('#toc a')];
 const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){links.forEach(a=>a.classList.toggle('on',a.getAttribute('href')==='#'+e.target.id));}}),{rootMargin:'-30% 0px -60% 0px'});
 document.querySelectorAll('main section').forEach(s=>io.observe(s));
