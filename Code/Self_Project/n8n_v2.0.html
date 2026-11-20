@@ -1,0 +1,1019 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>施工計畫書草稿產生</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: engineering notebook — sticky contents rail on wide screens, one reading column, dark terminal blocks for anything you type or that a machine sends. */
+:root{
+  --bg:#f4f6f6; --paper:#ffffff; --ink:#15262a; --muted:#5b6b70; --line:#dbe3e5;
+  --teal:#12515a; --teal-soft:#e3eff0; --amber:#b45309; --amber-soft:#fdf1e3;
+  --term:#0f1c1f; --term-ink:#d7e7e9; --term-dim:#7f9a9f; --term-key:#7dd3c8; --term-str:#f6c177;
+  --ok:#15803d; --bad:#b91c1c;
+  --display:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+  --body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0e1517; --paper:#152024; --ink:#e3ecee; --muted:#9db0b4; --line:#26363a;
+    --teal:#6cc3c9; --teal-soft:#16343a; --amber:#f0a94b; --amber-soft:#33250f;
+    --term:#081013; --term-ink:#d7e7e9; --term-dim:#6f8a8f; --term-key:#7dd3c8; --term-str:#f6c177;
+    --ok:#4ade80; --bad:#f87171; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0e1517; --paper:#152024; --ink:#e3ecee; --muted:#9db0b4; --line:#26363a;
+  --teal:#6cc3c9; --teal-soft:#16343a; --amber:#f0a94b; --amber-soft:#33250f;
+  --term:#081013; --term-ink:#d7e7e9; --term-dim:#6f8a8f; --term-key:#7dd3c8; --term-str:#f6c177;
+  --ok:#4ade80; --bad:#f87171; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.75}
+a{color:var(--teal)}
+.shell{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:32px 80px;display:grid;grid-template-columns:220px minmax(0,1fr);gap:48px}
+@media (max-width:900px){.shell{grid-template-columns:minmax(0,1fr);gap:0}.toc{display:none}}
+.toc{position:sticky;top:calc(env(safe-area-inset-top,0px) + 24px);align-self:start;font-size:14px}
+.toc b{display:block;font-size:12px;letter-spacing:.12em;color:var(--muted);margin-bottom:8px}
+.toc ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px;counter-reset:t}
+.toc a{display:block;text-decoration:none;color:var(--muted);padding:5px 10px;border-radius:8px}
+.toc a:hover,.toc a.on{background:var(--teal-soft);color:var(--teal)}
+main{min-width:0}
+section{padding-block:28px;border-top:1px solid var(--line)}
+section:first-of-type{border-top:none;padding-top:0}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;color:var(--amber);text-transform:uppercase}
+h1{font-family:var(--display);font-weight:900;font-size:clamp(2rem,4.6vw,3.1rem);line-height:1.2;margin:.2em 0 .4em;text-wrap:balance}
+h2{font-family:var(--display);font-weight:900;font-size:1.7rem;margin:.2em 0 .6em;text-wrap:balance}
+h3{font-family:var(--display);font-weight:700;font-size:1.15rem;margin:1.6em 0 .5em}
+p{margin:.6em 0;max-width:68ch}
+.lede{font-size:1.12rem;color:var(--ink)}
+.byline{color:var(--muted);font-size:.92rem}
+.facts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:24px 0}
+@media (max-width:700px){.facts{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.fact{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.fact .n{font-family:var(--mono);font-size:1.6rem;font-weight:600;color:var(--teal);font-variant-numeric:tabular-nums}
+.fact .l{font-size:.86rem;color:var(--muted);line-height:1.5}
+.diagram{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:16px;overflow-x:auto;margin:16px 0}
+.diagram svg{display:block;min-width:720px;width:100%;height:auto}
+.diagram text{font-family:var(--body)}
+.cap{font-size:.86rem;color:var(--muted);margin-top:6px}
+table{border-collapse:collapse;width:100%;font-size:.94rem}
+.tbl{overflow-x:auto;margin:12px 0;border:1px solid var(--line);border-radius:12px;background:var(--paper)}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:.82rem;letter-spacing:.06em;color:var(--muted);background:var(--teal-soft)}
+tr:last-child td{border-bottom:none}
+td code,p code,li code{overflow-wrap:anywhere;font-family:var(--mono);font-size:.88em;background:var(--teal-soft);color:var(--teal);padding:1px 6px;border-radius:5px}
+pre{background:var(--term);color:var(--term-ink);font-family:var(--mono);font-size:.86rem;line-height:1.65;padding:16px 18px;border-radius:12px;overflow-x:auto;margin:12px 0}
+pre .c{color:var(--term-dim)} pre .k{color:var(--term-key)} pre .s{color:var(--term-str)}
+.term-h{display:flex;justify-content:space-between;align-items:center;background:var(--term);color:var(--term-dim);font-family:var(--mono);font-size:.76rem;padding:8px 18px 0;border-radius:12px 12px 0 0;margin-top:12px}
+.term-h + pre{margin-top:0;border-radius:0 0 12px 12px}
+.copy{font:inherit;font-size:.74rem;background:transparent;color:var(--term-key);border:1px solid var(--term-dim);border-radius:6px;padding:2px 8px;cursor:pointer}
+.copy:focus-visible,.tab:focus-visible,.node:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+.callout{border-radius:12px;padding:12px 16px;margin:14px 0;background:var(--amber-soft);font-size:.95rem}
+.callout b{color:var(--amber)}
+.note{border-radius:12px;padding:12px 16px;margin:14px 0;background:var(--teal-soft);font-size:.95rem}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:700px){.two{grid-template-columns:1fr}}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px 18px;min-width:0}
+.card h4{margin:0 0 4px;font-size:1rem}
+.card p{font-size:.94rem;margin:.3em 0}
+ol.steps{padding-left:0;list-style:none;counter-reset:s;display:flex;flex-direction:column;gap:10px}
+ol.steps>li{counter-increment:s;position:relative;padding:12px 16px 12px 56px;background:var(--paper);border:1px solid var(--line);border-radius:12px}
+ol.steps>li::before{content:counter(s);position:absolute;left:14px;top:12px;width:28px;height:28px;border-radius:50%;background:var(--teal);color:var(--paper);font-family:var(--mono);font-weight:600;display:grid;place-items:center;font-size:.85rem}
+ol.steps>li b{display:block}
+/* flow explorer */
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0}
+.tab{font:inherit;font-size:.9rem;border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:99px;padding:6px 14px;cursor:pointer}
+.tab[aria-selected="true"]{background:var(--teal);border-color:var(--teal);color:var(--paper)}
+.explorer{display:grid;grid-template-columns:minmax(0,260px) minmax(0,1fr);gap:16px}
+@media (max-width:760px){.explorer{grid-template-columns:minmax(0,1fr)}}
+.nodes{display:flex;flex-direction:column;gap:8px}
+.node{font:inherit;text-align:left;background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:10px 12px;cursor:pointer;color:var(--ink);display:flex;gap:10px;align-items:flex-start}
+.node .i{font-family:var(--mono);font-size:.75rem;color:var(--muted);min-width:1.6em;padding-top:2px}
+.node .t{font-weight:700;font-size:.92rem;line-height:1.4}
+.node .k{font-family:var(--mono);font-size:.74rem;color:var(--muted);line-height:1.4}
+.node[aria-pressed="true"]{border-color:var(--teal);box-shadow:inset 0 0 0 1px var(--teal);background:var(--teal-soft)}
+.badge{font-family:var(--body);font-size:.7rem;font-weight:700;color:var(--amber);background:var(--amber-soft);border-radius:99px;padding:1px 8px;margin-left:6px;white-space:nowrap}
+.detail{min-width:0}
+.detail h4{margin:0 0 4px;font-size:1.05rem}
+.detail .type{font-family:var(--mono);font-size:.8rem;color:var(--muted)}
+.foot{color:var(--muted);font-size:.86rem;border-top:1px solid var(--line);padding-top:20px;margin-top:20px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+html{scroll-behavior:smooth}
+
+/* ---- v7: two-part layout ---- */
+:root{--l1:#15803d;--l1-soft:#e6f4ea;--l2:#12515a;--l2-soft:#e3eff0;--l3:#9a3412;--l3-soft:#fbede4}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--l1:#4ade80;--l1-soft:#11281a;--l2:#6cc3c9;--l2-soft:#16343a;--l3:#fb923c;--l3-soft:#33200f}}
+:root[data-theme="dark"]{--l1:#4ade80;--l1-soft:#11281a;--l2:#6cc3c9;--l2-soft:#16343a;--l3:#fb923c;--l3-soft:#33200f}
+.blk{min-width:0;margin:10px 0}
+.dbtn{font:inherit;font-size:.86rem;border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:99px;padding:5px 12px;cursor:pointer}
+.dbtn:focus-visible,.opt:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+.hero{padding-bottom:12px}
+.parts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:22px 0 8px}
+@media (max-width:640px){.parts{grid-template-columns:minmax(0,1fr)}}
+.pcard{display:block;text-decoration:none;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:16px 18px;border-top:5px solid var(--pc)}
+.pcard:hover{border-color:var(--pc)}
+.pcard b{display:block;font-family:var(--display);font-size:1.25rem;color:var(--pc)}
+.pcard span{font-size:.9rem;color:var(--muted)}
+.pcard.p1{--pc:var(--amber)} .pcard.p2{--pc:var(--teal)}
+.part{margin:40px 0 0;padding:22px 22px 18px;border-radius:16px;background:var(--pbg);border:1px solid var(--line)}
+.part.p1{--pbg:var(--amber-soft);--pc:var(--amber)} .part.p2{--pbg:var(--teal-soft);--pc:var(--teal)}
+.part .eyebrow{color:var(--pc)}
+.part h2{margin:.1em 0 .2em;font-size:2rem}
+.part p{margin:.2em 0;color:var(--ink)}
+.part + section{border-top:none;padding-top:28px}
+.toc .grp{font-size:.75rem;font-weight:700;letter-spacing:.1em;margin:14px 0 4px 10px}
+.toc .grp.p1{color:var(--amber)} .toc .grp.p2{color:var(--teal)}
+.url{display:flex;flex-wrap:wrap;gap:0;font-family:var(--mono);font-size:1rem;margin:14px 0;border-radius:10px;overflow:hidden;border:1px solid var(--line)}
+.url>div{padding:10px 12px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.url small{font-family:var(--body);font-size:.74rem;color:var(--muted)}
+.url .u1{background:var(--l1-soft)} .url .u2{background:var(--l2-soft)} .url .u3{background:var(--amber-soft)} .url .u4{background:var(--l3-soft)}
+.qa{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px 18px;margin:14px 0}
+.qa .q{font-weight:700;margin:0 0 8px}
+.opts{display:flex;flex-direction:column;gap:6px}
+.opt{font:inherit;text-align:left;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:10px;padding:8px 12px;cursor:pointer}
+.opt.right{border-color:var(--ok);background:var(--l1-soft)} .opt.wrong{border-color:var(--bad);background:var(--l3-soft)}
+.opt .why{display:block;font-size:.86rem;color:var(--muted);margin-top:4px}
+.opt[disabled]{cursor:default}
+.score{font-family:var(--mono);color:var(--teal);font-weight:600}
+dl.gl{display:grid;grid-template-columns:minmax(0,180px) minmax(0,1fr);gap:0;border:1px solid var(--line);border-radius:12px;background:var(--paper);overflow:hidden}
+dl.gl dt,dl.gl dd{margin:0;padding:9px 14px;border-bottom:1px solid var(--line)}
+dl.gl dt{font-weight:700;font-family:var(--mono);font-size:.9rem;background:var(--teal-soft);color:var(--teal)}
+@media (max-width:600px){dl.gl{grid-template-columns:minmax(0,1fr)}dl.gl dt{border-bottom:none}}
+.toc ol{max-height:calc(100vh - 80px);overflow:auto}
+.toc .n{font-family:var(--mono);font-size:.72rem;opacity:.7;margin-right:6px}
+ul.tight{margin:.4em 0;padding-left:1.3em} ul.tight li{margin:.2em 0}
+.kbd{font-family:var(--mono);font-size:.85em;border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:0 5px;background:var(--paper)}
+.node .s{display:none}
+.settings{margin:8px 0}
+.settings div{display:grid;grid-template-columns:minmax(0,150px) minmax(0,1fr);gap:8px;padding:6px 0;border-bottom:1px dashed var(--line);font-size:.9rem}
+.settings div span:first-child{color:var(--muted)}
+.settings code{font-family:var(--mono);font-size:.85em;background:var(--teal-soft);color:var(--teal);padding:1px 6px;border-radius:5px;word-break:break-all}
+</style>
+
+<div class="shell">
+<nav class="toc" aria-label="目錄">
+  <b>目錄</b>
+  <ol id="toc">
+    <li class="grp p1">專案介紹</li>
+    <li><a href="#overview"><span class="n">01</span>專案概述</a></li>
+    <li><a href="#problem"><span class="n">02</span>要解決的問題</a></li>
+    <li><a href="#solution"><span class="n">03</span>解決方案</a></li>
+    <li><a href="#governance"><span class="n">04</span>把關設計</a></li>
+    <li><a href="#limits"><span class="n">05</span>限制與未來</a></li>
+    <li class="grp p2">技術介紹</li>
+    <li><a href="#web"><span class="n">01</span>網路基礎</a></li>
+    <li><a href="#docker"><span class="n">02</span>Docker</a></li>
+    <li><a href="#plansite"><span class="n">03</span>計畫書系統</a></li>
+    <li><a href="#fileserver"><span class="n">04</span>公司伺服器</a></li>
+    <li><a href="#helper"><span class="n">05</span>計畫書小幫手</a></li>
+    <li><a href="#n8n"><span class="n">06</span>n8n 基礎</a></li>
+    <li><a href="#flows"><span class="n">07</span>流程逐節點</a></li>
+    <li><a href="#rules"><span class="n">08</span>讀 PDF 與套規則</a></li>
+    <li><a href="#setup"><span class="n">09</span>建置步驟</a></li>
+    <li><a href="#debug"><span class="n">10</span>除錯手冊</a></li>
+    <li><a href="#prod"><span class="n">11</span>上線考量</a></li>
+    <li><a href="#quiz"><span class="n">12</span>自我檢測</a></li>
+    <li><a href="#glossary"><span class="n">附</span>名詞表</a></li>
+  </ol>
+</nav>
+
+<main>
+<header class="hero" id="top">
+  <div class="eyebrow">AI 必修課期末專案 · n8n 自動化</div>
+  <h1>施工計畫書草稿自動產生</h1>
+  <p class="byline">課程：當機器人來上班－未來職場的 AI 必修課 期末作業｜2026</p>
+  <p class="lede">我在一家施工服務公司當行政工讀生。公司系統已經會自動寄送簽署連結、追蹤回簽，但<b>每一份施工計畫書還是要手動填寫</b>：照同一位客戶上一份計畫書抄地址、施作範圍、負責人員、時間；材料和配比還要找「同類型」的舊計畫書。這個專案用 <b>n8n</b> 讀取舊計畫書、照公司規則產生草稿，再由一個書籤小幫手把草稿逐格填進公司系統。最後由人檢查，再按下「生成計畫書」。</p>
+  <nav class="parts" aria-label="兩大部分">
+    <a class="pcard p1" href="#project"><b>專案介紹</b><span>要解決什麼問題、怎麼解決、怎麼確保不出錯、還有哪些限制。不需要技術背景。</span></a>
+    <a class="pcard p2" href="#tech"><b>技術介紹</b><span>網路、Docker、模擬系統、書籤小幫手、n8n 節點、PDF 解析、建置與除錯。照著做就能重現。</span></a>
+  </nav>
+</header>
+
+<div class="part p1" id="project"><div class="eyebrow">Part A</div><h2>專案介紹</h2><p>這個專案解決什麼問題、怎麼解決、怎麼確保不出錯。</p></div>
+
+<section id="overview">
+  <div class="eyebrow">專案介紹 · 01</div>
+  <h2>專案概述：一眼看懂整個系統</h2>
+  <div class="facts">
+    <div class="fact"><div class="n">12</div><div class="l">個 n8n 節點<br>一條流程完成</div></div>
+    <div class="fact"><div class="n">6</div><div class="l">種示範情境<br>照抄、往前找、停止…</div></div>
+    <div class="fact"><div class="n">0</div><div class="l">處修改公司系統<br>小幫手只在旁邊填表</div></div>
+    <div class="fact"><div class="n">0</div><div class="l">筆真實資料<br>公司與客戶全部虛構</div></div>
+  </div>
+
+  <h3>系統架構</h3>
+  <div class="diagram" role="img" aria-label="系統架構：瀏覽器上的計畫書系統與小幫手；Docker 裡有計畫書系統、公司伺服器、n8n">
+    <svg viewBox="0 0 960 430">
+      <rect x="10" y="10" width="940" height="410" rx="16" fill="var(--teal-soft)" stroke="var(--teal)" stroke-dasharray="6 5"/>
+      <text x="30" y="40" font-size="15" font-weight="700" fill="var(--teal)">我的電腦（全部在本機，資料不上雲端）</text>
+      <rect x="30" y="60" width="300" height="190" rx="14" fill="var(--paper)" stroke="var(--line)"/>
+      <text x="50" y="88" font-size="14" font-weight="700" fill="var(--muted)">瀏覽器</text>
+      <rect x="50" y="100" width="260" height="62" rx="10" fill="var(--paper)" stroke="var(--amber)" stroke-width="2"/>
+      <text x="66" y="126" font-size="15" font-weight="700" fill="var(--ink)">公司計畫書系統頁面</text>
+      <text x="66" y="148" font-size="12" fill="var(--muted)">localhost:8080（只能手動填表）</text>
+      <rect x="50" y="172" width="260" height="62" rx="10" fill="var(--paper)" stroke="#7c3aed" stroke-width="2"/>
+      <text x="66" y="198" font-size="15" font-weight="700" fill="var(--ink)">🤖 計畫書小幫手（書籤）</text>
+      <text x="66" y="220" font-size="12" fill="var(--muted)">送出行程、逐格填入草稿</text>
+      <rect x="380" y="60" width="550" height="340" rx="14" fill="var(--paper)" stroke="var(--line)"/>
+      <text x="400" y="92" font-size="14" font-weight="700" fill="var(--muted)">Docker Desktop</text>
+      <rect x="400" y="100" width="240" height="120" rx="12" fill="var(--paper)" stroke="var(--teal)" stroke-width="2"/>
+      <text x="418" y="128" font-size="16" font-weight="700" fill="var(--ink)">n8n</text>
+      <text x="418" y="150" font-size="12" fill="var(--muted)">流程：計畫書草稿自動產生</text>
+      <text x="418" y="170" font-size="12" fill="var(--muted)">Webhook → 讀舊檔 → 回草稿</text>
+      <text x="418" y="190" font-size="12" fill="var(--muted)" font-family="JetBrains Mono, monospace">port 5678</text>
+      <rect x="670" y="100" width="240" height="120" rx="12" fill="var(--paper)" stroke="var(--amber)" stroke-width="2"/>
+      <text x="688" y="128" font-size="16" font-weight="700" fill="var(--ink)">plan-site</text>
+      <text x="688" y="150" font-size="12" fill="var(--muted)">模擬公司計畫書系統</text>
+      <text x="688" y="170" font-size="12" fill="var(--muted)">表單、行事曆、簽署、PDF</text>
+      <text x="688" y="190" font-size="12" fill="var(--muted)" font-family="JetBrains Mono, monospace">port 8080</text>
+      <rect x="535" y="270" width="240" height="110" rx="12" fill="var(--paper)" stroke="var(--ok)" stroke-width="2"/>
+      <text x="553" y="298" font-size="16" font-weight="700" fill="var(--ink)">file-server</text>
+      <text x="553" y="320" font-size="12" fill="var(--muted)">模擬公司伺服器</text>
+      <text x="553" y="340" font-size="12" fill="var(--muted)">各客戶歷史計畫書 PDF</text>
+      <text x="553" y="360" font-size="12" fill="var(--muted)" font-family="JetBrains Mono, monospace">port 8090 ↔ .\公司伺服器</text>
+      <path d="M310 203 H400" stroke="#7c3aed" stroke-width="3" fill="none"/>
+      <text x="316" y="226" font-size="11" fill="#7c3aed">行程 ⇄ 草稿</text>
+      <path d="M310 131 H345 V70 H790 V100" stroke="var(--ink)" stroke-width="2" fill="none"/>
+      <text x="560" y="64" font-size="11" fill="var(--muted)">瀏覽 localhost:8080</text>
+      <line x1="540" y1="220" x2="610" y2="270" stroke="var(--ink)" stroke-width="2"/>
+      <text x="486" y="252" font-size="11" fill="var(--muted)">讀舊計畫書</text>
+      <line x1="770" y1="220" x2="710" y2="270" stroke="var(--ink)" stroke-width="2"/>
+      <text x="752" y="252" font-size="11" fill="var(--muted)">生成時自動歸檔</text>
+    </svg>
+  </div>
+  <p class="cap">紫色線是這個專案新增的部分：小幫手把行程交給 n8n，n8n 讀公司伺服器上的舊計畫書，把草稿回傳給小幫手填表。</p>
+
+  <h3>模擬對照表</h3>
+  <p>公司真正的系統有客戶個資，不能拿來做作業，所以每個角色都用一個模擬品代替，功能比照真實情況：</p>
+  <div class="tbl"><table>
+    <tr><th>真實工作</th><th>作業裡的模擬</th><th>保留了什麼特性</th></tr>
+    <tr><td>公司施工計畫書系統</td><td><code>plan-site</code></td><td><b>只能手動填表</b>、生成後取得簽署連結、自動歸檔、客戶線上簽署</td></tr>
+    <tr><td>公司行事曆</td><td>計畫書系統的「行事曆」頁</td><td>只記錄日期、施作類型、客戶名稱、時間</td></tr>
+    <tr><td>公司伺服器歸檔區</td><td><code>file-server</code></td><td>以客戶名稱開頭的大資料夾／施工計畫書／「日期_客戶名稱_類型.pdf」</td></tr>
+    <tr><td>我做的工具</td><td>n8n 流程＋書籤小幫手</td><td>不修改公司系統，只在旁邊產生草稿、幫忙填表</td></tr>
+  </table></div>
+  <div class="note"><b>範圍界定：</b>公司「安心環境服務」、6 位客戶、地址、材料與負責人員都是虛構的。材料代碼（A-1、B-1…）與用量都是編出來的示意。</div>
+</section>
+
+<section id="problem">
+  <div class="eyebrow">專案介紹 · 02</div>
+  <h2>要解決的問題：每份計畫書都要翻舊檔照抄</h2>
+  <p>一開始我想自動化「寄送簽署連結、追蹤回簽、歸檔」，結果到公司打工時發現，公司系統已經補上這些功能：會偵測回簽，首頁會列出已簽署但還沒歸檔的計畫書，也會把一個月內的行程整理成通知單寄給客戶確認。<b>真正剩下、最花時間的，是製作計畫書本身。</b></p>
+  <h3>老闆教的製作方法</h3>
+  <ol class="steps">
+    <li><b>看行事曆</b>行事曆只寫日期、施作類型、客戶名稱和時間。類型分成 A 類、B 類，以及兩者合併的 A+B 類。</li>
+    <li><b>找同一位客戶的上一份計畫書</b>完全照抄地址、施作範圍、負責人員、施作時間和施作需時。</li>
+    <li><b>找同類型的計畫書</b>材料和配比要照「同類型」的上一份。如果上一份類型不同，就要往前翻，檔名裡有寫類型。</li>
+    <li><b>一格一格填進系統</b>系統只能手動填寫，沒辦法匯入。</li>
+  </ol>
+  <h3>為什麼這件事值得自動化</h3>
+  <p>每一步都不難，但是<b>完全照固定規則、每天重複好幾次</b>，而且最容易出錯的地方剛好最危險：類型不同時忘記往前找，把 B 的材料抄到 A 的計畫書。這會直接影響現場施作，比漏存一份檔案嚴重得多。</p>
+  <div class="tbl"><table>
+    <tr><th>階段</th><th>我在做什麼</th><th>感受</th><th>改善機會</th></tr>
+    <tr><td>查看行程</td><td>從行事曆找到客戶與類型</td><td>😐 例行</td><td>複製行程文字交給 n8n</td></tr>
+    <tr><td><b>找舊計畫書</b></td><td>開客戶資料夾，找上一份和同類型</td><td>😫 最煩</td><td><b>依檔名自動挑選</b></td></tr>
+    <tr><td><b>照抄填表</b></td><td>開 PDF，11 個欄位一格一格複製</td><td>😩 疲累</td><td><b>自動組成草稿、逐格填入</b></td></tr>
+    <tr><td>生成計畫書</td><td>檢查後生成、取得連結</td><td>😟 擔心</td><td>保留人工檢查與按下生成</td></tr>
+  </table></div>
+  <p><b>自動化的邊界：</b>「判斷要不要生成」留給人。草稿再正確，最後按下「生成計畫書」的一定是人。</p>
+</section>
+
+<section id="solution">
+  <div class="eyebrow">專案介紹 · 03</div>
+  <h2>解決方案：n8n 找舊檔組草稿，小幫手填表</h2>
+  <p>核心想法是<b>把老闆的規則交給 n8n，把判斷留給人</b>。公司系統不能改，所以我不碰它，只做一個「坐在旁邊幫忙打字」的小幫手。</p>
+  <h3>公司規則怎麼變成程式</h3>
+  <div class="tbl"><table>
+    <tr><th>欄位</th><th>從哪裡來</th></tr>
+    <tr><td>施作日期與時間、施作類型、客戶名稱、負責人員</td><td>這次的行程（行程沒寫時間或負責人員，才沿用舊的並加黃框）</td></tr>
+    <tr><td>客戶編號、施作地址、施作範圍、施作需時、備註</td><td>同一位客戶<b>最近一份</b>計畫書</td></tr>
+    <tr><td>材料及配比</td><td>同一位客戶<b>最近一份同類型</b>計畫書；完全沒有同類型 → 留空，請人填</td></tr>
+  </table></div>
+  <p class="cap">「最近」只算行程日期以前的計畫書，所以剛生成的新計畫書不會被拿去抄自己。</p>
+
+  <h3>行程只要一行：時間、類別、客戶、負責人員</h3>
+<pre>2026/12/01 15:00 A 客戶甲 林先生
+<span class="c">└──── 時間 ────┘ └類別┘└客戶┘└負責人員┘</span></pre>
+  <p>公司伺服器的歸檔方式是：<b>以客戶名稱開頭的大資料夾</b>（例如「客戶甲（總店）」），底下有一個<b>「施工計畫書」子資料夾</b>，舊計畫書都在裡面，檔名含日期和類型。所以 n8n 用行程上的客戶名稱去找開頭相同的資料夾，再進「施工計畫書」挑檔案。</p>
+<pre>公司伺服器/
+└─ <span class="s">客戶甲（總店）</span>/            <span class="c">← 以「客戶甲」開頭</span>
+   └─ <span class="s">施工計畫書</span>/
+      ├─ 20260610_客戶甲_<b>A</b>.pdf   <span class="c">← 同類型：抄材料</span>
+      ├─ 20260915_客戶甲_B.pdf
+      └─ 20261101_客戶甲_B.pdf   <span class="c">← 最近一份：抄地址、範圍、需時…</span></pre>
+
+  <h3>六筆行程，六種情況</h3>
+  <div class="tbl"><table>
+    <tr><th>行程（一行）</th><th>公司伺服器</th><th>結果</th></tr>
+    <tr><td>2026/12/01 15:00 A 客戶甲 林先生</td><td>客戶甲（總店）：A、B、<b>B</b>（最近）</td><td>地址等抄 11/01；<b>材料往前抄 06/10 的 A</b></td></tr>
+    <tr><td>2026/12/04 14:00 A 客戶乙 李先生</td><td>客戶乙：A、B、<b>B</b></td><td>材料往前抄 07/02 的 A；時間與負責人員（李先生）用行程上的</td></tr>
+    <tr><td>2026/12/16 08:30 A+B 客戶丙 陳先生</td><td>客戶丙：A+B、A、<b>A</b></td><td><b>材料往前抄 05/20 的 A+B</b></td></tr>
+    <tr><td>2026/12/08 16:30 A 客戶丁 黃先生</td><td>客戶丁：B、B</td><td><b>查無 A → 材料欄黃框留空</b>，請人工填寫</td></tr>
+    <tr><td>2026/12/10 09:30 B 客戶戊 張先生</td><td>客戶戊：B、B</td><td>全部照抄最近一份</td></tr>
+    <tr><td>2026/12/12 10:00 B 客戶己 李先生</td><td>（沒有資料夾）</td><td><b>停止</b>，回覆「請手動建立」</td></tr>
+  </table></div>
+  <p class="cap">如果有兩個資料夾都以同一個名稱開頭（例如「客戶戊」和「客戶戊二店」），名稱完全相同的優先；都不相同就停止，請人在行程寫完整名稱，不會亂猜。</p>
+
+  <h3>工作分配：以前 vs 現在</h3>
+  <div class="tbl"><table>
+    <tr><th>工作</th><th>以前</th><th>現在</th></tr>
+    <tr><td>看行事曆、選這次的行程</td><td>人</td><td>人（把行程打成一行）</td></tr>
+    <tr><td>依客戶名稱找伺服器資料夾、找上一份與同類型</td><td>人</td><td>n8n</td></tr>
+    <tr><td>打開 PDF 讀內容、套規則</td><td>人</td><td>n8n</td></tr>
+    <tr><td>一格一格填進系統</td><td>人</td><td>小幫手（逐格打字，看得到每一格）</td></tr>
+    <tr><td>檢查、按「生成計畫書」</td><td>人</td><td>人（黃框欄位要特別確認）</td></tr>
+    <tr><td>歸檔到公司伺服器、寄送、追蹤回簽</td><td>公司系統</td><td>公司系統（不變）</td></tr>
+  </table></div>
+
+  <h3>實際畫面</h3>
+  <ol class="steps">
+    <li><b>打開公司計畫書系統，點書籤「🤖 計畫書小幫手」</b>右下角出現小幫手面板。</li>
+    <li><b>輸入一行行程</b>例如 <code>2026/12/01 15:00 A 客戶甲 林先生</code>（也可以到行事曆按「複製」再貼上），按「產生草稿並填入表單」。小幫手把行程送給 n8n，幾秒內收到草稿。</li>
+    <li><b>看表單被一格一格填好</b>面板列出每一格抄自哪一份檔案；需要人工確認的欄位會加上黃框。</li>
+    <li><b>檢查後自己按「生成計畫書」</b>取得簽署連結，公司系統自動把 PDF 歸檔到公司伺服器。</li>
+  </ol>
+
+  <h3>用到的工具</h3>
+  <div class="tbl"><table>
+    <tr><th>工具</th><th>在專案裡的角色</th></tr>
+    <tr><td><b>n8n</b></td><td>主角：收到行程、找舊檔、讀 PDF、套規則、回傳草稿，共 12 個節點</td></tr>
+    <tr><td><b>書籤小幫手</b>（JavaScript）</td><td>不修改公司系統，在頁面上把草稿逐格填入</td></tr>
+    <tr><td><b>Docker</b></td><td>在自己電腦上一次架起 n8n、模擬計畫書系統、模擬公司伺服器</td></tr>
+    <tr><td><b>模擬系統</b>（Python）</td><td>代替公司的計畫書系統和伺服器，並準備 5 位客戶共 13 份虛構的歷史計畫書</td></tr>
+    <tr><td><b>生成式 AI</b></td><td>協助規劃流程、撰寫程式與除錯（課程 14.7 的除錯方法）</td></tr>
+  </table></div>
+</section>
+
+<section id="governance">
+  <div class="eyebrow">專案介紹 · 04</div>
+  <h2>把關設計：自動化也要有人負責</h2>
+  <p>自動化最可怕的不是做不到，而是<b>很快地把錯的事做很多次</b>。計畫書錯了會影響現場施作，所以流程裡放了幾道關卡：</p>
+  <div class="tbl"><table>
+    <tr><th>原則</th><th>流程中的做法</th><th>對應課程</th></tr>
+    <tr><td><b>人工把關</b></td><td>小幫手只會「填寫」，不會送出；一定要人檢查後自己按「生成計畫書」</td><td>2.5 人類監督、Human in the Loop</td></tr>
+    <tr><td><b>不確定就交給人</b></td><td>查無同類型材料、沿用上次備註時，欄位加上黃框並說明原因；材料查不到就留空，不會亂猜</td><td>2.5 人類監督</td></tr>
+    <tr><td><b>停機</b></td><td>行程讀不懂、新客戶查無歸檔時，直接停止並說明原因，不產生任何草稿</td><td>2.6 停機機制</td></tr>
+    <tr><td><b>可追溯</b></td><td>面板列出每一格抄自哪一份檔案；n8n 的 Executions 保留每次執行的輸入與輸出</td><td>2.3 可歸責、透明</td></tr>
+    <tr><td><b>資料不出公司</b></td><td>全部在本機執行，不把客戶資料送到雲端 AI；用固定規則讀檔名和 PDF 文字</td><td>2.3 隱私、資料最小化</td></tr>
+    <tr><td><b>不改原系統</b></td><td>小幫手用書籤載入，公司系統一行程式都沒改；拿掉書籤就恢復原狀</td><td>導入風險控管</td></tr>
+  </table></div>
+  <h3>為什麼不讓 AI 直接判斷材料？</h3>
+  <p>材料和配比是有安全風險的內容，老闆的規則也很明確（照同類型的上一份）。用固定規則有三個好處：<b>每次結果都一樣、找得到依據、錯了知道錯在哪</b>。生成式 AI 可能「看起來很合理」地編出一個比例，這正是這個場景最不能接受的。所以查不到同類型時，系統選擇<b>留空交給人</b>，不讓 AI 去猜。</p>
+  <h3>錄影時要示範的兩個關卡</h3>
+  <ul class="tight">
+    <li><b>2026/12/08 16:30 A 客戶丁 黃先生</b>：材料欄黃框留空，面板寫「查無 A 類型的過往計畫書…請人工填寫」。</li>
+    <li><b>2026/12/12 10:00 B 客戶己 李先生</b>：新客戶，小幫手顯示紅字，表單完全不動。</li>
+  </ul>
+  <p>這兩段證明流程「會停、會求助」，而不只是「會跑」。</p>
+</section>
+
+<section id="limits">
+  <div class="eyebrow">專案介紹 · 05</div>
+  <h2>限制與未來</h2>
+  <p>這個作業是「模型屋」：結構和動線都是真的，但要真的在公司用，還需要以下幾件事。</p>
+  <div class="tbl"><table>
+    <tr><th>目前的限制</th><th>影響</th><th>真實環境的做法</th></tr>
+    <tr><td>模擬系統的欄位名稱是我自己定的</td><td>小幫手要知道真實表單每一格叫什麼</td><td>只改 <code>helper.js</code> 最上面的欄位對應，流程不用動</td></tr>
+    <tr><td>舊計畫書是我產生的 PDF，格式固定</td><td>真實 PDF 排版不同，切欄位的方式要調整</td><td>先拿幾份真實 PDF 測試標籤；掃描檔要加文字辨識（OCR）</td></tr>
+    <tr><td>行程要自己打成一行或複製</td><td>一次只處理一份</td><td>行事曆能匯出的話，可以一次產生整個月的草稿清單</td></tr>
+    <tr><td>都在我自己的電腦</td><td>別人用不到</td><td>經主管與 IT 同意後，裝在公司電腦或內部伺服器</td></tr>
+  </table></div>
+  <h3>可以延伸的方向</h3>
+  <ul class="tight">
+    <li><b>規則以外的提醒</b>：例如幼兒園、餐廳等場所的材料限制清單，草稿一碰到就加黃框。</li>
+    <li><b>本機 AI 輔助</b>：行程文字格式很亂時，用本機模型（Ollama）先把文字整理成固定格式，資料一樣不出電腦。</li>
+    <li><b>數據回饋（課程 17.5）</b>：記錄每份草稿被人工改了哪些欄位，找出最常需要修正的地方。</li>
+  </ul>
+</section>
+
+<div class="part p2" id="tech"><div class="eyebrow">Part B</div><h2>技術介紹</h2><p>從網路基礎到每個節點的設定，照順序讀完就能自己重建這個專案。</p></div>
+
+<section id="web">
+  <div class="eyebrow">技術介紹 · 01</div>
+  <h2>網路基礎：網址、HTTP、JSON、跨網站請求</h2>
+  <p>整個專案其實只在做一件事：<b>幾個程式透過網址互相傳資料</b>。先把這一章弄懂，後面每一章都會變簡單。</p>
+  <p><b>網址像地址</b>，找到一台電腦上的一個程式；<b>HTTP 像寄信規則</b>，寄出「請求」、收到「回應」，信封上蓋狀態章；<b>JSON 像填好的表格</b>，大家用同一種格式寫資料；<b>API 是給程式用的窗口</b>，不用看畫面，直接拿資料。</p>
+
+  <h3>拆解一個網址</h3>
+  <div class="url" aria-label="網址拆解">
+    <div class="u1"><span>http://</span><small>協定</small></div>
+    <div class="u2"><span>localhost</span><small>哪一台電腦</small></div>
+    <div class="u3"><span>:8090</span><small>哪個程式（埠號）</small></div>
+    <div class="u4"><span>/客戶甲（總店）/施工計畫書/</span><small>程式裡的哪個東西</small></div>
+  </div>
+  <ul class="tight">
+    <li><code>localhost</code> 是「我自己這台電腦」（<code>127.0.0.1</code>）。</li>
+    <li><b>埠號</b>像分機號碼：8080 計畫書系統、8090 公司伺服器、5678 n8n。</li>
+    <li>網址只能放英數字，中文會變成 <code>%E6%9E%97…</code> 這種百分比編碼，<code>+</code> 會變成 <code>%2B</code>。所以檔名 <code>20260520_客戶丙_A+B.pdf</code> 在網址裡是 <code>…P%2BR.pdf</code>。</li>
+  </ul>
+
+  <h3>GET、POST 與狀態碼</h3>
+  <div class="tbl"><table>
+    <tr><th></th><th>意思</th><th>這個專案裡的例子</th></tr>
+    <tr><td><code>GET</code></td><td>拿東西</td><td>n8n 查客戶資料夾、下載舊計畫書 PDF</td></tr>
+    <tr><td><code>POST</code></td><td>送東西</td><td>小幫手把行程送給 n8n；計畫書系統把 PDF 上傳到公司伺服器</td></tr>
+    <tr><td><code>200</code></td><td>成功</td><td>n8n 回覆草稿</td></tr>
+    <tr><td><code>302</code></td><td>請改去另一個網址</td><td>按「生成計畫書」後轉到完成頁</td></tr>
+    <tr><td><code>403</code></td><td>不准</td><td>想用 <code>../</code> 跳出公司伺服器的資料夾</td></tr>
+    <tr><td><code>404</code></td><td>找不到</td><td>n8n 流程沒啟用、資料夾不存在</td></tr>
+    <tr><td><code>500</code></td><td>對方程式出錯</td><td>看 <code>docker compose logs</code></td></tr>
+  </table></div>
+
+  <h3>n8n 回給小幫手的 JSON</h3>
+<pre>{
+  <span class="k">"ok"</span>: true,
+  <span class="k">"draft"</span>: {
+    <span class="k">"customer"</span>: <span class="s">"客戶甲"</span>, <span class="k">"date"</span>: <span class="s">"2026-12-01"</span>, <span class="k">"time"</span>: <span class="s">"15:00"</span>, <span class="k">"ptype"</span>: <span class="s">"A"</span>,
+    <span class="k">"address"</span>: <span class="s">"範例市東區示範路 210 號 5 樓"</span>,
+    <span class="k">"chemicals"</span>: <span class="s">"A-1 材料 每點 15 g，共 6 點；A-2 輔助片 4 份"</span>, …
+  },
+  <span class="k">"sources"</span>: [ { <span class="k">"fields"</span>: <span class="s">"材料及配比"</span>, <span class="k">"file"</span>: <span class="s">"客戶甲（總店）/施工計畫書/20260610_客戶甲_A.pdf"</span> }, … ],
+  <span class="k">"warnings"</span>: [ <span class="s">"備註沿用 20261101_客戶甲_B.pdf 的內容，請確認…"</span> ],
+  <span class="k">"warn_fields"</span>: [ <span class="s">"note"</span> ]    <span class="c">← 小幫手會把這些欄位加黃框</span>
+}</pre>
+
+  <h3>跨網站請求（CORS）：小幫手為什麼能叫 n8n</h3>
+  <p>小幫手在 <code>localhost:8080</code> 的頁面上執行，卻要呼叫 <code>localhost:5678</code> 的 n8n。埠號不同，瀏覽器就當成「不同網站」，基於安全預設<b>不讓網頁讀取別的網站的回應</b>，除非對方在回應中加上：</p>
+<pre><span class="k">Access-Control-Allow-Origin:</span> *    <span class="c">← n8n 的 Respond to Webhook 節點加這個標頭</span></pre>
+  <p>另外，小幫手刻意用<b>表單格式</b>（<code>application/x-www-form-urlencoded</code>）送出行程，而不是 JSON。這屬於瀏覽器定義的「簡單請求」，不需要先送一次 <code>OPTIONS</code> 預檢，n8n 也會自動把 <code>schedule=…</code> 解析到 <code>body.schedule</code>。</p>
+
+  <h3>上傳檔案：multipart/form-data</h3>
+  <p>JSON 只能放文字，PDF 是二進位資料。計畫書系統把 PDF 歸檔到公司伺服器時，用 <code>multipart/form-data</code>：一個請求切成好幾段，各放 <code>folder</code>、<code>filename</code>、<code>file</code>，和網頁上的「選擇檔案＋送出」是同一種格式。</p>
+</section>
+
+<section id="docker">
+  <div class="eyebrow">技術介紹 · 02</div>
+  <h2>Docker：一個指令把三個程式架起來</h2>
+  <p>Docker 把程式和它需要的一切<b>裝進一個便當盒</b>，到哪台電腦都一樣。<b>Image</b> 是食譜＋材料包，<b>Container</b> 是做好、正在吃的便當，<b>Dockerfile</b> 是手寫食譜，<b>Volume</b> 是吃完還留著的保鮮盒，<b>Compose</b> 是一次點好幾個便當的點餐單。</p>
+  <div class="term-h"><span>Downloads\n8n作業_公開版\docker-compose.yml（重點）</span></div>
+<pre><span class="k">services:</span>
+  <span class="k">plan-site:</span>                                  <span class="c"># 模擬公司計畫書系統</span>
+    <span class="k">build:</span> <span class="s">./plan-site</span>                       <span class="c"># 照 Dockerfile 自己做</span>
+    <span class="k">ports:</span> [<span class="s">"8080:8080"</span>]                     <span class="c"># 電腦的 8080 → 容器的 8080</span>
+    <span class="k">volumes:</span> [<span class="s">"./plan_data:/data"</span>]
+    <span class="k">environment:</span>
+      - <span class="s">FILE_SERVER_URL=http://file-server:8090</span>  <span class="c"># 生成時自動歸檔</span>
+      - <span class="s">TZ=CST-8</span>                              <span class="c"># 台灣時間</span>
+
+  <span class="k">file-server:</span>                                <span class="c"># 模擬公司伺服器＋小幫手書籤</span>
+    <span class="k">build:</span> <span class="s">./file-server</span>
+    <span class="k">ports:</span> [<span class="s">"8090:8090"</span>]
+    <span class="k">volumes:</span> [<span class="s">"./公司伺服器:/srv"</span>]             <span class="c"># 電腦上的資料夾 = 伺服器上的檔案</span>
+
+  <span class="k">n8n:</span>
+    <span class="k">image:</span> <span class="s">n8nio/n8n:latest</span>                  <span class="c"># 下載現成的</span>
+    <span class="k">ports:</span> [<span class="s">"5678:5678"</span>]
+    <span class="k">volumes:</span> [<span class="s">"./n8n_data:/home/node/.n8n"</span>]   <span class="c"># 帳號、流程都存在這</span>
+    <span class="k">environment:</span> [<span class="s">GENERIC_TIMEZONE=Asia/Taipei</span>, <span class="s">TZ=Asia/Taipei</span>]</pre>
+  <div class="tbl"><table>
+    <tr><th>指令</th><th>用途</th></tr>
+    <tr><td><code>docker compose up -d --build --remove-orphans</code></td><td>建立並啟動；<code>--build</code> 重做自己寫的 image；<code>--remove-orphans</code> 移除 compose 裡已經沒有的容器（舊的 ollama）</td></tr>
+    <tr><td><code>docker compose ps</code></td><td>看三個容器是不是 running</td></tr>
+    <tr><td><code>docker compose logs file-server</code></td><td>看某個容器的紀錄</td></tr>
+    <tr><td><code>docker compose down</code></td><td>停止並移除容器；掛載的資料夾都保留</td></tr>
+  </table></div>
+
+  <h3>容器之間怎麼找到對方</h3>
+  <p>Compose 會替這些服務建立一個私人網路，裡面有內建 DNS：<b>服務名稱就是主機名稱</b>。所以 n8n 下載舊計畫書時寫 <code>http://file-server:8090/…</code>，計畫書系統歸檔時也寫 <code>http://file-server:8090</code>。在容器裡寫 <code>localhost</code>，指的是容器自己。</p>
+  <p>反過來，<b>瀏覽器不在 Docker 網路裡</b>，只能用 <code>localhost:5678</code> 這種經過 port mapping 的網址。小幫手是在瀏覽器裡執行的，所以它呼叫 n8n 用的是 <code>http://localhost:5678/webhook/plan-draft-public</code>。<b>同一個服務有兩個網址，要看「誰在連」</b>，這是最容易搞混的地方。</p>
+
+  <h3>容器與虛擬機的差別</h3>
+  <p>虛擬機（像 VMware 裡的 Kali）模擬一整台電腦；容器<b>共用主機的 Linux 核心</b>，靠 namespaces 隔開檔案系統和網路、cgroups 限制資源，所以幾秒就能啟動。Windows 上的 Docker Desktop 會在背景開一台輕量的 Linux（WSL 2）來跑容器。</p>
+  <p><b>時區小插曲：</b>容器預設用國際標準時間（UTC），計畫書時間會少 8 小時，所以加了 <code>TZ=CST-8</code>。這種 POSIX 寫法不需要容器裡有時區資料庫，精簡版 image 也能用。</p>
+</section>
+
+<section id="plansite">
+  <div class="eyebrow">技術介紹 · 03</div>
+  <h2>模擬計畫書系統 plan-site</h2>
+  <p>代表「公司現有、不能修改」的系統：承辦人手動填 11 個欄位，按「生成計畫書」取得簽署連結；生成時自動把未簽署 PDF 歸檔到公司伺服器，客戶簽署後換成已簽署版。</p>
+  <div class="tbl"><table>
+    <tr><th>網址</th><th>做什麼</th></tr>
+    <tr><td><code>GET /</code></td><td>建立計畫書表單＋清單（顯示歸檔狀態）</td></tr>
+    <tr><td><code>GET /schedule</code></td><td>12 月行事曆，每筆行程有「複製」按鈕</td></tr>
+    <tr><td><code>POST /create</code></td><td>生成計畫書 → 產生 PDF → 上傳到公司伺服器 → 轉到完成頁</td></tr>
+    <tr><td><code>GET /s/編號</code></td><td>客戶簽署頁</td></tr>
+    <tr><td><code>POST /s/編號/sign</code></td><td>送出簽名 → 用同一個檔名覆蓋成已簽署版</td></tr>
+    <tr><td><code>GET /api/plans/編號</code></td><td>計畫書 JSON</td></tr>
+  </table></div>
+  <h3>表單欄位（小幫手靠 name 找到它們）</h3>
+  <div class="tbl"><table>
+    <tr><th>欄位</th><th>name</th><th>類型</th></tr>
+    <tr><td>客戶編號／客戶名稱</td><td><code>customer_id</code>／<code>customer</code></td><td>文字</td></tr>
+    <tr><td>施作地址</td><td><code>address</code></td><td>文字</td></tr>
+    <tr><td>施作日期</td><td><code>date</code></td><td>日期（<code>2026-12-04</code>）</td></tr>
+    <tr><td>施作時間／施作需時</td><td><code>time</code>／<code>duration</code></td><td>文字</td></tr>
+    <tr><td>施作類型</td><td><code>ptype</code></td><td>下拉選單：A、B、A+B</td></tr>
+    <tr><td>施作範圍／材料及配比</td><td><code>scope</code>／<code>chemicals</code></td><td>多行文字</td></tr>
+    <tr><td>負責人員／備註</td><td><code>worker</code>／<code>note</code></td><td>文字</td></tr>
+  </table></div>
+  <h3>PDF 版面是固定的</h3>
+  <p>PDF 用 ReportLab 產生，每個欄位都是「<b>標籤</b>＋<b>內容</b>」，順序固定：計畫書編號 → 客戶編號 → 客戶名稱 → 施作地址 → 施作日期 → 施作時間 → 施作需時 → 施作類型 → 負責人員 → 施作範圍 → 材料及配比 → 備註 → 施工注意事項。這個固定順序就是 n8n 讀回內容的依據（〈讀 PDF 與套規則〉）。真實公司的計畫書通常也有固定格式，原理相同。</p>
+  <h3>自動歸檔的檔名規則</h3>
+<pre>公司伺服器/<span class="s">客戶甲（總店）</span>/施工計畫書/<span class="s">20261201_客戶甲_A.pdf</span>
+            <span class="c">└ 以客戶名稱開頭 ┘             └ 施作日期_客戶名稱_類型 ┘</span></pre>
+  <p>歸檔前先問公司伺服器「以這個客戶名稱開頭、底下有施工計畫書的資料夾」是哪一個；找不到（新客戶）就用客戶名稱新建一個。</p>
+  <p>生成時存未簽署版，客戶簽完<b>用同一個檔名覆蓋</b>成已簽署版，一份計畫書只會有一個檔案，下次 n8n 挑檔時不會重複。</p>
+  <h3>資安設計（沿用）</h3>
+  <ul class="tight">
+    <li>計畫書編號加 6 位隨機碼，防止改網址猜到別人的計畫書（IDOR）。</li>
+    <li>編號必須完全符合格式才讀檔，防止路徑穿越。</li>
+    <li>輸出到網頁前一律跳脫，防止 XSS。</li>
+    <li>寫入時加鎖（Lock），防止同時建立造成編號重複。</li>
+  </ul>
+</section>
+
+<section id="fileserver">
+  <div class="eyebrow">技術介紹 · 04</div>
+  <h2>公司伺服器 file-server</h2>
+  <p>像<b>有兩扇門的抽屜</b>：一扇是檔案總管裡的 <code>公司伺服器</code> 資料夾，一扇是網址 <code>http://localhost:8090</code>，裡面是同一份檔案。裡面已經放了 5 位客戶共 13 份歷史計畫書，結構和公司一樣：<b>以客戶名稱開頭的大資料夾 → 施工計畫書 → PDF</b>。</p>
+  <div class="tbl"><table>
+    <tr><th>網址</th><th>做什麼</th><th>誰用</th></tr>
+    <tr><td><code>GET /</code>、<code>GET /資料夾/</code></td><td>瀏覽資料夾與 PDF</td><td>人</td></tr>
+    <tr><td><code>GET /api/folders?prefix=客戶甲&amp;sub=施工計畫書</code></td><td>找以「客戶甲」開頭、底下有「施工計畫書」（裡面有 PDF）的大資料夾</td><td>n8n、計畫書系統</td></tr>
+    <tr><td><code>GET /api/list/客戶甲（總店）/施工計畫書</code></td><td>檔名清單＋每個檔案的網址與修改日</td><td>n8n</td></tr>
+    <tr><td><code>POST /api/upload</code></td><td>上傳（folder、filename、file）</td><td>計畫書系統</td></tr>
+    <tr><td><code>GET /tools/</code>、<code>/tools/helper.js</code></td><td>小幫手安裝頁與程式</td><td>人、書籤</td></tr>
+  </table></div>
+<pre><span class="c"># GET /api/folders?prefix=客戶甲&amp;sub=施工計畫書</span>
+{ <span class="k">"count"</span>: 1, <span class="k">"folders"</span>: [<span class="s">"客戶甲（總店）"</span>],
+  <span class="k">"path"</span>: <span class="s">"客戶甲（總店）/施工計畫書"</span>,
+  <span class="k">"list"</span>: <span class="s">"/api/list/%E5%AE%A2…/%E6%96%BD…"</span>,      <span class="c">← n8n 下一步直接用這個網址</span>
+  <span class="k">"message"</span>: <span class="s">"找到客戶資料夾：客戶甲（總店）/施工計畫書"</span> }
+
+<span class="c"># GET /api/list/客戶甲（總店）/施工計畫書</span>
+{ <span class="k">"files"</span>: [<span class="s">"20260610_客戶甲_A.pdf"</span>, <span class="s">"20260915_客戶甲_B.pdf"</span>, <span class="s">"20261101_客戶甲_B.pdf"</span>],
+  <span class="k">"urls"</span>:  { <span class="s">"20260610_客戶甲_A.pdf"</span>: <span class="s">"/%E5%AE%A2…/20260610_%E5%AE%A2…_A.pdf"</span>, … },
+  <span class="k">"mtime"</span>: { <span class="s">"20260610_客戶甲_A.pdf"</span>: <span class="s">"20260610"</span>, … } }    <span class="c">← 檔名沒日期時的備案</span></pre>
+  <h3>依名稱找資料夾的規則</h3>
+  <div class="tbl"><table>
+    <tr><th>情況</th><th>結果</th></tr>
+    <tr><td>剛好一個資料夾以這個名稱開頭</td><td>就是它（客戶甲 → 客戶甲（總店））</td></tr>
+    <tr><td>好幾個，其中一個名稱完全相同</td><td>用完全相同的（客戶戊 vs 客戶戊二店 → 客戶戊）</td></tr>
+    <tr><td>好幾個，都不完全相同</td><td>停止，請人寫完整名稱（不亂猜）</td></tr>
+    <tr><td>一個都沒有</td><td>停止，可能是新客戶，請手動建立</td></tr>
+  </table></div>
+  <p>回應裡的 <code>message</code> 是給人看的說明，n8n 停止時會直接把它回給小幫手顯示。</p>
+  <h3>防止路徑穿越</h3>
+  <p>如果有人把資料夾填成 <code>../../etc</code>，天真的程式會把檔案寫到伺服器外面。這裡有兩道防線：先清掉 <code>..</code>、斜線與 Windows 不允許的字元；再算出絕對路徑，只要不在 <code>/srv</code> 底下就回 403。這叫<b>多層防禦</b>：不要只靠一道檢查。</p>
+</section>
+
+<section id="helper">
+  <div class="eyebrow">技術介紹 · 05</div>
+  <h2>計畫書小幫手：不改系統也能自動填表</h2>
+  <p>公司系統不能改，n8n 也沒辦法直接操作別人的網頁。解法是做一個<b>書籤小工具（bookmarklet）</b>：書籤的網址不是網站，而是一小段 JavaScript。點下去，它就在<b>目前這個頁面</b>載入小幫手的程式。</p>
+<pre><span class="k">javascript:</span>(function(){
+  var s = document.createElement('script');
+  s.src = 'http://localhost:8090/tools/helper.js?t=' + Date.now();   <span class="c">// 每次都抓最新版</span>
+  document.body.appendChild(s);
+})();</pre>
+  <h3>小幫手做的事</h3>
+  <ol class="steps">
+    <li><b>畫出面板</b>放在 Shadow DOM 裡，樣式和公司網頁互不影響。</li>
+    <li><b>送出行程</b>使用者輸入一行行程（例如 <code>2026/12/01 15:00 A 客戶甲 林先生</code>），按按鈕或 Ctrl + Enter，<code>fetch</code> POST 到 n8n。先試正式網址 <code>/webhook/plan-draft-public</code>，回 404 時改試測試網址 <code>/webhook-test/plan-draft-public</code>；兩個都 404 就提示「流程還沒 Publish」。</li>
+    <li><b>逐格「打字」</b>對每個欄位：捲到畫面中間 → 聚焦 → 一個字一個字加進去，每加一個字就送出 <code>input</code> 事件。下拉選單和日期欄直接設值，再送出 <code>change</code> 事件。</li>
+    <li><b>標示與說明</b>把 <code>warn_fields</code> 裡的欄位加黃框，列出 warnings 與每一格的依據。<b>不會按送出鈕。</b></li>
+  </ol>
+  <h3>為什麼要觸發 input／change 事件？</h3>
+  <p>只改 <code>el.value</code>，畫面上看得到字，但很多網站（尤其用 React、Vue 寫的）是靠「事件」才知道使用者輸入了東西。不送事件，網站可能以為欄位還是空的，送出時就被清掉。模擬真人打字並送出事件，是自動填表最穩的做法。</p>
+  <h3>換到真的公司系統只要改一段</h3>
+<pre><span class="c">// helper.js 最上面</span>
+fields: [
+  [<span class="s">'customer_id'</span>, <span class="s">'[name="customer_id"]'</span>, <span class="s">'客戶編號'</span>],   <span class="c">// 草稿欄位, 公司表單上的選擇器, 顯示名稱</span>
+  [<span class="s">'address'</span>,     <span class="s">'[name="address"]'</span>,     <span class="s">'施作地址'</span>],
+  …
+]</pre>
+  <p>用瀏覽器的「檢查」（F12）看真實表單每一格的 <code>name</code> 或 <code>id</code>，填進第二欄即可，n8n 流程完全不用動。這種設計叫<b>關注點分離</b>：n8n 只負責「內容」，小幫手只負責「填到哪」。</p>
+</section>
+
+<section id="n8n">
+  <div class="eyebrow">技術介紹 · 06</div>
+  <h2>n8n 基礎：把工作畫成流水線</h2>
+  <p>n8n 是工作流程自動化工具：把一個個<b>節點</b>用線連起來，資料從左流到右。<b>觸發節點是門鈴</b>，門鈴一響，流水線上的工人依序處理同一份資料。</p>
+  <div class="tbl"><table>
+    <tr><th>名詞</th><th>意思</th><th>在這個專案</th></tr>
+    <tr><td><b>Webhook</b></td><td>一個專屬網址，有人 POST 進來就啟動流程</td><td>「收到行程」節點，網址 <code>/webhook/plan-draft-public</code></td></tr>
+    <tr><td><b>Respond to Webhook</b></td><td>決定回什麼給呼叫的人</td><td>「回覆草稿」「回覆無法產生」</td></tr>
+    <tr><td><b>Code</b></td><td>寫一小段 JavaScript</td><td>解析行程、挑選參考檔、組合草稿</td></tr>
+    <tr><td><b>If</b></td><td>條件分岔：true／false 兩條路</td><td>行程讀得懂？有歸檔嗎？</td></tr>
+    <tr><td><b>HTTP Request</b></td><td>對任何網址發請求</td><td>查資料夾、列檔名、下載 PDF</td></tr>
+    <tr><td><b>Extract From File</b></td><td>把檔案內容轉成文字或資料</td><td>讀取 PDF 文字</td></tr>
+    <tr><td><b>Execution</b></td><td>每跑一次留下的紀錄</td><td>出錯時看哪個節點紅了</td></tr>
+  </table></div>
+  <h3>資料長什麼樣：items</h3>
+  <p>節點之間傳的是一個陣列，每個元素是一個 item，裡面有 <code>json</code>（一般資料）和 <code>binary</code>（檔案）。大多數節點會<b>對每個 item 各做一次</b>：「挑選參考檔」輸出 2 個 item（最近一份、同類型一份），後面的「下載舊計畫書」就自動下載 2 次，不用自己寫迴圈。</p>
+  <h3>運算式</h3>
+  <div class="tbl"><table>
+    <tr><th>寫法</th><th>意思</th></tr>
+    <tr><td><code>{{ $json.customer_id }}</code></td><td>上一個節點輸出的欄位</td></tr>
+    <tr><td><code>{{ encodeURIComponent($json.folders[0]) }}</code></td><td>把中文資料夾名稱轉成網址可用的格式</td></tr>
+    <tr><td><code>$('解析行程').first().json</code></td><td>（Code 節點裡）回頭拿指定節點的輸出</td></tr>
+    <tr><td><code>$input.all()</code></td><td>（Code 節點裡）這個節點收到的全部 items</td></tr>
+  </table></div>
+  <p><b>Webhook 的兩個網址：</b>測試網址 <code>/webhook-test/…</code> 只有在節點上按 <b>Listen for test event</b> 後收<b>一次</b>；正式網址 <code>/webhook/…</code> 要流程 <b>Publish</b>（啟用）後才有效。</p>
+  <p><b>Respond 模式：</b>「收到行程」設成 <i>Using 'Respond to Webhook' Node</i>，代表 n8n 先不回應，等流程跑到 Respond 節點才把結果送回去。小幫手因此能「問一次、拿到完整草稿」。</p>
+</section>
+
+<section id="flows">
+  <div class="eyebrow">技術介紹 · 07</div>
+  <h2>流程逐節點：「計畫書草稿自動產生」</h2>
+  <p>整條流程有 12 個節點：主線 11 個，加上一個「回覆無法產生」的出口。下圖是實際匯入 n8n 後的畫面：</p>
+  <figure style="margin:16px 0">
+    <img src="data:image/jpeg;base64,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+3FGecUABzjjGfelpCcDNLQAgzjnGfajnPbFAORkZozzigAOeMY96WkJxjrzxS0AAzgZxnvikGcnOMdqAcgH1oBySPSgAOcjGMd6U5wcYz70hOCB60E4BPpQAtIM98fhS0gOf5UAHOe2KDnHGM+9GecUE4GeaAFpBnHOM+1LSA5GeaADnPbFBzxjHvRnnFBOMe9AC0DOOetFAORmgBBnnOPajnI6Y70A5z7UZwQPWgAOcHGM9s0tITgE88elLQAgz3x+FHOe2KAc+vpRnnHPrQAHPbH40tITiloAQZwM4z7Uc5PTHagHIB559aM8kelAAc8Yx70pzjjrSE4x70pOBmgAopAAM4HXmjAznHPSgBaKQgEYIzS0AFFIAFGAMCjAznHJoAWikIBxkdORS9aACigAAYHQUgABJA69aAFopMAkHHIoIDAgjINAC0UUgAHQe9AC0UmBnOOelBAPUZoAWiikACjAGAKAFopMAEnHJoIBxkdOlAC0UEZGD0oAwMUAFFIABnA680YGQccigBaKQgMMHkUtABRSAADAFGBnPfpQAtFIQD1HvS0AFFIAFAAGAKAACTjk9aAFopCASCR06UpAIIPINABRRSAAZx35oAWikwM5xzQQGGDyKAFoopAAowBgUALRSYGc45oIBxkdOaAFoooAAAA6CgAopAACSB160EAkHHI6UALRSEBgQRkGloAKKQADoOvNGBnOOelAC0UhAIwRmloAKKQAKMAYFGBknHJoAWikIBxkdORSkZGKACigDAwKQADOB15NAC0UmASDjkUEBhg8g0ALRRSAAdBigBaKTAznHPSggHqPegBaKKQAKAAMAUALRSYAJOOTQQDgkdOlAC0UEZGD0NHTigAopAAM4HXmjAyDjkUALRSEBhgjIpaACikAAGAMUYGc456UALTZI1lQo4yppSAcZHQ5rmPHmqXemW1i1tfXFkjPO8z26xtIyR28km0eYpUZKDnFAHTLLdRDaHjlUdC+Q34kdad9qu/+ecH/AH0f8K8z0zxDqv2+OJtbvZFUyxSxubadB/orSoytDGDkEDjn6GuSj+JHigXvlnWXKkI3FugU71XaMlRnBzkjI5HJwaAPeftV3/zzg/76P+FH2m7/AOecH/fR/wAK8o8V/EDxNoni6+tIEhFrCsUcMUlsJeocmQkSodxxjHTA/Pf0rxLq+reHtP1S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" alt="n8n 畫布：收到行程、解析行程、行程讀得懂？、查詢歸檔資料夾、有歸檔嗎？、列出舊計畫書、挑選參考檔、下載舊計畫書、讀取PDF文字、組合草稿、回覆草稿；兩個 If 的 false 都接到回覆無法產生" style="width:100%;border:1px solid var(--line);border-radius:12px;background:#fff">
+    <figcaption class="cap">n8n 2.x 實際畫面（作者實測）。兩個 If 節點的 false 都接到下方的「回覆無法產生」。</figcaption>
+  </figure>
+
+  <h3>時序圖：誰在什麼時候跟誰講話</h3>
+  <p>實線是請求，虛線是回應，橘色是節點內部的處理。n8n 是整個流程的指揮：小幫手只跟 n8n 講話，n8n 自己去公司伺服器找資料。</p>
+  <div class="diagram" role="img" aria-label="時序圖：小幫手把行程交給 n8n，n8n 向公司伺服器找資料夾、列檔名、下載 PDF，組好草稿回給小幫手，小幫手填表，人按生成，系統歸檔">
+<svg viewBox="0 0 900 625">
+<rect x="8" y="16" width="124" height="40" rx="10" fill="var(--paper)" stroke="var(--line)" stroke-width="2"/><text x="70" y="41" text-anchor="middle" font-size="14" font-weight="700" fill="var(--ink)">人</text>
+<line x1="70" y1="56" x2="70" y2="615" stroke="var(--line)" stroke-width="2" stroke-dasharray="4 4"/>
+<rect x="178" y="16" width="124" height="40" rx="10" fill="var(--paper)" stroke="#7c3aed" stroke-width="2"/><text x="240" y="41" text-anchor="middle" font-size="14" font-weight="700" fill="var(--ink)">小幫手</text>
+<line x1="240" y1="56" x2="240" y2="615" stroke="var(--line)" stroke-width="2" stroke-dasharray="4 4"/>
+<rect x="368" y="16" width="124" height="40" rx="10" fill="var(--paper)" stroke="var(--teal)" stroke-width="2"/><text x="430" y="41" text-anchor="middle" font-size="14" font-weight="700" fill="var(--ink)">n8n</text>
+<line x1="430" y1="56" x2="430" y2="615" stroke="var(--line)" stroke-width="2" stroke-dasharray="4 4"/>
+<rect x="568" y="16" width="124" height="40" rx="10" fill="var(--paper)" stroke="var(--ok)" stroke-width="2"/><text x="630" y="41" text-anchor="middle" font-size="14" font-weight="700" fill="var(--ink)">file-server</text>
+<line x1="630" y1="56" x2="630" y2="615" stroke="var(--line)" stroke-width="2" stroke-dasharray="4 4"/>
+<rect x="768" y="16" width="124" height="40" rx="10" fill="var(--paper)" stroke="var(--amber)" stroke-width="2"/><text x="830" y="41" text-anchor="middle" font-size="14" font-weight="700" fill="var(--ink)">plan-site</text>
+<line x1="830" y1="56" x2="830" y2="615" stroke="var(--line)" stroke-width="2" stroke-dasharray="4 4"/>
+<line x1="70" y1="95" x2="238" y2="95" stroke="var(--ink)" stroke-width="2"/><polygon points="240,95 231,90 231,100" fill="var(--ink)"/>
+<text x="155.0" y="88" text-anchor="middle" font-size="12" fill="var(--ink)">① 輸入「2026/12/01 15:00 A 客戶甲 林先生」</text>
+<line x1="240" y1="129" x2="428" y2="129" stroke="var(--ink)" stroke-width="2"/><polygon points="430,129 421,124 421,134" fill="var(--ink)"/>
+<text x="335.0" y="122" text-anchor="middle" font-size="12" fill="var(--ink)">② POST /webhook/plan-draft-public</text>
+<path d="M430 155 h30 v16 h-30" fill="none" stroke="var(--amber)" stroke-width="2"/><text x="468" y="167" font-size="12" fill="var(--amber)" font-weight="700">③ 解析：12/01 15:00 A 客戶甲 林先生</text>
+<line x1="430" y1="197" x2="628" y2="197" stroke="var(--ink)" stroke-width="2"/><polygon points="630,197 621,192 621,202" fill="var(--ink)"/>
+<text x="530.0" y="190" text-anchor="middle" font-size="12" fill="var(--ink)">④ GET /api/folders?prefix=客戶甲</text>
+<line x1="630" y1="231" x2="432" y2="231" stroke="var(--muted)" stroke-width="2" stroke-dasharray="6 4"/><polygon points="430,231 439,226 439,236" fill="var(--muted)"/>
+<text x="530.0" y="224" text-anchor="middle" font-size="12" fill="var(--muted)">⑤ 客戶甲（總店）/施工計畫書</text>
+<line x1="430" y1="265" x2="628" y2="265" stroke="var(--ink)" stroke-width="2"/><polygon points="630,265 621,260 621,270" fill="var(--ink)"/>
+<text x="530.0" y="258" text-anchor="middle" font-size="12" fill="var(--ink)">⑥ GET 檔名清單</text>
+<line x1="630" y1="299" x2="432" y2="299" stroke="var(--muted)" stroke-width="2" stroke-dasharray="6 4"/><polygon points="430,299 439,294 439,304" fill="var(--muted)"/>
+<text x="530.0" y="292" text-anchor="middle" font-size="12" fill="var(--muted)">⑦ 3 個檔名</text>
+<path d="M430 325 h30 v16 h-30" fill="none" stroke="var(--amber)" stroke-width="2"/><text x="468" y="337" font-size="12" fill="var(--amber)" font-weight="700">⑧ 挑選：1101 B ＋ 0610 A</text>
+<line x1="430" y1="367" x2="628" y2="367" stroke="var(--ink)" stroke-width="2"/><polygon points="630,367 621,362 621,372" fill="var(--ink)"/>
+<text x="530.0" y="360" text-anchor="middle" font-size="12" fill="var(--ink)">⑨ GET 2 份 PDF</text>
+<line x1="630" y1="401" x2="432" y2="401" stroke="var(--muted)" stroke-width="2" stroke-dasharray="6 4"/><polygon points="430,401 439,396 439,406" fill="var(--muted)"/>
+<text x="530.0" y="394" text-anchor="middle" font-size="12" fill="var(--muted)">⑩ PDF 檔案</text>
+<path d="M430 427 h30 v16 h-30" fill="none" stroke="var(--amber)" stroke-width="2"/><text x="468" y="439" font-size="12" fill="var(--amber)" font-weight="700">⑪ 讀 PDF 文字、套規則</text>
+<line x1="430" y1="469" x2="242" y2="469" stroke="var(--muted)" stroke-width="2" stroke-dasharray="6 4"/><polygon points="240,469 249,464 249,474" fill="var(--muted)"/>
+<text x="335.0" y="462" text-anchor="middle" font-size="12" fill="var(--muted)">⑫ 200 草稿 JSON</text>
+<line x1="240" y1="503" x2="828" y2="503" stroke="var(--ink)" stroke-width="2"/><polygon points="830,503 821,498 821,508" fill="var(--ink)"/>
+<text x="535.0" y="496" text-anchor="middle" font-size="12" fill="var(--ink)">⑬ 逐格填入表單</text>
+<line x1="70" y1="537" x2="828" y2="537" stroke="var(--ink)" stroke-width="2"/><polygon points="830,537 821,532 821,542" fill="var(--ink)"/>
+<text x="450.0" y="530" text-anchor="middle" font-size="12" fill="var(--ink)">⑭ 檢查後按「生成計畫書」</text>
+<line x1="830" y1="571" x2="632" y2="571" stroke="var(--ink)" stroke-width="2"/><polygon points="630,571 639,566 639,576" fill="var(--ink)"/>
+<text x="730.0" y="564" text-anchor="middle" font-size="12" fill="var(--ink)">⑮ 依名稱找資料夾並歸檔</text>
+</svg>
+  </div>
+
+  <h3>互動拆解：點節點看設定和輸出</h3>
+  <p>點左邊的節點，右邊會顯示它的作用、設定和輸出（以 <code>2026/12/01 15:00 A 客戶甲 林先生</code> 為例）。標橘色標籤的是把關節點。</p>
+  <div class="tabs" role="tablist" id="tabs"></div>
+  <div class="explorer">
+    <div class="nodes" id="nodes"></div>
+    <div class="detail" id="detail" aria-live="polite"></div>
+  </div>
+</section>
+
+<section id="rules">
+  <div class="eyebrow">技術介紹 · 08</div>
+  <h2>讀 PDF 與套規則：三個 Code 節點在做什麼</h2>
+  <h3>1. 解析行程：從一行文字讀出五件事</h3>
+<pre>2026/12/01 15:00 A 客戶甲 林先生
+<span class="c">└ 日期 ──┘└時間┘└類別┘└客戶┘└負責人員┘</span>
+
+<span class="k">日期</span>  /(\d{4})\s*[\/\-.年]\s*(\d{1,2})\s*[\/\-.月]\s*(\d{1,2})/   → 2026-12-01
+<span class="k">類型</span>  /P\s*\+\s*R|A|B/i                                      → A
+<span class="k">時間</span>  /([01]?\d|2[0-3])\s*[:：]\s*([0-5]\d)/                     → 15:00
+<span class="k">客戶</span>  把上面三樣和星期、符號拿掉，剩下的第 1 個詞                  → 客戶甲
+<span class="k">負責人員</span>  剩下的第 2 個詞                                         → 林先生</pre>
+  <p>用<b>正規表示式</b>（regex）描述「長什麼樣子」，所以順序不同、日期寫成 <code>2026-12-01</code> 或 <code>2026年12月1日</code>、多了「（二）」星期都讀得懂。日期、類別、客戶缺一樣，就回 <code>ok:false</code> 並提示格式；時間或負責人員沒寫，則沿用舊計畫書並加黃框。客戶一定要寫在負責人員前面。</p>
+
+  <h3>2. 找資料夾、挑選參考檔</h3>
+<pre>① 用名稱找大資料夾      客戶甲 → 客戶甲（總店）/施工計畫書
+② 每個檔名找出日期與類型  20261101_客戶甲_B.pdf → 20261101、B
+   （檔名沒日期就用檔案修改日）
+③ 只留「日期 &lt; 行程日期」的，由新到舊排序        <span class="c">← 不會抄到自己</span>
+④ latest = 第一份                               <span class="c">→ 20261101_客戶甲_B.pdf</span>
+⑤ same   = 第一份「類型 = A」的                 <span class="c">→ 20260610_客戶甲_A.pdf</span>
+⑥ 兩份不同就輸出 2 個 item，相同就 1 個</pre>
+  <p>8 碼日期（年月日）剛好可以直接用字串比大小：<code>"20261101" &gt; "20260610"</code>，不必轉成日期物件。檔名格式只要求「含日期、含類型」，真實公司的命名稍有不同也能用。</p>
+
+  <h3>3. 組合草稿：依「欄位標籤」切開 PDF 文字</h3>
+  <p>「讀取PDF文字」把 PDF 轉成一大段文字。因為計畫書版面固定，標籤一定照順序出現，所以做法是：<b>依序找到每個標籤的位置，兩個標籤之間的文字就是前一個標籤的內容</b>。</p>
+<pre>…<span class="k">施作地址</span>範例市東區示範路 210 號 5 樓<span class="k">施作日期</span>2026-11-01<span class="k">施作時間</span>13:30…
+     └──────────── 施作地址的內容 ─────────────┘</pre>
+  <ul class="tight">
+    <li>找下一個標籤時，從上一個標籤<b>之後</b>開始找。「負責人員」也出現在注意事項裡，但那在後面，不會誤抓。</li>
+    <li>內容裡的換行全部拿掉，因為 PDF 自動換行會把「共 1」和「2 站」拆開。</li>
+    <li>內容是「—」代表原本空白，當成空字串。</li>
+  </ul>
+  <h3>套規則與提醒</h3>
+  <div class="tbl"><table>
+    <tr><th>情況</th><th>材料及配比</th><th>提醒（黃框）</th></tr>
+    <tr><td>最近一份就是同類型</td><td>抄最近一份</td><td>—</td></tr>
+    <tr><td>最近一份類型不同，前面有同類型</td><td>抄同類型那份</td><td>—（依據會寫出是哪一份）</td></tr>
+    <tr><td>完全沒有同類型</td><td>留空</td><td><code>chemicals</code>：請人工填寫並請主管確認</td></tr>
+    <tr><td>舊計畫書有備註</td><td>—</td><td><code>note</code>：沿用上次備註，請確認是否仍適用</td></tr>
+    <tr><td>行程名稱和舊檔不同</td><td>—</td><td><code>customer</code>：請確認</td></tr>
+    <tr><td>行程沒寫時間</td><td>—</td><td><code>time</code>：沿用舊計畫書時間，請確認</td></tr>
+    <tr><td>行程沒寫負責人員</td><td>—</td><td><code>worker</code>：沿用舊計畫書的負責人員，請確認</td></tr>
+    <tr><td>舊檔讀不到某個欄位</td><td>—</td><td>該欄位：請人工填寫</td></tr>
+  </table></div>
+  <p>完整程式在 <code>n8n流程\code_parse.js</code>、<code>code_pick.js</code>、<code>code_build.js</code>，每段都有中文註解。</p>
+</section>
+
+<section id="setup">
+  <div class="eyebrow">技術介紹 · 09</div>
+  <h2>建置步驟：從零開始做一次</h2>
+  <p>總時間約 40 分鐘。每一步都附「怎麼確認成功」，確認了再往下。</p>
+  <h3>A. 啟動容器</h3>
+  <ol class="steps">
+    <li><b>點兩下</b><code>Downloads\n8n作業_公開版\啟動公開版.bat</code>。它會先關掉舊的容器，再執行 <code>docker compose up -d --build --remove-orphans</code>，最後打開 localhost:8080。</li>
+    <li><b>確認</b>localhost:8080 表單有 11 個欄位；localhost:8090 看得到 5 個客戶大資料夾；localhost:5678 打得開 n8n。</li>
+  </ol>
+  <h3>B. 匯入 n8n 流程</h3>
+  <ol class="steps">
+    <li><b>新增流程</b>n8n 左上 ＋ → Workflow。</li>
+    <li><b>匯入</b>右上 ⋯ → Import from File… → 選 <code>n8n流程\計畫書草稿自動產生_公開版.json</code>。</li>
+    <li><b>啟用</b>右上角按 Publish。<b>匯入的流程預設沒有啟用</b>，沒按的話小幫手會顯示「正式網址、測試網址都回 404」。</li>
+    <li><b>確認</b>畫面和〈流程逐節點〉的截圖一樣，有 12 個節點。</li>
+  </ol>
+  <h3>C. 安裝小幫手</h3>
+  <ol class="steps">
+    <li><b>打開安裝頁</b>http://localhost:8090/tools/</li>
+    <li><b>拖曳書籤</b>Ctrl + Shift + B 顯示書籤列，把紫色按鈕拖上去。</li>
+    <li><b>確認</b>在 localhost:8080 點書籤，右下角出現小幫手面板。</li>
+  </ol>
+  <h3>D. 跑六種情境</h3>
+  <p>在小幫手輸入以下每一行（或到 localhost:8080/schedule 按「複製」再貼上）：</p>
+  <ol class="steps">
+    <li><b>2026/12/01 15:00 A 客戶甲 林先生</b>表單逐格填好，材料依據是 <code>20260610_客戶甲_A.pdf</code>（往前找）。</li>
+    <li><b>2026/12/04 14:00 A 客戶乙 李先生、2026/12/16 08:30 A+B 客戶丙 陳先生、2026/12/10 09:30 B 客戶戊 張先生</b>都正確填好，依據顯示正確的檔案。</li>
+    <li><b>2026/12/08 16:30 A 客戶丁 黃先生</b>材料欄黃框、空白，面板有說明。</li>
+    <li><b>2026/12/12 10:00 B 客戶己 李先生</b>紅字停止，表單不動。</li>
+    <li><b>生成</b>客戶甲填好後按「生成計畫書」，<code>客戶甲（總店）/施工計畫書</code> 多一份 <code>20261201_客戶甲_A.pdf</code>。</li>
+    <li><b>看紀錄</b>n8n 上方 Executions，點一次執行，逐一點節點看輸入輸出。</li>
+  </ol>
+  <p><b>想自己從頭建？</b>照〈流程逐節點〉的順序新增節點、照抄設定，三個 Code 節點把對應的 <code>.js</code> 整段貼上。節點名稱要一模一樣，因為程式用 <code>$('解析行程')</code>、<code>$('挑選參考檔')</code> 找資料。</p>
+</section>
+
+<section id="debug">
+  <div class="eyebrow">技術介紹 · 10</div>
+  <h2>除錯手冊</h2>
+  <p>除錯就是<b>沿著資料走過的路一站一站檢查</b>：到哪一站還是對的、到哪一站變錯了，問題就在中間。</p>
+  <div class="tbl"><table>
+    <tr><th>症狀</th><th>原因</th><th>解法</th></tr>
+    <tr><td>小幫手：連不到 n8n</td><td>n8n 沒開</td><td><code>docker compose ps</code></td></tr>
+    <tr><td>小幫手：正式網址、測試網址都回 404</td><td>流程沒 Publish，也沒按 Listen</td><td>按 Publish；或按 Listen 後再試（只收一次）</td></tr>
+    <tr><td>小幫手：找不到以○○開頭…</td><td>沒有這個名稱開頭的大資料夾，或底下沒有「施工計畫書」</td><td>看 localhost:8090 的資料夾名稱；新客戶就手動建立</td></tr>
+    <tr><td>小幫手：…不只一個</td><td>好幾個資料夾都以這個名稱開頭</td><td>在行程寫完整名稱</td></tr>
+    <tr><td>小幫手：Error in workflow</td><td>流程中某個節點出錯</td><td>Executions → 紅色那次 → 紅色節點看錯誤</td></tr>
+    <tr><td>點書籤沒反應</td><td>8090 沒在跑，或不是在 8080 頁面點</td><td>打開 localhost:8090/tools/helper.js 看得到程式碼嗎</td></tr>
+    <tr><td>「查詢歸檔資料夾」ECONNREFUSED</td><td>網址寫成 localhost</td><td>改成 <code>http://file-server:8090</code></td></tr>
+    <tr><td>「讀取PDF文字」找不到 binary</td><td>下載節點沒設成 File</td><td>Response Format 選 File，輸出欄位 <code>data</code></td></tr>
+    <tr><td>「組合草稿」：Referenced node doesn't exist</td><td>節點名稱和程式不一致</td><td>改回 <code>解析行程</code>、<code>挑選參考檔</code></td></tr>
+    <tr><td>草稿某一欄是空的</td><td>PDF 標籤和程式的 LABELS 不同</td><td>看「讀取PDF文字」的輸出，找出真正的標籤文字</td></tr>
+    <tr><td>瀏覽器 Console：CORS error</td><td>Respond 節點沒加標頭</td><td>Options → Response Headers：<code>Access-Control-Allow-Origin: *</code></td></tr>
+    <tr><td>生成後「歸檔失敗」</td><td>計畫書系統連不到公司伺服器</td><td>compose 裡 plan-site 要有 <code>FILE_SERVER_URL</code>；看 logs</td></tr>
+  </table></div>
+  <h3>用 curl 繞過小幫手測 n8n</h3>
+<pre>curl -X POST http://localhost:5678/webhook/plan-draft-public --data-urlencode "schedule=2026/12/01 15:00 A 客戶甲 林先生"</pre>
+  <p>curl 成功、小幫手失敗 → 問題在小幫手或 CORS；curl 也失敗 → 問題在 n8n 或公司伺服器。</p>
+  <h3>請 AI 幫忙除錯（課程 14.7）</h3>
+  <p>給 AI 四樣東西：<b>錯誤訊息、節點的輸入、節點的設定、預期結果</b>。比只說「壞了」有效十倍，也記得把這段過程錄進影片。</p>
+</section>
+
+<section id="prod">
+  <div class="eyebrow">技術介紹 · 11</div>
+  <h2>上線考量：要用在真的公司還差什麼</h2>
+  <ul class="tight">
+    <li><b>先取得同意：</b>在公司電腦執行程式、讀取客戶資料，都要經過主管和 IT 同意。</li>
+    <li><b>欄位對應：</b>用 F12 找出真實表單每一格的 <code>name</code> 或 <code>id</code>，改 <code>helper.js</code> 的 <code>CONFIG.fields</code>。如果公司網頁有內容安全政策（CSP），可能會擋書籤載入外部程式，就要改用瀏覽器擴充功能。</li>
+    <li><b>PDF 格式：</b>拿 5～10 份真實舊計畫書測試標籤切割；如果是掃描檔，要先做 OCR 文字辨識。</li>
+    <li><b>伺服器路徑：</b>真實歸檔區如果是網路磁碟（例如 <code>\\server\客戶資料</code>），要把它掛載給 n8n 讀取，或請 IT 提供讀取用的 API。</li>
+    <li><b>權限最小化：</b>n8n 只需要「讀」歸檔區，不需要寫入權限。</li>
+    <li><b>資料不出公司：</b>維持全部本機執行；如果要加 AI，用本機模型，不送到雲端。</li>
+    <li><b>紀錄：</b>保留 Executions 一段時間，必要時能查出某份計畫書的草稿依據是哪幾份舊檔。</li>
+    <li><b>固定版本：</b><code>n8nio/n8n:latest</code> 改成固定版本號，升級前先測試。</li>
+  </ul>
+</section>
+
+<section id="quiz">
+  <div class="eyebrow">技術介紹 · 12</div>
+  <h2>自我檢測</h2>
+  <p>每題作答後立刻顯示對錯，每個選項都有解析。</p>
+  <p>目前得分：<span class="score" id="score">0 / 0</span> <button class="dbtn" id="reset">重做</button></p>
+  <div id="quizbox"></div>
+</section>
+
+<section id="glossary">
+  <div class="eyebrow">附錄</div>
+  <h2>名詞表</h2>
+  <dl class="gl">
+    <dt>API</dt><dd>給程式用的窗口，回傳 JSON 等資料。</dd>
+    <dt>Bind mount</dt><dd>把電腦上的資料夾掛進容器，兩邊是同一份檔案。</dd>
+    <dt>Bookmarklet</dt><dd>書籤小工具：書籤網址是一段 JavaScript，點下去就在目前頁面執行。</dd>
+    <dt>CORS</dt><dd>跨來源資源共用：瀏覽器預設不讓網頁讀別的網站的回應，對方要加 Access-Control-Allow-Origin 才行。</dd>
+    <dt>Code 節點</dt><dd>在 n8n 裡寫 JavaScript 處理資料。</dd>
+    <dt>Container 容器</dt><dd>從 image 啟動、正在執行的程式。</dd>
+    <dt>DNS</dt><dd>把名字翻成位址。Docker 內建 DNS 讓服務名稱可以當網址。</dd>
+    <dt>Docker Compose</dt><dd>用一個 YAML 檔描述多個容器，一個指令一起啟動。</dd>
+    <dt>Extract From File</dt><dd>n8n 節點，把 PDF 等檔案轉成文字。</dd>
+    <dt>Fail-safe</dt><dd>失敗安全：不確定時選擇停下或交給人，而不是繼續做。</dd>
+    <dt>Human in the Loop</dt><dd>在自動化流程中保留人工確認的步驟。</dd>
+    <dt>IDOR</dt><dd>改網址裡的編號就看到別人資料的漏洞。</dd>
+    <dt>If 節點</dt><dd>依條件把資料分到 true 或 false 兩條路。</dd>
+    <dt>Item</dt><dd>n8n 節點之間傳遞的一筆資料。</dd>
+    <dt>JSON</dt><dd>程式之間交換資料的文字格式。</dd>
+    <dt>localhost</dt><dd>自己這台電腦（127.0.0.1）。在容器裡指的是容器自己。</dd>
+    <dt>multipart/form-data</dt><dd>可以同時傳文字欄位和檔案的請求格式。</dd>
+    <dt>Path traversal</dt><dd>路徑穿越：用 ../ 跳出允許的資料夾。</dd>
+    <dt>Port 埠號</dt><dd>同一台電腦上區分不同程式的號碼。</dd>
+    <dt>Regex 正規表示式</dt><dd>描述文字「長什麼樣子」的規則，用來找日期、編號等。</dd>
+    <dt>Respond to Webhook</dt><dd>n8n 節點，決定回給呼叫者什麼內容。</dd>
+    <dt>Shadow DOM</dt><dd>網頁裡一塊和外面樣式隔離的區域，小幫手面板放在這裡。</dd>
+    <dt>URL 編碼</dt><dd>把中文、+ 等字元轉成 %XX，讓網址合法。</dd>
+    <dt>Webhook</dt><dd>一個專屬網址，有人 POST 過來就觸發流程。</dd>
+    <dt>A／B／A+B</dt><dd>本專案的施作類別代碼：A 類、B 類，以及兩者合併的 A+B 類（皆為虛構分類）。</dd>
+  </dl>
+  <p class="foot">本頁中的公司、客戶、地址、材料與負責人員皆為虛構，材料用量僅為示意，僅供課程作業展示。</p>
+</section>
+</main>
+</div>
+
+<script>
+const FLOWS={
+ A:{name:'n8n 流程（12 節點）',desc:'收到行程 → 找舊檔 → 讀 PDF → 套規則 → 回覆草稿',nodes:[
+  {t:'收到行程',k:'Webhook',d:'小幫手把行程文字 POST 到這裡。設成等「Respond to Webhook」節點才回應，小幫手才能一次拿到完整草稿。',
+   s:[['HTTP Method','POST'],['Path','plan-draft-public'],['Respond','Using \'Respond to Webhook\' Node'],['Options','Allowed Origins (CORS)：*'],['正式網址','http://localhost:5678/webhook/plan-draft-public'],['測試網址','http://localhost:5678/webhook-test/plan-draft-public']],
+   o:{body:{schedule:'2026/12/01 15:00 A 客戶甲 林先生'}}},
+  {t:'解析行程',k:'Code',d:'從一行「時間 類別 客戶 負責人員」讀出日期、時間、類別、客戶、負責人員。日期、類別、客戶缺一樣就回 ok:false 並提示格式。',
+   s:[['Mode','Run Once for All Items'],['程式','n8n流程\\code_parse.js 整段貼上']],
+   o:{ok:true,date:'2026-12-01',time:'15:00',ptype:'A',customer:'客戶甲',worker:'林先生'}},
+  {t:'行程讀得懂？',k:'If',gov:'停機',d:'ok 是 true 才往下；false 直接到「回覆無法產生」，回覆讀不懂的原因。',
+   s:[['條件','{{ $json.ok }}  is true（Boolean）'],['false','→ 回覆無法產生']],o:{結果:'true'}},
+  {t:'查詢歸檔資料夾',k:'HTTP Request（GET）',d:'用行程上的客戶名稱，到公司伺服器找「以這個名稱開頭、底下有施工計畫書」的大資料夾。名稱有中文，要先轉成網址格式。',
+   s:[['Method','GET'],['URL','http://file-server:8090/api/folders?prefix={{ encodeURIComponent($json.customer) }}&sub=施工計畫書（編碼後）']],
+   o:{ok:true,prefix:'客戶甲',count:1,folders:['客戶甲（總店）'],path:'客戶甲（總店）/施工計畫書',list:'/api/list/%E5%AE%A2…/%E6%96%BD…',message:'找到客戶資料夾：客戶甲（總店）/施工計畫書'}},
+  {t:'找到客戶資料夾？',k:'If',gov:'停機',d:'剛好找到 1 個才往下。找不到（新客戶）或找到好幾個（名稱不夠完整）都走 false，把 message 回給小幫手。',
+   s:[['條件','{{ $json.count }}  is equal to  1（Number）'],['false','→ 回覆無法產生']],o:{結果:'true'}},
+  {t:'列出舊計畫書',k:'HTTP Request（GET）',d:'直接用上一步回傳的 list 網址，取得「施工計畫書」裡所有檔名、每個檔案的網址與修改日。',
+   s:[['Method','GET'],['URL','http://file-server:8090{{ $json.list }}']],
+   o:{folder:'客戶甲（總店）/施工計畫書',files:['20260610_客戶甲_A.pdf','20260915_客戶甲_B.pdf','20261101_客戶甲_B.pdf'],urls:{'20260610_客戶甲_A.pdf':'/%E5%AE%A2…/20260610_…_A.pdf','…':'…'}}},
+  {t:'挑選參考檔',k:'Code',gov:'規則',d:'從每個檔名找出日期和類型（A／B／A+B），挑出「行程日期以前最近一份」和「最近一份同類型」。兩份不同就輸出 2 個 item，後面的節點會各處理一次。',
+   s:[['Mode','Run Once for All Items'],['程式','n8n流程\\code_pick.js 整段貼上']],
+   code:'檔案（新→舊）：1101 B、0915 B、0610 A\nlatest = 20261101_客戶甲_B.pdf\nsame（A）= 20260610_客戶甲_A.pdf',
+   o:[{role:'latest',file:'20261101_客戶甲_B.pdf',type:'B',url:'http://file-server:8090/%E5%AE%A2…/20261101_…_B.pdf'},{role:'same',file:'20260610_客戶甲_A.pdf',type:'A',url:'http://file-server:8090/%E5%AE%A2…/20260610_…_A.pdf'}]},
+  {t:'下載舊計畫書',k:'HTTP Request（Response: File）',d:'對每個 item 下載一份 PDF，放在 binary 的 data 欄位。',
+   s:[['Method','GET'],['URL','{{ $json.url }}'],['Options → Response','Response Format：File'],['Put Output in Field','data']],
+   o:[{binary:{data:{fileName:'20261101_客戶甲_B.pdf',mimeType:'application/pdf'}}},{binary:{data:{fileName:'20260610_客戶甲_A.pdf',mimeType:'application/pdf'}}}]},
+  {t:'讀取PDF文字',k:'Extract From File',d:'把 PDF 變成一段文字，交給下一步依標籤切開。',
+   s:[['Operation','Extract From PDF'],['Input Binary Field','data']],
+   o:{text:'施工計畫書\n…\n施作地址\n範例市東區示範路 210 號 5 樓\n施作日期\n2026-11-01\n…'}},
+  {t:'組合草稿',k:'Code',gov:'規則',d:'依欄位標籤切出內容，套用公司規則，標出要人工確認的欄位（warn_fields），並列出每一格的依據。',
+   s:[['Mode','Run Once for All Items'],['程式','n8n流程\\code_build.js 整段貼上']],
+   o:{ok:true,draft:{customer_id:'C001',customer:'客戶甲',address:'範例市東區示範路 210 號 5 樓',date:'2026-12-01',time:'15:00',duration:'1 小時',ptype:'A',scope:'等候區、工作室排水、茶水間',chemicals:'A-1 材料 每點 15 g，共 6 點；A-2 輔助片 4 份',worker:'林先生',note:'午休時段施工'},sources:[{fields:'日期、類別、客戶、時間、負責人員',file:'行程'},{fields:'客戶編號、地址、範圍、需時、備註',file:'客戶甲（總店）/施工計畫書/20261101_客戶甲_B.pdf'},{fields:'材料及配比',file:'客戶甲（總店）/施工計畫書/20260610_客戶甲_A.pdf'}],warn_fields:['note']}},
+  {t:'回覆草稿',k:'Respond to Webhook',d:'把草稿 JSON 回給小幫手。加上 CORS 標頭，瀏覽器才讓小幫手讀到內容。',
+   s:[['Respond With','JSON'],['Response Body','{{ JSON.stringify($json) }}'],['Options → Response Headers','Access-Control-Allow-Origin = *']],
+   o:{'HTTP':'200','內容':'上一步的草稿 JSON'}},
+  {t:'回覆無法產生',k:'Respond to Webhook（兩個 If 的 false）',gov:'停機',d:'回覆 ok:false 和原因（讀不懂的格式、找不到或找到多個資料夾），小幫手顯示紅字，不會填任何欄位。',
+   s:[['Respond With','JSON'],['Response Body',"{{ JSON.stringify({ ok:false, message: $json.message || '無法產生草稿…' }) }}"],['Options → Response Headers','Access-Control-Allow-Origin = *']],
+   o:{ok:false,message:'公司伺服器找不到以「客戶己」開頭、且有施工計畫書的客戶資料夾（可能是新客戶），請手動建立計畫書。'}}
+ ]},
+ B:{name:'小幫手與公司系統',desc:'n8n 之外的步驟：誰觸發、誰填表、誰按下生成',nodes:[
+  {t:'點書籤',k:'人',d:'在公司計畫書系統頁面點書籤「🤖 計畫書小幫手」，右下角出現面板。',o:{面板:'格式說明＋一行行程輸入框'}},
+  {t:'輸入行程',k:'人',d:'依行事曆打一行「時間 類別 客戶 負責人員」（或到行事曆按複製再貼上），按「產生草稿並填入表單」或 Ctrl + Enter。',o:{schedule:'2026/12/01 15:00 A 客戶甲 林先生'}},
+  {t:'呼叫 n8n',k:'小幫手 fetch',d:'先送正式網址；回 404 時改送測試網址；兩個都 404 就提示到 n8n 按 Publish。用表單格式送出，避免 CORS 預檢。',s:[['方法','POST（application/x-www-form-urlencoded）'],['網址','http://localhost:5678/webhook/plan-draft-public']],o:{ok:true,'…':'草稿 JSON'}},
+  {t:'逐格填入',k:'小幫手',d:'依 CONFIG.fields 找到每個欄位，一個字一個字打進去並觸發 input／change 事件；最後把 warn_fields 加黃框。',o:{填入:'11 個欄位',黃框:['note']}},
+  {t:'檢查並生成',k:'人',gov:'人工把關',d:'看過每一格、處理黃框後，自己按「生成計畫書」。小幫手不會替你按。',o:{簽署連結:'http://localhost:8080/s/P0002-xxxxxx'}},
+  {t:'自動歸檔',k:'公司系統',d:'計畫書系統依客戶名稱找到大資料夾，把未簽署 PDF 存進「施工計畫書」；客戶簽署後用同一個檔名換成已簽署版。',o:{path:'客戶甲（總店）/施工計畫書/20261201_客戶甲_A.pdf',version:'未簽署 → 已簽署'}}
+ ]}
+};
+
+const QUIZ=[
+ {q:'公司系統不能修改，小幫手是怎麼把資料填進表單的？',a:2,o:[
+  ['n8n 直接連進公司資料庫寫入','n8n 沒有公司資料庫的權限，這個專案也刻意不碰公司系統。'],
+  ['請 IT 在表單加一個匯入按鈕','這等於修改公司系統，正是這個專案要避開的。'],
+  ['用書籤在目前頁面載入程式，模擬人一格一格打字','正確。書籤小工具（bookmarklet）不需要改公司網站，拿掉書籤就恢復原狀。'],
+  ['用截圖辨識後自動按送出','小幫手不截圖，也不會替人按送出。']]},
+ {q:'行程「2026/12/01 15:00 A 客戶甲 林先生」，最近一份是 20261101_客戶甲_B.pdf。材料及配比應該抄哪一份？',a:1,o:[
+  ['20261101_客戶甲_B.pdf（最近一份）','最近一份是 B，類型不同，材料不能照抄。'],
+  ['20260610_客戶甲_A.pdf（最近一份 A）','正確。材料要照「同類型」的上一份，類型不同就往前找。'],
+  ['20260915_客戶甲_B.pdf','也是 B，類型不對。'],
+  ['留空給人填','前面找得到 A，就不需要留空。']]},
+ {q:'行程寫「客戶甲」，公司伺服器的資料夾叫「客戶甲（總店）」。n8n 怎麼找到它？',a:2,o:[
+  ['要求行程一定要寫完整資料夾名稱','可以寫完整，但不是必要；用開頭比對就找得到。'],
+  ['用客戶編號 C001 找','行程上沒有客戶編號，公司伺服器也是用名稱歸檔。'],
+  ['找「以客戶甲開頭」、底下有「施工計畫書」的大資料夾','正確。剛好一個就用它；有好幾個時，名稱完全相同的優先，否則停止請人寫完整。'],
+  ['把所有客戶資料夾都下載回來比對','不需要，公司伺服器的 /api/folders 直接回傳符合的資料夾。']]},
+{q:'「2026/12/08 16:30 A 客戶丁 黃先生」，客戶丁只做過 B。草稿的材料欄會怎樣？',a:3,o:[
+  ['抄最近一份 B 的材料','類型不同的材料不能用，會造成錯誤施作。'],
+  ['讓 AI 推測一個 A 材料','材料有安全風險，不能讓 AI 猜。'],
+  ['整個流程停止','只有材料缺，其他欄位都找得到，不需要整個停掉。'],
+  ['留空並加黃框，請人工填寫、主管確認','正確。不確定的地方交給人，這是 Human in the Loop。']]},
+ {q:'「2026/12/12 10:00 B 客戶己 李先生」，客戶己是新客戶，送出後會怎樣？',a:0,o:[
+  ['「找到客戶資料夾？」走 false，小幫手顯示紅字，表單不動','正確。找不到資料夾就停機，請人手動建立。'],
+  ['用別位客戶的計畫書當範本','會把別人的地址、材料帶進來，非常危險。'],
+  ['n8n 當機','流程有設計 false 出口，會正常回覆原因。'],
+  ['自動建立一份空白計畫書並送出','小幫手從不送出，也不會產生空白計畫書。']]},
+ {q:'n8n 容器要下載公司伺服器上的 PDF，網址應該寫？',a:1,o:[
+  ['http://localhost:8090/…','在容器裡，localhost 是 n8n 自己，會連線被拒。'],
+  ['http://file-server:8090/…','正確。同一個 compose 的容器靠服務名稱互相找到。'],
+  ['http://公司伺服器:8090/…','「公司伺服器」是電腦上的資料夾名，不是服務名稱。'],
+  ['file:///srv/…','n8n 容器裡沒有這個資料夾，要透過 HTTP 跟 file-server 拿。']]},
+ {q:'反過來，小幫手（在瀏覽器裡執行）呼叫 n8n 的網址應該寫？',a:0,o:[
+  ['http://localhost:5678/webhook/plan-draft-public','正確。瀏覽器不在 Docker 網路裡，要走 port mapping 的 localhost。'],
+  ['http://n8n:5678/webhook/plan-draft-public','n8n 這個名字只有 Docker 網路裡的容器認得，瀏覽器不認得。'],
+  ['http://file-server:8090/webhook/plan-draft-public','Webhook 在 n8n，不在公司伺服器。'],
+  ['http://localhost:8080/webhook/plan-draft-public','8080 是計畫書系統，不是 n8n。']]},
+ {q:'Respond to Webhook 節點為什麼要加 Access-Control-Allow-Origin: * 標頭？',a:2,o:[
+  ['讓 n8n 跑得比較快','標頭跟速度無關。'],
+  ['用來驗證小幫手的身分','這個標頭是「允許誰讀」，不是驗證身分。'],
+  ['8080 和 5678 是不同來源，沒有這個標頭，瀏覽器會擋住小幫手讀取回應','正確。這就是 CORS：瀏覽器的安全機制。'],
+  ['Discord 規定的','這個專案沒有用 Discord。']]},
+ {q:'「挑選參考檔」只挑「行程日期以前」的檔案，主要是為了？',a:1,o:[
+  ['減少下載量','有一點幫助，但不是主要原因。'],
+  ['避免剛生成的同一天計畫書被拿來抄自己','正確。生成 12/04 那份後，再產生一次 12/04 草稿時，不會把它當成「上一份」。'],
+  ['因為 n8n 不能處理未來的日期','n8n 可以處理任何日期。'],
+  ['公司規定只能看去年的計畫書','沒有這個規定。']]},
+ {q:'「組合草稿」怎麼從 PDF 文字找出「施作地址」的內容？',a:3,o:[
+  ['用 AI 閱讀整份 PDF','這個專案刻意不用 AI，改用固定規則，結果才穩定可追溯。'],
+  ['固定抓第 5 行','PDF 轉文字時的換行可能不同，抓固定行數很容易錯。'],
+  ['找「新北市」三個字','地址不一定在新北市。'],
+  ['找到「施作地址」標籤，取它和下一個標籤「施作日期」之間的文字','正確。計畫書版面固定，標籤依序出現，兩個標籤之間就是內容。']]},
+ {q:'小幫手填表時為什麼要觸發 input／change 事件，而不只改 value？',a:1,o:[
+  ['為了讓打字動畫比較好看','動畫是靠逐字加入，事件的目的不同。'],
+  ['很多網站靠事件得知使用者輸入，不觸發可能被當成沒填','正確。尤其用 React、Vue 寫的網站，不送事件可能在送出時被清掉。'],
+  ['瀏覽器規定一定要觸發','不觸發也不會報錯，只是網站可能不知道。'],
+  ['讓 n8n 收到通知','事件只在瀏覽器頁面裡，n8n 收不到。']]},
+ {q:'「挑選參考檔」輸出 2 個 item，接下來的「下載舊計畫書」會？',a:0,o:[
+  ['自動對 2 個 item 各下載一次','正確。n8n 大多數節點會對每個 item 各執行一次，不用自己寫迴圈。'],
+  ['只下載第一份','HTTP Request 會處理全部 items。'],
+  ['報錯，因為一次只能處理一筆','n8n 本來就是以 items 陣列運作。'],
+  ['把兩份 PDF 合併成一份','不會合併，會得到 2 個各自帶 binary 的 item。']]},
+ {q:'為什麼材料規則用固定程式，而不交給生成式 AI 判斷？',a:2,o:[
+  ['因為 AI 一定比較慢','速度不是主要考量。'],
+  ['因為 n8n 不能接 AI','n8n 可以接 AI，這是設計上的選擇。'],
+  ['規則明確且有安全風險，固定程式每次結果一樣、找得到依據；AI 可能編出看似合理的錯誤比例','正確。查不到就留空交給人，而不是讓 AI 猜。'],
+  ['因為老闆不喜歡 AI','跟喜好無關，是風險與可追溯性的考量。']]}
+];
+
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function hl(o){return esc(JSON.stringify(o,null,2)).replace(/(&quot;[^&]*?&quot;)(\s*:)/g,'<span class="k">$1</span>$2').replace(/:\s(&quot;.*?&quot;)/g,': <span class="s">$1</span>');}
+/* flow explorer */
+let cur='A', sel=0;
+function render(){
+  const tabs=$('tabs'); tabs.innerHTML='';
+  Object.entries(FLOWS).forEach(([k,f])=>{const b=document.createElement('button');b.className='tab';b.setAttribute('role','tab');b.setAttribute('aria-selected',k===cur);b.textContent=f.name;b.onclick=()=>{cur=k;sel=0;render();};tabs.appendChild(b);});
+  const f=FLOWS[cur]; const n=$('nodes'); n.innerHTML='';
+  f.nodes.forEach((x,i)=>{const b=document.createElement('button');b.className='node';b.setAttribute('aria-pressed',i===sel);
+    b.innerHTML=`<span class="i">${String(i+1).padStart(2,'0')}</span><span><span class="t">${esc(x.t)}</span>${x.gov?`<span class="badge">${esc(x.gov)}</span>`:''}<br><span class="k">${esc(x.k)}</span></span>`;b.onclick=()=>{sel=i;render();};n.appendChild(b);});
+  const x=f.nodes[sel];
+  $('detail').innerHTML=`<p class="cap" style="margin-top:0">${esc(f.desc)}</p><h4>${esc(x.t)}</h4><div class="type">${esc(x.k)}</div><p>${esc(x.d)}</p>`+
+    (x.s?`<div class="settings" aria-label="設定">${x.s.map(([a,b])=>`<div><span>${esc(a)}</span><span><code>${esc(b)}</code></span></div>`).join('')}</div>`:'')+
+    (x.code?`<div class="term-h"><span>運算過程</span></div><pre>${esc(x.code)}</pre>`:'')+
+    `<div class="term-h"><span>輸出（示意資料）</span></div><pre>${hl(x.o)}</pre>`;
+}
+render();
+
+/* quiz */
+let answered=0, right=0;
+function buildQuiz(){
+  answered=0;right=0;$('score').textContent=`0 / ${QUIZ.length}`;
+  const box=$('quizbox'); box.innerHTML='';
+  QUIZ.forEach((item,qi)=>{
+    const d=document.createElement('div');d.className='qa';
+    d.innerHTML=`<p class="q">${qi+1}. ${esc(item.q)}</p><div class="opts"></div>`;
+    const opts=d.querySelector('.opts');
+    item.o.forEach(([text,why],oi)=>{
+      const b=document.createElement('button');b.className='opt';b.innerHTML=`${String.fromCharCode(65+oi)}. ${esc(text)}<span class="why" hidden>${esc(why)}</span>`;
+      b.onclick=()=>{
+        opts.querySelectorAll('.opt').forEach((o,k)=>{o.disabled=true;o.querySelector('.why').hidden=false;if(k===item.a)o.classList.add('right');});
+        if(oi!==item.a)b.classList.add('wrong'); else right++;
+        answered++; $('score').textContent=`${right} / ${QUIZ.length}`+(answered===QUIZ.length?(right===QUIZ.length?'　全對！':'　看完解析可以按重做'):'');
+      };
+      opts.appendChild(b);
+    });
+    box.appendChild(d);
+  });
+}
+$('reset').onclick=buildQuiz; buildQuiz();
+
+/* copy */
+document.querySelectorAll('.copy').forEach(b=>b.addEventListener('click',async()=>{
+  const t=b.dataset.copy; try{await navigator.clipboard.writeText(t);b.textContent='已複製';}catch(e){const r=document.createRange();r.selectNodeContents(b.parentElement.nextElementSibling);const s=getSelection();s.removeAllRanges();s.addRange(r);b.textContent='已選取';}
+  setTimeout(()=>b.textContent='複製',1500);
+}));
+
+/* toc highlight */
+const links=[...document.querySelectorAll('#toc a')];
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){links.forEach(a=>a.classList.toggle('on',a.getAttribute('href')==='#'+e.target.id));}}),{rootMargin:'-30% 0px -60% 0px'});
+document.querySelectorAll('main section').forEach(s=>io.observe(s));
+
+</script>
+
+</body></html>
