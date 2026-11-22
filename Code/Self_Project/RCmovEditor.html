@@ -77,6 +77,16 @@ h4{font-size:12px;color:var(--mu);margin:12px 0 6px;font-weight:700}
 .kfd{position:absolute;bottom:4px;width:9px;height:9px;margin-left:-4px;transform:rotate(45deg);background:#ffd400;border:1px solid #000;z-index:3;cursor:pointer}
 .trm{position:absolute;left:0;top:0;bottom:0;background:repeating-linear-gradient(45deg,rgba(255,255,255,.25) 0 4px,transparent 4px 8px);pointer-events:none}
 #marq{position:absolute;border:1px solid var(--ac);background:rgba(0,209,178,.15);z-index:9;pointer-events:none}
+#ctx{position:fixed;z-index:70;background:var(--p1);border:1px solid var(--bd);border-radius:10px;padding:5px;min-width:250px;box-shadow:0 10px 30px rgba(0,0,0,.6);font-size:13px}
+#ctx div{padding:8px 12px;border-radius:7px;cursor:pointer;white-space:nowrap;line-height:1.4}#ctx div:hover{background:var(--p3)}#ctx div.dis{color:var(--mu);cursor:default;background:none}#ctx hr{border:none;border-top:1px solid var(--bd);margin:4px 0}
+.gapmark.hov{background:rgba(255,77,109,.16);border:1px dashed rgba(255,120,140,.75);display:flex;align-items:center;justify-content:center;animation:gapIn .25s ease}
+.gapmark.hov span{font-size:11px;color:#ffc2cc;white-space:nowrap;text-shadow:0 1px 2px #000;overflow:hidden;padding:0 4px}
+@keyframes gapIn{from{opacity:0}to{opacity:1}}
+.gapmark{position:absolute;top:3px;bottom:3px;background:repeating-linear-gradient(45deg,rgba(255,77,109,.35) 0 6px,rgba(255,77,109,.12) 6px 12px);border:1px dashed #ff4d6d;border-radius:6px;pointer-events:none;z-index:1}
+.wmgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;background:#000;border:1px solid var(--bd);border-radius:9px;padding:5px;aspect-ratio:16/9}
+.wmgrid i{display:flex;align-items:center;justify-content:center;border-radius:5px;cursor:pointer;background:#1a1a20;font-style:normal;font-size:11px;color:var(--mu)}
+.wmgrid i:hover{background:#26303a}.wmgrid i.on{background:var(--ac);color:#00121a;font-weight:700}
+#ltabs .tab{font-size:12px;padding:9px 0}
 #ph{position:absolute;top:0;bottom:0;width:2px;background:#fff;z-index:8;pointer-events:none;margin-left:-1px}
 #ph i{position:absolute;top:0;left:-6px;border:7px solid transparent;border-top:9px solid #fff}
 details{background:var(--p2);border:1px solid var(--bd);border-radius:9px;margin-bottom:8px}
@@ -120,7 +130,7 @@ kbd{background:var(--p3);border:1px solid var(--bd);border-radius:4px;padding:0 
 <div id="app">
 <header>
  <span class="logo">✂ RCmovEditor</span>
- <input id="pname" value="我的宣傳影片" title="專案名稱">
+ <input id="pname" value="RCmovEditor" title="專案名稱">
  <button class="mob" id="mL">📁 素材</button><button class="mob" id="mR">🎛 屬性</button>
  <select id="ratio" title="畫面比例">
   <option value="1920x1080">16:9 橫式 (YouTube)</option><option value="1080x1920">9:16 直式 (Reels/抖音)</option><option value="1080x1080">1:1 方形 (IG 貼文)</option><option value="1080x1350">4:5 (IG 直式)</option><option value="1440x1080">4:3</option><option value="2560x1080">21:9 電影寬</option>
@@ -132,12 +142,12 @@ kbd{background:var(--p3);border:1px solid var(--bd);border-radius:4px;padding:0 
  <label><button onclick="this.nextElementSibling.click()">📂 <span class="hidem">開啟專案</span></button><input type="file" id="fProj" accept=".json,application/json" hidden></label>
  <button id="bSave" title="下載 .json 專案檔（備份/換電腦用）">💾 <span class="hidem">下載專案檔</span></button>
  <button id="bShot" title="匯出目前畫面為 PNG（可當封面）">🖼 <span class="hidem">截圖</span></button>
- <button id="bHelp">❓ <span class="hidem">教學</span></button>
+ <button id="bHelp">❓ <span class="hidem">教學</span></button><a href="https://youtu.be/gEiZoap_YRE" target="_blank" rel="noopener" title="YouTube 教學影片" style="color:inherit;text-decoration:none"><button>🎬 <span class="hidem">教學影片</span></button></a>
  <button class="pri" id="bExport">⬇ 匯出影片</button>
 </header>
 <main>
  <section id="left">
-  <div class="tabs" id="ltabs"><div class="tab act" data-tab="media">素材</div><div class="tab" data-tab="text">文字</div><div class="tab" data-tab="sub">字幕</div><div class="tab" data-tab="fx">特效</div><div class="tab" data-tab="trans">轉場</div></div>
+  <div class="tabs" id="ltabs"><div class="tab act" data-tab="media">素材</div><div class="tab" data-tab="text">文字</div><div class="tab" data-tab="sub">字幕</div><div class="tab" data-tab="fx">特效</div><div class="tab" data-tab="trans">轉場</div><div class="tab" data-tab="wm">浮水印</div></div>
   <div class="pane act" id="p-media">
    <label class="drop">📥 點這裡匯入影片 / 圖片 / 音樂<br><small>也可以直接把檔案或 .json 專案檔拖進視窗</small><input type="file" id="fMedia" multiple accept="video/*,image/*,audio/*,.json" hidden></label>
    <div class="grid2"><button id="addColor">■ 純色背景</button><button id="addGrad">◩ 漸層背景</button></div>
@@ -152,7 +162,7 @@ kbd{background:var(--p3);border:1px solid var(--bd);border-radius:4px;padding:0 
   </div>
   <div class="pane" id="p-sub">
    <h4>快速上字幕：一行 = 一句字幕</h4>
-   <textarea id="subTxt" rows="7" placeholder="歡迎來到我們的店&#10;全館新品八折優惠&#10;只到本週日！"></textarea>
+   <textarea id="subTxt" rows="7" placeholder="一行一句，例如：&#10;RCmovEditor&#10;你最得力的小工具">RCmovEditor 你最得力的小工具</textarea>
    <div class="fld"><label>每句秒數</label><input type="number" id="subSec" value="2.5" step="0.1" min="0.3" class="num"><label style="width:auto">樣式</label><select id="subStyle"></select></div>
    <div class="btnrow"><button class="pri" id="subGen">產生字幕（從播放頭開始）</button></div>
    <div class="btnrow"><label><button onclick="this.nextElementSibling.click()">匯入 SRT</button><input type="file" id="fSrt" accept=".srt,.txt" hidden></label><button id="subExp">匯出 SRT</button></div>
@@ -164,6 +174,29 @@ kbd{background:var(--p3);border:1px solid var(--bd);border-radius:4px;padding:0 
    <h4>畫面特效（可多選，再點一次取消）</h4><div class="grid" id="fxList"></div>
    <h4>遮擋</h4><div class="grid2"><button id="addMosaic">▦ 新增馬賽克</button><button id="addBlur">◍ 新增模糊遮擋</button></div>
    <div class="tip">💡 馬賽克會遮住「它下面所有軌道」的畫面。在預覽畫面拖曳移動、拉右下角縮放；搭配關鍵幀可以跟著人臉或車牌移動。</div>
+  </div>
+  <div class="pane" id="p-wm">
+   <h4>① 浮水印類型</h4>
+   <div class="grid2"><div class="chip" data-wmt="text">🔤 文字浮水印</div><div class="chip" data-wmt="image">🖼 圖片 / Logo</div></div>
+   <div id="wmTextBox">
+    <div class="fld"><label>文字</label><input id="wmText" style="flex:1"></div>
+    <div class="fld"><label>字體</label><select id="wmFont" style="flex:1"></select></div>
+    <div class="fld"><label>顏色</label><input type="color" id="wmColor"><label style="width:auto;display:inline-flex;gap:4px;align-items:center;color:var(--tx)"><input type="checkbox" id="wmShadow">加陰影（任何背景都看得清）</label></div>
+    <div class="sw" id="wmSw"></div>
+   </div>
+   <div id="wmImgBox">
+    <div class="fld"><label>圖片</label><select id="wmImg" style="flex:1"></select></div>
+    <label class="drop" style="padding:8px;margin:4px 0">⬆ 上傳 Logo 圖片（建議透明背景 PNG）<input type="file" id="wmUp" accept="image/*" hidden></label>
+   </div>
+   <h4>② 位置</h4>
+   <div class="wmgrid" id="wmPos"></div>
+   <div class="grid2" style="margin-top:6px"><div class="chip" data-wmm="tile">▦ 平鋪防盜</div><div class="chip" data-wmm="move">↻ 四角輪流移動</div></div>
+   <h4>③ 調整</h4>
+   <div class="fld"><label>大小</label><input type="range" id="wmSize" min="1" max="40" step="0.5"><span id="wmSizeV" style="width:42px"></span></div>
+   <div class="fld"><label>不透明度</label><input type="range" id="wmOp" min="5" max="100"><span id="wmOpV" style="width:42px"></span></div>
+   <div class="fld"><label>邊距</label><input type="range" id="wmMg" min="0" max="12" step="0.5"><span id="wmMgV" style="width:42px"></span></div>
+   <div class="btnrow"><button class="pri" id="wmApply" style="flex:1">✅ 套用浮水印</button><button id="wmDel" class="dn">移除</button></div>
+   <div class="tip" id="wmTip">浮水印會放在最上層的「浮水印」軌道，<b>自動延伸到整支影片長度</b>。套用後再調整上面的設定會即時更新。<br>設定會自動記住，下次開新專案按「套用浮水印」就好。</div>
   </div>
   <div class="pane" id="p-trans">
    <h4>轉場：套用在「選取片段的開頭」，跟前一段銜接</h4><div class="grid" id="trList"></div>
@@ -187,7 +220,7 @@ kbd{background:var(--p3);border:1px solid var(--bd);border-radius:4px;padding:0 
 <section id="tl">
  <div id="tlbar">
   <button id="tSplit" title="分割 S">✂ 分割</button><button id="tDup" title="複製 Ctrl+D">⧉ 複製</button><button id="tDel" class="dn" title="刪除 Delete">🗑</button>
-  <button id="tKf" title="在播放頭加/刪關鍵幀 K">◆ 關鍵幀</button>
+  <button id="tKf" title="在播放頭加/刪關鍵幀 K">◆ 關鍵幀</button><button id="tRev" title="把選取的影片/音訊片段倒著播放 R">⏪ 倒轉</button>
   <button id="tAddV">＋ 畫面軌</button><button id="tAddA">＋ 音軌</button>
   <button id="tSnap" class="on" title="吸附對齊">🧲 吸附</button><button id="tMulti" title="多選模式（手機/平板用）；電腦可直接按住 Ctrl 或 Shift 點選，或在空白處拖曳框選">☑ 多選</button><button id="tAll" title="全選 Ctrl+A">全選</button><span id="selInfo" style="color:var(--ac);white-space:nowrap"></span>
   <span style="color:var(--mu)">🔍</span><input type="range" id="zoom" min="8" max="400" value="60">
@@ -210,12 +243,18 @@ kbd{background:var(--p3);border:1px solid var(--bd);border-radius:4px;padding:0 
 
 <div class="modal hide" id="helpModal"><div class="box">
  <h3>📘 RCmovEditor・快速教學</h3>
+ <a href="https://youtu.be/gEiZoap_YRE" target="_blank" rel="noopener" style="display:flex;gap:12px;align-items:center;background:var(--p2);border:1px solid var(--ac);border-radius:12px;padding:10px;margin-bottom:12px;color:var(--tx);text-decoration:none">
+  <span style="position:relative;flex:none;width:160px;height:90px;border-radius:8px;overflow:hidden;background:linear-gradient(135deg,#1a2a3a,#0b0b0f)"><img src="https://img.youtube.com/vi/89kXXsll-6E/mqdefault.jpg" alt="" style="width:160px;height:90px;object-fit:cover;display:block" onerror="this.remove()"><b style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:30px;text-shadow:0 2px 8px #000">▶</b></span>
+  <span><b style="color:var(--ac);font-size:15px">🎬 觀看教學影片</b><br><small style="color:var(--mu)">完整操作示範（YouTube）<br>https://youtu.be/gEiZoap_YRE</small></span></a>
  <p><b>1. 基本流程</b>：素材分頁匯入檔案 → 按 ＋ 放到時間軸 → 在時間軸拖曳排列 → 加文字/字幕/特效 → 右上「匯出影片」。</p>
  <p><b>2. 軌道（多軌時間軸）</b>：越上面的軌道會蓋在越上層。主軌放影片、疊加軌放 Logo/子母畫面、文字軌放標題。</p>
  <p><b>3. 關鍵幀（最重要！）</b>：關鍵幀 = 在某個時間點「記住」位置、大小、旋轉、透明度。<br>例：在 0 秒按 ◆ 記錄「在左邊」，移動播放頭到 2 秒，把物件拖到右邊（會自動新增第 2 個關鍵幀），播放時電腦會自動算出中間的移動過程（這叫「插值」）。曲線可選「緩入緩出」讓動作更自然。</p>
  <p><b>4. 轉場</b>：選取第二段片段 → 轉場分頁點一種效果。兩段要在同一軌道、頭尾相接。</p>
  <p><b>5. AI 去背</b>：選取影片/圖片 → 右側「AI 去背」選「AI 人像」（適合人物），商品圖可用「AI 物件去背」，綠幕素材選「綠幕」。第一次會下載 AI 模型，需要網路。</p>
  <p><b>6. 快捷鍵</b>：<kbd>空白</kbd> 播放 ・ <kbd>S</kbd> 分割 ・ <kbd>Delete</kbd> 刪除 ・ <kbd>K</kbd> 關鍵幀 ・ <kbd>←</kbd><kbd>→</kbd> 逐格（加 Shift 一秒）・ <kbd>Ctrl+Z</kbd> 復原 ・ <kbd>Ctrl+D</kbd> 複製 ・ 預覽畫面滾輪 = 縮放</p>
+ <p><b>浮水印</b>：左側「浮水印」分頁 → 選文字或 Logo 圖片 → 點九宮格選位置（或平鋪防盜、四角輪流移動）→ 調大小、透明度 →「套用浮水印」。會自動延伸到整支影片，設定也會記住。</p>
+ <p><b>時間軸小技巧</b>：拖曳片段到時間軸左右邊緣，時間軸會自動捲動。在軌道的<b>空白處按右鍵</b>→「刪除這段空白」，右邊的片段會自動往前補齊；在片段上按右鍵有分割、複製、倒轉、刪除並補齊等快捷功能（手機長按）。</p>
+ <p><b>倒轉播放</b>：選取影片或音訊片段 → 按時間軸上的「⏪ 倒轉」（或 <kbd>R</kbd>），會產生一支倒放版素材並自動替換；再按一次就還原。可以多選一起倒轉。</p>
  <p><b>多選片段</b>：按住 <kbd>Ctrl</kbd> 或 <kbd>Shift</kbd> 點片段可加選/取消；在時間軸空白處拖曳可以框選；<kbd>Ctrl+A</kbd> 全選、<kbd>Esc</kbd> 取消。手機請按時間軸上的「☑ 多選」。選好後可以一起移動、一起拉長縮短、一起改設定（右側會顯示「批次編輯」）。</p>
  <p><b>7. 儲存</b>：每次修改都會<b>自動存在這個瀏覽器</b>（包含素材），下次打開會問你要不要繼續。換電腦時用「下載專案檔」存成 .json，在新電腦「開啟專案」（或把 .json 拖進視窗），再依提示選取素材即可接回。</p>
  <p><b>8. 手機/平板</b>：用 Chrome 或 Safari 開這個檔案即可；上方「素材 / 屬性」按鈕切換面板。</p>
@@ -233,6 +272,7 @@ kbd{background:var(--p3);border:1px solid var(--bd);border-radius:4px;padding:0 
  <div class="btnrow" style="justify-content:flex-end"><button id="rlLater">先略過</button><button class="pri" id="rlMulti">📂 一次選取多個檔案</button></div>
 </div></div>
 <input type="file" id="fRelinkOne" accept="video/*,image/*,audio/*" hidden>
+<div class="modal hide" id="busyModal"><div class="box"><h3 id="busyT">處理中…</h3><div class="bar"><i id="busyBar"></i></div><div id="busyInfo" style="color:var(--mu);min-height:20px"></div><div class="btnrow" style="justify-content:flex-end"><button id="busyCancel">取消</button></div></div></div>
 <div id="toast"></div><div id="pool"></div>
 <input type="file" id="fRelink" multiple accept="video/*,image/*,audio/*" hidden>
 
@@ -266,7 +306,7 @@ const EASE={linear:p=>p,ease:p=>p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2,out:p=>1-Math.
  back:p=>{const c1=1.70158,c3=c1+1;return 1+c3*Math.pow(p-1,3)+c1*Math.pow(p-1,2)}};
 
 /* ========== 專案狀態 ========== */
-const S={name:'我的宣傳影片',w:1920,h:1080,tracks:[],clips:[],media:{},time:0,playing:false,sel:null,zoom:60,snap:true};
+const S={name:'RCmovEditor',w:1920,h:1080,tracks:[],clips:[],media:{},time:0,playing:false,sel:null,zoom:60,snap:true};
 // 多選：S.msel 是所有選取的片段；S.sel 是「主要片段」（屬性面板顯示它的數值）
 let _sel=null;Object.defineProperty(S,'sel',{get:()=>_sel,set:v=>{_sel=v;S.msel=new Set(v?[v]:[])},enumerable:true,configurable:true});S.msel=new Set();
 const TH=()=>parseInt(getComputedStyle(document.documentElement).getPropertyValue('--th'))||96;
@@ -280,7 +320,7 @@ const FX={shake:'畫面抖動',pulse:'心跳縮放',flash:'開場閃白',glitch:
 const FPRE={'原圖':{},'鮮豔':{saturate:145,contrast:110},'黑白':{grayscale:100,contrast:115},'復古':{sepia:45,contrast:95,saturate:85,brightness:105},'冷調':{hue:-15,saturate:110,brightness:103},'暖調':{sepia:25,saturate:125},'電影感':{contrast:120,saturate:80,vignette:45},'高對比':{contrast:145},'柔和':{contrast:88,brightness:108,saturate:90}};
 const FONTS=[['Noto Sans TC','思源黑體'],['Noto Serif TC','思源宋體'],['LXGW WenKai TC','霞鶩文楷'],['Montserrat','Montserrat'],['Bebas Neue','Bebas Neue'],['sans-serif','系統字體']];
 const COLORS=['#ffffff','#000000','#ffe600','#ff3b30','#ff2bd6','#00e5ff','#34c759','#ff9500','#7c5cff','#f8e7a1'];
-const DEF_TEXT={content:'輸入文字',font:'Noto Sans TC',size:96,color:'#ffffff',color2:'#ff3c00',grad:false,hollow:false,bold:true,italic:false,align:'center',stroke:'#000000',strokeW:0,shadow:'#000000',shadowBlur:0,shadowX:0,shadowY:0,bgOn:false,bg:'#000000',bgAlpha:.6,bgPad:24,bgR:14,spacing:0,lineH:1.25};
+const DEF_TEXT={content:'RCmovEditor 你最得力的小工具',font:'Noto Sans TC',size:96,color:'#ffffff',color2:'#ff3c00',grad:false,hollow:false,bold:true,italic:false,align:'center',stroke:'#000000',strokeW:0,shadow:'#000000',shadowBlur:0,shadowX:0,shadowY:0,bgOn:false,bg:'#000000',bgAlpha:.6,bgPad:24,bgR:14,spacing:0,lineH:1.25};
 // 花字樣式
 const TSTYLES=[
  {n:'白字黑邊',t:{color:'#ffffff',stroke:'#000000',strokeW:6,grad:false,bgOn:false,shadowBlur:0,hollow:false,font:'Noto Sans TC'},css:'color:#fff;-webkit-text-stroke:1px #000'},
@@ -318,7 +358,7 @@ function setPath(o,p,v){const ks=p.split('.');let a=o;for(let i=0;i<ks.length-1;
 /* ========== 復原 / 重做 ========== */
 const HIST=[],REDO=[];let lastSnap='';
 const snapState=()=>JSON.stringify({tracks:S.tracks,clips:S.clips,w:S.w,h:S.h});
-function commit(){const s=snapState();if(s===lastSnap)return;if(lastSnap)HIST.push(lastSnap);if(HIST.length>120)HIST.shift();lastSnap=s;REDO.length=0;autosave()}
+function commit(){syncWM();const s=snapState();if(s===lastSnap)return;if(lastSnap)HIST.push(lastSnap);if(HIST.length>120)HIST.shift();lastSnap=s;REDO.length=0;autosave()}
 function restore(s){const o=JSON.parse(s);S.tracks=o.tracks;S.clips=o.clips;if(o.w!==S.w||o.h!==S.h)setRatio(o.w,o.h,true);if(!selClip())S.sel=null;renderAll()}
 function undo(){if(!HIST.length)return toast('沒有可以復原的步驟');REDO.push(lastSnap);lastSnap=HIST.pop();restore(lastSnap)}
 function redo(){if(!REDO.length)return;HIST.push(lastSnap);lastSnap=REDO.pop();restore(lastSnap)}
@@ -345,7 +385,7 @@ async function importOne(f,targetId){
  else IDB.put('media',m.id,{id:m.id,name:m.name,type:m.type,size:f.size,file:f}).then(autosave).catch(idbWarn);
  if(ex){for(const c of S.clips)if(c.mediaId===m.id&&EL[c.id]){EL[c.id].remove();delete EL[c.id]}toast('已重新連結：'+f.name)}
  return m}
-async function importFiles(files){const js=files.filter(f=>/\.json$/i.test(f.name));files=files.filter(f=>!/\.json$/i.test(f.name));if(js.length)await openProjectFile(js[0]);if(!files.length){if(document.querySelector('#relinkModal:not(.hide)'))showRelink();return}toast('匯入中…');let n=0,bad=0;for(const f of files){const m=await importOne(f);if(m){m.status==='error'?bad++:n++}}renderLibrary();renderTimeline();requestDraw();if(!$('#relinkModal').classList.contains('hide'))showRelink();if(bad)toast(`✅ 成功 ${n} 個，❌ 失敗 ${bad} 個（紅框的素材，滑鼠移上去看原因）`,7000);else if(n)toast(`✅ 已匯入 ${n} 個素材，按 ＋ 加到時間軸`)}
+async function importFiles(files){const js=files.filter(f=>/\.json$/i.test(f.name));files=files.filter(f=>!/\.json$/i.test(f.name));if(js.length)await openProjectFile(js[0]);if(!files.length){if(document.querySelector('#relinkModal:not(.hide)'))showRelink();return}toast('匯入中…');let n=0,bad=0;for(const f of files){const m=await importOne(f);if(m){m.status==='error'?bad++:n++}}await regenReversed();renderLibrary();renderTimeline();requestDraw();if(!$('#relinkModal').classList.contains('hide'))showRelink();if(bad)toast(`✅ 成功 ${n} 個，❌ 失敗 ${bad} 個（紅框的素材，滑鼠移上去看原因）`,7000);else if(n)toast(`✅ 已匯入 ${n} 個素材，按 ＋ 加到時間軸`)}
 
 /* ========== 媒體元素 & 音訊 ========== */
 const EL={};let AC=null,RECD=null;
@@ -420,6 +460,7 @@ function drawClip(ctx,W,H,k,c,t,ex){const lt=clamp(t-c.start,0,c.dur);const A=an
  if(ex){x+=ex.dx||0;y+=ex.dy||0;sc*=ex.s??1;rot+=ex.r||0;al*=ex.a??1}
  if(c.kind==='mosaic'){drawMosaic(ctx,W,H,k,c,x,y,sc);return}
  if(al<=.002||sc<=0)return;
+ if(c.wm){if(c.wm.mode==='tile'){drawWMTile(ctx,W,H,k,c,lt,A,sc,al);return}const P=wmPos(c,W,H,k,t,sc);x=P.x;y=P.y}
  ctx.save();if(ex&&ex.clip)ex.clip(ctx);ctx.globalAlpha=clamp(al,0,1);
  ctx.filter=filterStr(c,k,A.blur+(ex?.blur||0),c.kind==='text'?0:A.hue);
  ctx.translate(x*W,y*H);ctx.rotate(rot*Math.PI/180);ctx.scale(sc,sc);
@@ -564,7 +605,7 @@ function clipHTML(c){const m=S.media[c.mediaId],w=Math.max(4,c.dur*S.zoom);
  const label=c.kind==='text'?(c.sub?'💬 ':'T ')+esc(c.text.content.replace(/\n/g,' ').slice(0,40)):c.kind==='mosaic'?'▦ '+(c.mosaic.mode==='blur'?'模糊遮擋':'馬賽克'):c.kind==='color'?'■ 背景':(m&&(m.status==='error'||!m.url)?'❌ ':m&&m.status==='loading'?'⏳ ':'')+(c.kind==='audio'?'♪ ':'')+esc(c.name||'');
  const bg=m&&m.thumb&&c.kind!=='audio'?`background-image:url(${m.thumb});`:'';
  let kfs='';for(const t of kfTimes(c))if(t>=0&&t<=c.dur)kfs+=`<i class="kfd" data-t="${c.start+t}" style="left:${t*S.zoom}px" title="關鍵幀"></i>`;
- const bd=[c.animIn.type!=='none'?'入場':'',c.animOut.type!=='none'?'出場':'',c.animLoop!=='none'?'循環':'',c.fx.length?'特效':'',c.bg.mode!=='none'?'去背':''].filter(Boolean).join('·');
+ const bd=[c.animIn.type!=='none'?'入場':'',c.animOut.type!=='none'?'出場':'',c.animLoop!=='none'?'循環':'',c.fx.length?'特效':'',c.bg.mode!=='none'?'去背':'',c.revSrc?'⏪倒轉':''].filter(Boolean).join('·');
  return`<div class="clip k-${c.kind}${c.sub?' sub':''}${S.msel.has(c.id)?' sel':''}" data-id="${c.id}" style="left:${c.start*S.zoom}px;width:${w}px;${bg}">${c.trans.type!=='none'?`<i class="trm" style="width:${c.trans.dur*S.zoom}px"></i>`:''}<span class="cl">${label}</span>${bd?`<span class="bd">${bd}</span>`:''}${kfs}<i class="hl"></i><i class="hr"></i></div>`}
 function renderTimeline(){const inner=$('#tlinner'),total=Math.max(projDur()+20,30),LW=total*S.zoom;
  let h=`<div class="row ruler"><div class="th" style="color:var(--mu)">軌道</div><div class="lane" id="ruler" style="width:${LW}px">${ticks(total)}</div></div>`;
@@ -579,7 +620,7 @@ function maxDurOf(c){const m=S.media[c.mediaId];if((c.kind==='video'||c.kind==='
 function seekX(e){const r=$('#ruler').getBoundingClientRect();seek((e.clientX-r.left)/S.zoom)}
 let td=null,MULTI=false;const tli=$('#tlinner');
 const modKey=e=>e.ctrlKey||e.metaKey||e.shiftKey||MULTI;
-tli.addEventListener('pointerdown',e=>{const kd=e.target.closest('.kfd');if(kd){seek(+kd.dataset.t);return}
+tli.addEventListener('pointerdown',e=>{clearGapHov();if(e.button!==0)return;hideCtx();const kd=e.target.closest('.kfd');if(kd){seek(+kd.dataset.t);return}
  const ta=e.target.closest('[data-tact]');if(ta){trackAct(ta.dataset.tact,ta.dataset.t);return}
  const ce=e.target.closest('.clip');
  if(ce){const c=clipById(ce.dataset.id);let collapse=false;
@@ -599,26 +640,91 @@ function trimL(g,dt,snap){const c=g.c,nb=S.clips.filter(o=>o.id!==c.id&&o.trackI
  c.kf={};for(const p in g.kf0)c.kf[p]=g.kf0[p].map(k=>({...k,t:k.t-sh}));return sh}
 function trimR(g,dt,snap){const c=g.c,nx=S.clips.filter(o=>o.id!==c.id&&o.trackId===c.trackId&&o.start>=g.s0+g.d0-1e-3).map(o=>o.start);
  const maxE=Math.min(g.s0+maxDurOf(c),nx.length?Math.min(...nx):1e9);let ne=g.s0+g.d0+dt;if(snap)ne=snapT(ne,c.id);ne=clamp(ne,g.s0+.1,maxE);c.dur=ne-g.s0;return ne-(g.s0+g.d0)}
-function boxSelect(e){const ir=tli.getBoundingClientRect();let m=$('#marq');if(!m){m=document.createElement('div');m.id='marq';tli.appendChild(m)}
- const x1=Math.min(td.x0,e.clientX),x2=Math.max(td.x0,e.clientX),y1=Math.min(td.y0,e.clientY),y2=Math.max(td.y0,e.clientY);
+// 框選：起點用「內容座標」記住，所以時間軸自動捲動時框也會正確延伸
+function boxSelect(e,dsl,dst){const ir=tli.getBoundingClientRect();let m=$('#marq');if(!m){m=document.createElement('div');m.id='marq';tli.appendChild(m)}
+ const ax=td.x0-dsl,ay=td.y0-dst,x1=Math.min(ax,e.clientX),x2=Math.max(ax,e.clientX),y1=Math.min(ay,e.clientY),y2=Math.max(ay,e.clientY);
  Object.assign(m.style,{left:(x1-ir.left)+'px',top:(y1-ir.top)+'px',width:(x2-x1)+'px',height:(y2-y1)+'px'});
  const set=new Set(td.add?td.base:[]);for(const el of $$('.clip')){const r=el.getBoundingClientRect();if(r.right>x1&&r.left<x2&&r.bottom>y1&&r.top<y2)set.add(el.dataset.id)}
  S.msel=set;if(!set.has(_sel))_sel=[...set][0]||null;markSel();requestDraw()}
-tli.addEventListener('pointermove',e=>{if(!td)return;if(td.mode==='seek'){seekX(e);return}
- if(!td.moved&&Math.abs(e.clientX-td.x0)<4&&Math.abs(e.clientY-td.y0)<4)return;td.moved=true;
- if(td.mode==='box'){boxSelect(e);return}
- const c=td.c,g0=td.group.find(g=>g.c===c),dt=(e.clientX-td.x0)/S.zoom;
+const tls=$('#tlscroll');
+// 補記拖曳開始時的捲動位置（第二個監聽器，在上面的 pointerdown 之後執行）
+tli.addEventListener('pointerdown',e=>{if(td&&td.sl0===undefined){td.sl0=tls.scrollLeft;td.st0=tls.scrollTop;td.lx=e.clientX;td.ly=e.clientY;if(td.x0===undefined){td.x0=e.clientX;td.y0=e.clientY}}});
+// 依照「滑鼠移動距離 + 時間軸已捲動的距離」計算片段要移動多少秒
+function tlMove(){if(!td)return;const e={clientX:td.lx,clientY:td.ly};if(td.mode==='seek'){seekX(e);return}
+ const dsl=tls.scrollLeft-td.sl0,dst=tls.scrollTop-td.st0;
+ if(!td.moved&&Math.abs(td.lx-td.x0)<4&&Math.abs(td.ly-td.y0)<4&&!dsl)return;td.moved=true;
+ if(td.mode==='box'){boxSelect(e,dsl,dst);return}
+ const c=td.c,g0=td.group.find(g=>g.c===c),dt=(td.lx-td.x0+dsl)/S.zoom;
  if(td.mode==='m'){let ns=Math.max(0,g0.s0+dt);const a=snapT(ns,c.id,td.ids);if(a!==ns)ns=a;else ns=snapT(ns+c.dur,c.id,td.ids)-c.dur;
   const d=Math.max(ns-g0.s0,-Math.min(...td.group.map(g=>g.s0)));for(const g of td.group)g.c.start=g.s0+d;
-  if(td.group.length===1){const el=document.elementFromPoint(e.clientX,e.clientY);const ln=el&&el.closest('.lane[data-track]');if(ln){const tr=S.tracks.find(t=>t.id===ln.dataset.track);if(compat(c,tr))c.trackId=tr.id}}}
+  // 跨軌道：算出「被拖的片段」往上/下移了幾條軌道，同類型（畫面/音訊）的選取片段都移動同樣條數
+  const el=document.elementFromPoint(td.lx,td.ly),ln=el&&el.closest('.lane[data-track]');
+  if(ln){const tr=S.tracks.find(t=>t.id===ln.dataset.track),t0=S.tracks.find(t=>t.id===g0.tr0);
+   if(tr&&t0&&tr.type===t0.type){const list=S.tracks.filter(t=>t.type===tr.type).map(t=>t.id),same=td.group.filter(g=>list.includes(g.tr0)),idx=same.map(g=>list.indexOf(g.tr0));
+    const dl=clamp(list.indexOf(tr.id)-list.indexOf(g0.tr0),-Math.min(...idx),list.length-1-Math.max(...idx));
+    for(const g of same)g.c.trackId=list[list.indexOf(g.tr0)+dl]}}}
  else{const fn=td.mode==='l'?trimL:trimR;const d=fn(g0,dt,true);for(const g of td.group)if(g!==g0)fn(g,d,false)}
- renderTimeline();requestDraw()});
+ renderTimeline();requestDraw()}
+tli.addEventListener('pointermove',e=>{if(!td)return;td.lx=e.clientX;td.ly=e.clientY;tlMove();if(!td.as){td.as=true;requestAnimationFrame(autoScroll)}});
+// 自動捲動：滑鼠靠近時間軸左右邊緣（或上下）時，越靠近捲得越快
+function autoScroll(){const T=td;if(!T)return;
+ if(T.moved||T.mode==='seek'){const r=tls.getBoundingClientRect(),L=r.left+TH(),R=r.right,E=60;let vx=0,vy=0;
+  if(T.lx<L+E)vx=-Math.min(28,Math.ceil((L+E-T.lx)/E*16));else if(T.lx>R-E)vx=Math.min(28,Math.ceil((T.lx-(R-E))/E*16));
+  if(T.mode!=='seek'){if(T.ly<r.top+26+24)vy=-8;else if(T.ly>r.bottom-24)vy=8}
+  if(vx||vy){const bl=tls.scrollLeft,bt=tls.scrollTop;tls.scrollLeft+=vx;tls.scrollTop+=vy;if(tls.scrollLeft!==bl||tls.scrollTop!==bt)tlMove()}}
+ requestAnimationFrame(autoScroll)}
 tli.addEventListener('pointerup',e=>{if(!td)return;const T=td;td=null;const mq=$('#marq');if(mq)mq.remove();
  if(T.mode==='box'){if(!T.moved)seekX(e);else{renderInspector();if(S.msel.size>1)toast(`已框選 ${S.msel.size} 個片段`)}return}
  if(!T.c)return;
  if(T.moved){if(T.mode==='m'&&T.group.some(g=>overlaps(g.c,g.c.trackId,g.c.start,g.c.dur,T.ids))){for(const g of T.group){g.c.start=g.s0;g.c.trackId=g.tr0}toast('有片段會跟其他片段重疊，已放回原處')}
   commit();renderTimeline();renderInspector()}
  else if(T.collapse)select(T.c.id)});
+/* ---- 右鍵選單：空白區段刪除（右邊往前補齊）、片段快速操作 ---- */
+function hideCtx(){const m=$('#ctx');if(m)m.remove();$$('.gapmark').forEach(e=>e.remove())}
+function showCtx(x,y,items){const o=$('#ctx');if(o)o.remove();const m=document.createElement('div');m.id='ctx';
+ m.innerHTML=items.map((it,i)=>it==='-'?'<hr>':`<div data-i="${i}" class="${it.dis?'dis':''}">${it.label}</div>`).join('');document.body.appendChild(m);
+ const r=m.getBoundingClientRect();m.style.left=Math.max(4,Math.min(x,innerWidth-r.width-6))+'px';m.style.top=Math.max(4,Math.min(y,innerHeight-r.height-6))+'px';
+ m.addEventListener('click',e=>{const d=e.target.closest('[data-i]');if(!d||d.classList.contains('dis'))return;const it=items[+d.dataset.i];hideCtx();it.fn()})}
+document.addEventListener('pointerdown',e=>{if(!e.target.closest('#ctx'))hideCtx()},true);
+tls.addEventListener('scroll',()=>{if(!td)hideCtx()});
+function findGap(tid,t){const cl=S.clips.filter(c=>c.trackId===tid);if(cl.some(c=>t>=c.start&&t<c.start+c.dur))return null;
+ const a=Math.max(0,...cl.filter(c=>c.start+c.dur<=t+1e-6).map(c=>c.start+c.dur));const nx=cl.filter(c=>c.start>=t-1e-6).map(c=>c.start);
+ return{a,b:nx.length?Math.min(...nx):null}}
+function rippleGap(tid,a,b,all){const d=b-a;let n=0;for(const c of S.clips)if((all||c.trackId===tid)&&c.start>=b-1e-3){c.start=Math.max(0,c.start-d);n++}
+ commit();renderTimeline();requestDraw();toast(`✅ 已刪除 ${d.toFixed(2)} 秒空白，${n} 個片段往前補齊`)}
+function rippleDelete(){const cs=sels();if(!cs.length)return;cs.sort((p,q)=>q.start-p.start);
+ for(const c of cs){const end=c.start+c.dur,tid=c.trackId;S.clips=S.clips.filter(x=>x.id!==c.id);
+  const nb=S.clips.filter(x=>x.trackId===tid&&x.start>=end-1e-3);const prevEnd=Math.max(0,...S.clips.filter(x=>x.trackId===tid&&x.start<c.start).map(x=>x.start+x.dur));
+  const d=Math.min(c.dur,Math.max(0,Math.min(...nb.map(x=>x.start),1e9)-Math.max(prevEnd,c.start)));for(const x of nb)x.start-=d}
+ S.sel=null;commit();renderTimeline();renderInspector();requestDraw();toast(`已刪除 ${cs.length} 個片段，右邊往前補齊`)}
+tli.addEventListener('contextmenu',e=>{e.preventDefault();clearGapHov();const r=$('#ruler').getBoundingClientRect(),t=Math.max(0,(e.clientX-r.left)/S.zoom);
+ const ce=e.target.closest('.clip');
+ if(ce){const id=ce.dataset.id;if(!S.msel.has(id))select(id);const cs=sels(),n=cs.length,av=cs.some(c=>c.kind==='video'||c.kind==='audio'),inside=cs.some(c=>S.time-c.start>.05&&c.start+c.dur-S.time>.05);
+  showCtx(e.clientX,e.clientY,[{label:`✂ 在播放頭分割${n>1?`（${n} 個）`:''}`,dis:!inside,fn:split},{label:'⧉ 複製',fn:dup},{label:'⏪ 倒轉 / 還原',dis:!av,fn:reverseClips},'-',
+   {label:'🗑 刪除',fn:del},{label:'🗑 刪除並讓右邊片段往前補齊',fn:rippleDelete}]);return}
+ const ln=e.target.closest('.lane[data-track]');if(!ln)return;const tid=ln.dataset.track,g=findGap(tid,t);
+ const items=[];
+ if(g&&g.b!==null&&g.b-g.a>1e-3){const mk=document.createElement('div');mk.className='gapmark';mk.style.left=g.a*S.zoom+'px';mk.style.width=(g.b-g.a)*S.zoom+'px';ln.appendChild(mk);
+  const blocked=S.clips.some(o=>o.trackId!==tid&&o.start<g.b-1e-3&&o.start+o.dur>g.a+1e-3);
+  items.push({label:`🗑 刪除這段空白（${(g.b-g.a).toFixed(2)} 秒），右邊片段往前補齊`,fn:()=>rippleGap(tid,g.a,g.b,false)},
+   {label:'🗑 刪除空白，所有軌道一起往前（保持同步）'+(blocked?'<br><small style="color:var(--mu)">其他軌道在這段時間有片段，無法一起移動</small>':''),dis:blocked,fn:()=>rippleGap(tid,g.a,g.b,true)})}
+ else items.push({label:g?'右邊沒有片段，不需要刪除空白':'這裡沒有空白區段',dis:true});
+ items.push('-',{label:'▶ 播放頭移到這裡',fn:()=>seek(t)});showCtx(e.clientX,e.clientY,items)});
+// 滑鼠停在空白區段 1 秒 → 淺紅色標示並提示可以右鍵刪除
+let gapHov={key:'',timer:0,el:null};
+function clearGapHov(){clearTimeout(gapHov.timer);if(gapHov.el)gapHov.el.remove();gapHov={key:'',timer:0,el:null}}
+tli.addEventListener('pointermove',e=>{if(td||e.pointerType!=='mouse'||$('#ctx')){if(td)clearGapHov();return}
+ const ln=e.target.closest('.lane[data-track]');if(!ln||e.target.closest('.clip')){clearGapHov();return}
+ const r=$('#ruler').getBoundingClientRect(),t=(e.clientX-r.left)/S.zoom,g=findGap(ln.dataset.track,t);
+ if(!g||g.b===null||g.b-g.a<1e-3){clearGapHov();return}
+ const key=ln.dataset.track+'|'+g.a.toFixed(3)+'|'+g.b.toFixed(3);
+ if(key===gapHov.key&&(!gapHov.el||gapHov.el.isConnected))return;
+ clearGapHov();gapHov.key=key;
+ gapHov.timer=setTimeout(()=>{const lane=$(`.lane[data-track="${ln.dataset.track}"]`);if(!lane)return;const mk=document.createElement('div');mk.className='gapmark hov';
+  const w=(g.b-g.a)*S.zoom;mk.style.left=g.a*S.zoom+'px';mk.style.width=w+'px';
+  mk.innerHTML=w>70?`<span>${w>200?`空白 ${(g.b-g.a).toFixed(2)} 秒・按右鍵可刪除並往前補齊`:`右鍵刪除空白`}</span>`:'';mk.title=`空白 ${(g.b-g.a).toFixed(2)} 秒：按右鍵可以刪除`;
+  lane.appendChild(mk);gapHov.el=mk},1000)});
+tli.addEventListener('pointerleave',clearGapHov);
 tli.addEventListener('pointercancel',()=>{td=null;const mq=$('#marq');if(mq)mq.remove()});
 $('#tlscroll').addEventListener('wheel',e=>{if(e.ctrlKey||e.metaKey){e.preventDefault();setZoom(S.zoom*(e.deltaY<0?1.15:.87))}},{passive:false});
 function setZoom(z){S.zoom=clamp(z,8,400);$('#zoom').value=S.zoom;renderTimeline()}
@@ -681,16 +787,17 @@ const selc=(l,p,o,isNum)=>`<div class="fld"><label>${l}</label><select data-p="$
 const chk=(l,p)=>`<label style="display:inline-flex;gap:4px;align-items:center;margin-right:10px"><input type="checkbox" data-p="${p}">${l}</label>`;
 const col=(l,p,extra='')=>`<div class="fld"><label>${l}</label><input type="color" data-p="${p}">${extra}</div><div class="sw">${COLORS.map(c=>`<i style="background:${c}" data-sw="${p}" data-c="${c}"></i>`).join('')}</div>`;
 function renderInspector(){const el=$('#insp'),c=selClip();
- if(!c){el.innerHTML=`<div class="empty">👈 點選時間軸上的片段<br>或直接點預覽畫面中的物件<br>就可以在這裡調整屬性<br><br><b style="color:var(--tx)">建議流程</b><br>① 素材分頁匯入影片/圖片/音樂<br>② 按 ＋ 放進時間軸<br>③ 文字分頁加標題、字幕分頁上字幕<br>④ 右上角「匯出影片」</div>`;return}
+ if(!c){el.innerHTML=`<div class="empty">👈 點選時間軸上的片段<br>或直接點預覽畫面中的物件<br>就可以在這裡調整屬性<br><br><b style="color:var(--tx)">建議流程</b><br>① 素材分頁匯入影片/圖片/音樂<br>② 按 ＋ 放進時間軸<br>③ 文字分頁加標題、字幕分頁上字幕<br>④ 右上角「匯出影片」<br><br><a href="https://youtu.be/gEiZoap_YRE" target="_blank" rel="noopener" style="color:var(--ac)">🎬 看教學影片</a></div>`;return}
  const vis=c.kind!=='audio',media=c.kind==='video'||c.kind==='image',av=c.kind==='video'||c.kind==='audio';
  let h=`<div class="ihead"><b>${KIND[c.kind]}${c.sub?'（字幕）':''}</b><span>${esc(c.name||'')}</span></div><div class="btnrow"><button data-act="split">✂ 分割</button><button data-act="dup">⧉ 複製</button><button data-act="del" class="dn">🗑 刪除</button></div>`;
+ if(c.wm)h+=`<div class="tip" style="border:1px solid var(--ac);color:var(--tx);margin-bottom:8px">💧 這是<b>浮水印</b>：位置、大小、透明度請到左側「浮水印」分頁調整（會自動延伸到整支影片）。<div class="btnrow"><button data-act="gowm">前往浮水印設定</button></div></div>`;
  const all=sels();if(all.length>1){const cnt={};for(const x of all)cnt[KIND[x.kind]]=(cnt[KIND[x.kind]]||0)+1;
   h=`<div class="tip" style="border:1px solid var(--ac);color:var(--tx);margin:0 0 8px">🔗 <b>批次編輯 ${all.length} 個片段</b>（${Object.entries(cnt).map(([k,v])=>k+'×'+v).join('、')}）<br>下面顯示「主要片段」的數值（藍框那個）；你改的設定會同時套用到所有<b>有這個設定</b>的片段。文字內容只改主要片段。<div class="btnrow"><button data-act="clearSel">取消多選</button></div></div>`+h
   +sec('批次時間調整',`<div class="fld"><label>統一長度</label><input type="number" id="bDur" step="0.1" min="0.1" value="${c.dur.toFixed(2)}" style="flex:1">秒<button data-act="bDur">套用</button></div>
   <div class="fld"><label>時間伸縮</label><input type="number" id="bScale" step="5" min="10" value="100" style="flex:1">%<button data-act="bScale">套用</button></div>
   <div class="btnrow"><button data-act="bChain">⇥ 依序首尾相接</button><button data-act="bToPH">⇤ 整組移到播放頭</button></div>
   <div class="tip">時間伸縮：以最早的片段為起點，把間隔和長度一起放大或縮小（50% = 節奏快一倍）。影片片段不會超過素材本身長度。<br>拖曳任一個選取的片段可整組移動；拉任一個的邊緣，全部一起伸縮。</div>`)}
- h+=sec('時間',num('開始(秒)','start',.01)+num('長度(秒)','dur',.01)+(av?sld('速度 (倍)','speed',.1,4,.05)+`<div class="btnrow" style="margin-left:78px">${[0.25,0.5,1,1.5,2,3].map(v=>`<button data-act="spd:${v}">${v}x</button>`).join('')}</div><div class="tip">滑桿可以自由調整 0.1x～4x（也能直接輸入數字）。變快 → 片段變短；變慢 → 片段變長（不會超過素材本身長度）。</div>`:''));
+ h+=sec('時間',num('開始(秒)','start',.01)+num('長度(秒)','dur',.01)+(av?sld('速度 (倍)','speed',.1,4,.05)+`<div class="btnrow" style="margin-left:78px">${[0.25,0.5,1,1.5,2,3].map(v=>`<button data-act="spd:${v}">${v}x</button>`).join('')}</div><div class="btnrow" style="margin-left:78px"><button data-act="rev" class="${c.revSrc?'on':''}">⏪ ${c.revSrc?'已倒轉（點此還原）':'倒轉播放'}</button></div><div class="tip">滑桿可以自由調整 0.1x～4x（也能直接輸入數字）。變快 → 片段變短；變慢 → 片段變長（不會超過素材本身長度）。</div>`:''));
  if(c.kind==='text'){const T='text.';h+=sec('文字內容與樣式',`<textarea data-p="text.content" rows="3"></textarea>
   ${selc('字體','text.font',Object.fromEntries(FONTS))}${sld('字級','text.size',10,400,1)}
   <div class="fld"><label>樣式</label>${chk('粗體',T+'bold')}${chk('斜體',T+'italic')}</div>${selc('對齊','text.align',{left:'靠左',center:'置中',right:'靠右'})}
@@ -766,6 +873,8 @@ insp.addEventListener('click',e=>{const c=selClip();if(!c)return;const all=sels(
  else if(a==='flipH'||a==='flipV'){const v=!c[a];for(const x of all)if(media(x))x[a]=v;commit()}
  else if(a.startsWith('crop:')){const R=+a.slice(5);for(const x of all){if(!media(x))continue;const m=S.media[x.mediaId];x.crop={l:0,t:0,r:0,b:0};if(R&&m){const cur=m.w/m.h;if(cur>R){const k=(1-R/cur)/2;x.crop.l=x.crop.r=k}else{const k=(1-cur/R)/2;x.crop.t=x.crop.b=k}}}commit();refreshInspector()}
  else if(a==='g'||a==='b'){for(const x of all){if(!media(x))continue;x.bg.color=a==='g'?'#00ff00':'#0047ff';if(x.bg.mode==='none')x.bg.mode='chroma'}commit();refreshInspector()}
+ else if(a==='rev'){reverseClips();return}
+ else if(a==='gowm'){openTab('wm');return}
  else if(a.startsWith('spd:')){const v=+a.slice(4);for(const x of all)if(x.kind==='video'||x.kind==='audio'){const span=x.dur*x.speed;x.speed=v;x.dur=Math.max(.1,Math.min(span/v,maxDurOf(x)))}commit();renderTimeline();refreshInspector()}
  else if(a==='autokey'){let n=0;for(const x of all)if(media(x)&&autoKey(x)){if(x.bg.mode==='none')x.bg.mode='chroma';n++}commit();refreshInspector();toast(n?'🎯 已自動偵測幕布顏色':'偵測失敗，請手動選色')}
  else if(a==='aiImg')aiCutoutImage(c);
@@ -778,7 +887,7 @@ function mStat(m){if(!m.url)return'<span style="color:var(--dn)">⚠ 缺少檔�
  if(m.status==='loading')return'<span style="color:#ffd400">⏳ 載入中…</span>';
  if(m.status==='error')return`<span style="color:var(--dn)">❌ 載入失敗：${esc(m.err)}</span>`;
  const mb=m.size?` · ${(m.size/1048576).toFixed(1)}MB`:'';return`<span style="color:#34c759">✅</span> ${m.type==='image'?'圖片':fmt(m.duration)}${m.w?` · ${m.w}×${m.h}`:''}${mb}`}
-function renderLibrary(){const ms=Object.values(S.media);$('#lib').innerHTML=ms.length?ms.map(m=>`<div class="mcard ${!m.url||m.status==='error'?'miss':''}" draggable="true" data-mid="${m.id}" title="${esc(m.err||'')}">${m.thumb?`<img src="${m.thumb}">`:`<div class="ph">${m.status==='loading'?'⏳':m.status==='error'?'❌':m.type==='audio'?'🎵':m.type==='video'?'🎬':'🖼'}</div>`}<div class="mi"><div class="mn">${esc(m.name)}</div><div class="md" style="white-space:normal">${mStat(m)}</div></div>${!m.url?`<button data-relink="${m.id}" title="指定檔案">🔗</button>`:''}${m.status==='error'?`<button data-retry="${m.id}" title="重新嘗試載入">↻</button>`:''}<button data-add="${m.id}" title="加到播放頭位置" ${m.status==='ok'?'':'disabled style="opacity:.4"'}>＋</button></div>`).join(''):'<div class="tip">還沒有素材。商業宣傳片建議準備：產品影片/照片、Logo（透明 PNG）、背景音樂。</div>'}
+function renderLibrary(){setTimeout(refreshWMImgs,0);const ms=Object.values(S.media);$('#lib').innerHTML=ms.length?ms.map(m=>`<div class="mcard ${!m.url||m.status==='error'?'miss':''}" draggable="true" data-mid="${m.id}" title="${esc(m.err||'')}">${m.thumb?`<img src="${m.thumb}">`:`<div class="ph">${m.status==='loading'?'⏳':m.status==='error'?'❌':m.type==='audio'?'🎵':m.type==='video'?'🎬':'🖼'}</div>`}<div class="mi"><div class="mn">${esc(m.name)}</div><div class="md" style="white-space:normal">${mStat(m)}</div></div>${!m.url?`<button data-relink="${m.id}" title="指定檔案">🔗</button>`:''}${m.status==='error'?`<button data-retry="${m.id}" title="重新嘗試載入">↻</button>`:''}<button data-add="${m.id}" title="加到播放頭位置" ${m.status==='ok'?'':'disabled style="opacity:.4"'}>＋</button></div>`).join(''):'<div class="tip">還沒有素材。商業宣傳片建議準備：產品影片/照片、Logo（透明 PNG）、背景音樂。</div>'}
 $('#lib').addEventListener('click',async e=>{const rl=e.target.closest('[data-relink]');if(rl){relinkOne(rl.dataset.relink);return}const r=e.target.closest('[data-retry]');if(r){const m=S.media[r.dataset.retry];renderLibrary();await probe(m);renderLibrary();renderTimeline();requestDraw();toast(m.status==='ok'?'✅ 重新載入成功':'❌ 還是失敗：'+m.err,5000);return}const b=e.target.closest('[data-add]');if(b){const m=S.media[b.dataset.add];if(m.status==='loading')return toast('還在載入中，請稍等');if(m.status==='error')return toast('這個素材載入失敗：'+m.err,5000);addMedia(b.dataset.add)}});
 $('#lib').addEventListener('dragstart',e=>{const c=e.target.closest('[data-mid]');if(c)e.dataTransfer.setData('text/mid',c.dataset.mid)});
 function renderLeft(){
@@ -803,7 +912,7 @@ $('#fxList').addEventListener('click',e=>{const ch=e.target.closest('[data-fxc]'
 $('#trList').addEventListener('click',e=>{const ch=e.target.closest('[data-tr]');if(!ch)return;const cs=visTargets();if(!cs.length)return toast('先選取「後面那一段」片段');
  for(const c of cs)c.trans={type:ch.dataset.tr,dur:Math.min(+$('#trDur').value,c.dur)};commit();renderTimeline();renderInspector();if(cs.length>1)toast(`已套用轉場到 ${cs.length} 個片段`);seek(Math.max(cs[0].start-.5,0));if(!S.playing)togglePlay()});
 $('#trDur').addEventListener('input',e=>$('#trDurV').textContent=e.target.value+'s');
-$('#ltabs').addEventListener('click',e=>{const t=e.target.closest('.tab');if(!t)return;$$('#ltabs .tab').forEach(x=>x.classList.toggle('act',x===t));$$('#left .pane').forEach(p=>p.classList.toggle('act',p.id==='p-'+t.dataset.tab))});
+$('#ltabs').addEventListener('click',e=>{const t=e.target.closest('.tab');if(!t)return;if(t.dataset.tab==='wm')setTimeout(updWMPanel,0);$$('#ltabs .tab').forEach(x=>x.classList.toggle('act',x===t));$$('#left .pane').forEach(p=>p.classList.toggle('act',p.id==='p-'+t.dataset.tab))});
 
 /* ========== 字幕 ========== */
 function makeSub(text,start,dur,si){const st=clone(TSTYLES[si??+$('#subStyle').value].t);const tr=subTrack();const c=baseClip('text',tr.id,start,dur);
@@ -825,7 +934,7 @@ $('#subList').addEventListener('change',()=>{commit();renderTimeline()});
 
 /* ========== 儲存 / 開啟 / 截圖 ========== */
 function download(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),60000)}
-function projData(){return{app:'RCmovEditor',v:2,name:S.name,w:S.w,h:S.h,tracks:S.tracks,clips:S.clips,savedAt:Date.now(),media:Object.values(S.media).map(m=>({id:m.id,name:m.name,type:m.type,size:m.size||null,duration:isFinite(m.duration)?m.duration:null,w:m.w,h:m.h}))}}
+function projData(){return{app:'RCmovEditor',v:2,name:S.name,w:S.w,h:S.h,tracks:S.tracks,clips:S.clips,savedAt:Date.now(),media:Object.values(S.media).map(m=>({id:m.id,name:m.name,type:m.type,size:m.size||null,duration:isFinite(m.duration)?m.duration:null,w:m.w,h:m.h,revKey:m.revKey||null,revOf:m.revOf||null}))}}
 $('#bSave').onclick=()=>{download(new Blob([JSON.stringify(projData())],{type:'application/json'}),S.name+'.rcmov.json');toast('已下載 .json 專案檔。平常會自動存在瀏覽器，這個檔案是備份/換電腦用',5000)};
 async function openProjectFile(f){try{const o=JSON.parse(await f.text());await loadProject(o)}catch(err){toast('開啟失敗：'+err.message,5000)}}
 $('#fProj').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(f)await openProjectFile(f)};
@@ -840,13 +949,14 @@ async function loadProject(o){if(!o||!['RCmovEditor','CutStudio'].includes(o.app
  S.name=o.name||'未命名影片';$('#pname').value=S.name;S.tracks=o.tracks;S.clips=o.clips;S.sel=null;S.time=0;
  setRatio(o.w||1920,o.h||1080,true);HIST.length=0;REDO.length=0;lastSnap='';commit();renderAll();
  await Promise.all(Object.values(S.media).filter(m=>m.status==='loading').map(m=>probe(m)));renderAll();
- if(Object.values(S.media).some(m=>!m.url))showRelink();else toast('✅ 專案已開啟，可以繼續編輯',4000)}
-function showRelink(){const miss=Object.values(S.media).filter(m=>!m.url);if(!miss.length){$('#relinkModal').classList.add('hide');toast('✅ 素材全部接回了，可以繼續編輯',4000);return}
+ await regenReversed();
+ if(Object.values(S.media).some(m=>!m.url&&!m.revOf))showRelink();else toast('✅ 專案已開啟，可以繼續編輯',4000)}
+function showRelink(){const miss=Object.values(S.media).filter(m=>!m.url&&!m.revOf);if(!miss.length){$('#relinkModal').classList.add('hide');toast('✅ 素材全部接回了，可以繼續編輯',4000);return}
  $('#relinkList').innerHTML=miss.map(m=>`<div class="mcard miss" style="cursor:default"><div class="ph">${m.type==='audio'?'🎵':m.type==='video'?'🎬':'🖼'}</div><div class="mi"><div class="mn">${esc(m.name)}</div><div class="md">${m.type==='image'?'圖片':fmt(m.duration)}${m.size?' · '+(m.size/1048576).toFixed(1)+'MB':''}</div></div><button data-rl="${m.id}">指定檔案</button></div>`).join('');
  $('#relinkModal').classList.remove('hide')}
 let relinkTarget=null;function relinkOne(id){relinkTarget=id;$('#fRelinkOne').click()}
 $('#relinkList').addEventListener('click',e=>{const b=e.target.closest('[data-rl]');if(b)relinkOne(b.dataset.rl)});
-$('#fRelinkOne').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f||!relinkTarget)return;await importOne(f,relinkTarget);relinkTarget=null;renderAll();if(!$('#relinkModal').classList.contains('hide'))showRelink()};
+$('#fRelinkOne').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f||!relinkTarget)return;await importOne(f,relinkTarget);relinkTarget=null;await regenReversed();renderAll();if(!$('#relinkModal').classList.contains('hide'))showRelink()};
 $('#rlMulti').onclick=()=>$('#fRelink').click();$('#rlLater').onclick=()=>{$('#relinkModal').classList.add('hide');toast('缺少的素材在素材區會顯示紅框，按 🔗 可以之後再接回',5000)};
 /* ---- 自動存檔：存在瀏覽器的 IndexedDB（像瀏覽器內建的小資料庫，可以存檔案） ---- */
 const IDB={db:null,open(){if(this.db)return Promise.resolve(this.db);return new Promise((res,rej)=>{let r;try{r=indexedDB.open('cutstudio',1)}catch(e){return rej(e)}
@@ -857,7 +967,7 @@ let idbWarned=false,AUTOSAVE=false,asT=null,saveOK=true;
 function idbWarn(e){saveOK=false;if(idbWarned)return;idbWarned=true;toast('⚠ 這個瀏覽器無法自動保存素材（空間不足或被限制）。請記得「下載專案檔」備份',7000)}
 function autosave(){if(!AUTOSAVE)return;clearTimeout(asT);asT=setTimeout(()=>{IDB.put('proj','last',projData()).then(()=>{const d=new Date();$('#saveSt').textContent=`☁ 已自動儲存 ${pad(d.getHours())}:${pad(d.getMinutes())}`}).catch(idbWarn)},700)}
 async function newProject(ask=true){if(ask&&S.clips.length&&!confirm('開新專案會清除目前的編輯（瀏覽器裡的自動存檔也會清掉）。確定嗎？\n想保留的話，先按「下載專案檔」備份。'))return;
- if(S.playing)togglePlay();for(const id in EL){EL[id].remove();delete EL[id]}S.media={};S.clips=[];initTracks();S.sel=null;S.time=0;S.name='我的宣傳影片';$('#pname').value=S.name;
+ if(S.playing)togglePlay();for(const id in EL){EL[id].remove();delete EL[id]}S.media={};S.clips=[];initTracks();S.sel=null;S.time=0;S.name='RCmovEditor';$('#pname').value=S.name;
  try{await IDB.clear('proj');await IDB.clear('media')}catch(e){}HIST.length=0;REDO.length=0;lastSnap='';commit();renderAll();$('#saveSt').textContent=''}
 $('#bNew').onclick=()=>newProject(true);
 $('#bShot').onclick=async()=>{await waitFonts();const c=document.createElement('canvas');c.width=S.w;c.height=S.h;renderFrame(c.getContext('2d'),S.w,S.h,S.time);c.toBlob(b=>download(b,`${S.name}_${fmt(S.time).replace(/[:.]/g,'-')}.png`),'image/png')};
@@ -990,6 +1100,130 @@ async function realtimeExport(W,H,fps,q){const mime=pickMime();if(mime===null){p
  EXP={fast:false,ctx,W,H,cv:ec,rec,end:projDur(),t:0,cancel:false,stall:false,stalls:0};EXP_LAST=EXP;rec.start(500);S.playing=true;$('#play').textContent='⏸'}
 function finishExport(){if(!EXP||EXP.fast)return;const e=EXP;EXP=null;S.playing=false;$('#play').textContent='▶';try{if(e.rec.state!=='inactive')e.rec.stop()}catch(err){}for(const id in EL)EL[id].pause();requestDraw()}
 
+/* ========== 浮水印 ==========
+ 浮水印就是一個特別的文字/圖片片段（c.wm），放在最上層軌道。
+ 位置不用 x/y，而是用「錨點」（九宮格）+ 邊距，在畫的時候依照實際大小算出座標，所以換畫面比例也會貼齊角落。 */
+const WMDEF={type:'text',text:'© RCmovEditor',font:'Noto Sans TC',color:'#ffffff',shadow:true,img:'',pos:'br',mode:'fixed',tsize:4.5,isize:12,opacity:55,margin:3};
+let WM=(()=>{try{return{...WMDEF,...JSON.parse(localStorage.getItem('rc_wm')||'{}')}}catch(e){return{...WMDEF}}})();
+const saveWM=()=>{try{localStorage.setItem('rc_wm',JSON.stringify(WM))}catch(e){}};
+const wmClip=()=>S.clips.find(c=>c.wm);
+const MC=document.createElement('canvas').getContext('2d');
+function wmSize(c,W,H,k){if(c.kind==='text'){const T=c.text,fs=T.size*k;MC.font=`${T.italic?'italic ':''}${T.bold?'900':'400'} ${fs}px "${T.font}","Noto Sans TC",sans-serif`;
+  const ls=String(T.content).split('\n');const w=Math.max(1,...ls.map(l=>MC.measureText(l).width+[...l].length*T.spacing*k));const pad=T.bgOn?T.bgPad*k:0;return{w:w+pad*2,h:fs*T.lineH*ls.length+pad*1.2}}
+ const m=S.media[c.mediaId];if(!m||!m.w)return{w:100*k,h:100*k};const cr=c.crop,sw=m.w*(1-cr.l-cr.r),sh=m.h*(1-cr.t-cr.b),f=Math.min(W/sw,H/sh);return{w:sw*f,h:sh*f}}
+function wmPos(c,W,H,k,t,sc){const z=wmSize(c,W,H,k),hw=z.w*sc/2,hh=z.h*sc/2,mg=c.wm.margin*Math.min(W,H);
+ const at=an=>({x:(an[1]==='l'?mg+hw:an[1]==='r'?W-mg-hw:W/2)/W,y:(an[0]==='t'?mg+hh:an[0]==='b'?H-mg-hh:H/2)/H});
+ if(c.wm.mode==='move'){const seq=['tl','tr','br','bl'],per=5,tr=.8,i=Math.floor(t/per),q=t-i*per,a=at(seq[i%4]),b=at(seq[(i+1)%4]),p=q>per-tr?EASE.ease((q-(per-tr))/tr):0;return{x:lerp(a.x,b.x,p),y:lerp(a.y,b.y,p)}}
+ return at(c.wm.anchor||'br')}
+function drawWMTile(ctx,W,H,k,c,lt,A,sc,al){const z=wmSize(c,W,H,k),gx=Math.max(z.w*sc*1.8,80*k),gy=Math.max(z.h*sc*3.4,70*k),R=Math.hypot(W,H)/2+Math.max(gx,gy);
+ ctx.save();ctx.globalAlpha=clamp(al,0,1);ctx.filter='none';ctx.translate(W/2,H/2);ctx.rotate(-28*Math.PI/180);
+ for(let yy=-R,row=0;yy<=R;yy+=gy,row++)for(let xx=-R+(row%2)*gx/2;xx<=R;xx+=gx){ctx.save();ctx.translate(xx,yy);ctx.scale(sc,sc);if(c.kind==='text')drawText(ctx,k,c,lt,A);else drawMedia(ctx,W,H,c);ctx.restore()}
+ ctx.restore()}
+function syncWM(){const w=S.clips.filter(c=>c.wm&&c.wm.auto);if(!w.length)return;const end=Math.max(1,...S.clips.filter(c=>!c.wm).map(c=>c.start+c.dur));for(const c of w){c.start=0;c.dur=end}}
+function wmTrack(){let tr=S.tracks.find(t=>t.wmT);if(!tr){tr={id:'t_wm'+uid(),name:'浮水印',type:'v',wmT:true};S.tracks.unshift(tr)}else if(S.tracks[0]!==tr){S.tracks.splice(S.tracks.indexOf(tr),1);S.tracks.unshift(tr)}return tr}
+function applyWM(create,doCommit=true){let c=wmClip();if(!c&&!create)return;
+ const im=WM.type==='image'?S.media[WM.img]:null;
+ if(WM.type==='image'&&(!im||im.status!=='ok')){if(create)toast('請先選擇或上傳一張浮水印圖片（建議透明背景 PNG）');return}
+ const kind=WM.type==='image'?'image':'text';if(c&&c.kind!==kind){S.clips=S.clips.filter(x=>x!==c);c=null}
+ if(!c){const tr=wmTrack();c=baseClip(kind,tr.id,0,1);S.clips.push(c)}
+ c.wm={mode:WM.mode,anchor:WM.pos,margin:WM.margin/100,auto:true};c.opacity=WM.opacity/100;c.kf={};c.rotation=0;c.animIn={type:'none',dur:.5};c.animOut={type:'none',dur:.5};c.animLoop='none';
+ if(kind==='text'){c.name='浮水印';c.text={...clone(DEF_TEXT),content:WM.text||'©',font:WM.font,size:Math.max(8,Math.round(WM.tsize/100*S.h)),color:WM.color,bold:true,strokeW:0,shadow:'#000000',shadowBlur:WM.shadow?10:0,shadowX:WM.shadow?2:0,shadowY:WM.shadow?2:0};c.scale=1}
+ else{c.mediaId=im.id;c.name='浮水印 '+im.name;const f=Math.min(S.w/im.w,S.h/im.h);c.scale=+((WM.isize/100*S.h)/(im.h*f)).toFixed(4)}
+ saveWM();if(doCommit){commit();renderTimeline()}else syncWM();requestDraw()}
+function removeWM(){if(!wmClip())return toast('目前沒有浮水印');S.clips=S.clips.filter(c=>!c.wm);S.tracks=S.tracks.filter(t=>!(t.wmT&&!S.clips.some(c=>c.trackId===t.id)));if(!selClip())S.sel=null;commit();renderAll();toast('已移除浮水印')}
+function refreshWMImgs(){const sel=$('#wmImg');if(!sel)return;const ims=Object.values(S.media).filter(m=>m.type==='image'&&m.status==='ok');
+ sel.innerHTML=ims.length?ims.map(m=>`<option value="${m.id}" ${m.id===WM.img?'selected':''}>${esc(m.name)}</option>`).join(''):'<option value="">（還沒有圖片，請先上傳）</option>';if(ims.length&&!ims.some(m=>m.id===WM.img))WM.img=ims[0].id}
+function renderWMPanel(){$('#wmFont').innerHTML=FONTS.map(([v,t])=>`<option value="${v}">${t}</option>`).join('');
+ $('#wmSw').innerHTML=COLORS.map(c=>`<i style="background:${c}" data-c="${c}"></i>`).join('');
+ $('#wmPos').innerHTML=[['tl','左上'],['tc','上'],['tr','右上'],['ml','左'],['mc','中間'],['mr','右'],['bl','左下'],['bc','下'],['br','右下']].map(([v,t])=>`<i data-pos="${v}">${t}</i>`).join('');updWMPanel()}
+function updWMPanel(){$('#wmText').value=WM.text;$('#wmFont').value=WM.font;$('#wmColor').value=WM.color;$('#wmShadow').checked=WM.shadow;refreshWMImgs();
+ $$('[data-wmt]').forEach(e=>e.classList.toggle('on',e.dataset.wmt===WM.type));$('#wmTextBox').style.display=WM.type==='text'?'':'none';$('#wmImgBox').style.display=WM.type==='image'?'':'none';
+ $$('#wmPos i').forEach(e=>e.classList.toggle('on',WM.mode==='fixed'&&e.dataset.pos===WM.pos));$$('[data-wmm]').forEach(e=>e.classList.toggle('on',WM.mode===e.dataset.wmm));
+ const sz=WM.type==='text'?WM.tsize:WM.isize;$('#wmSize').value=sz;$('#wmSizeV').textContent=sz+'%';$('#wmOp').value=WM.opacity;$('#wmOpV').textContent=WM.opacity+'%';$('#wmMg').value=WM.margin;$('#wmMgV').textContent=WM.margin+'%';
+ $('#wmApply').textContent=wmClip()?'✅ 已套用（設定會即時更新）':'✅ 套用浮水印'}
+function wmChanged(commitNow){updWMPanel();applyWM(false,commitNow);saveWM()}
+$('#p-wm').addEventListener('click',e=>{const t=e.target.closest('[data-wmt]'),p=e.target.closest('[data-pos]'),m=e.target.closest('[data-wmm]'),sw=e.target.closest('#wmSw [data-c]');
+ if(t){WM.type=t.dataset.wmt;if(WM.type==='image'&&!Object.values(S.media).some(x=>x.type==='image'&&x.status==='ok'))toast('上傳一張 Logo 圖片當浮水印吧（透明背景 PNG 最好看）');wmChanged(true)}
+ else if(p){WM.pos=p.dataset.pos;WM.mode='fixed';wmChanged(true)}else if(m){WM.mode=m.dataset.wmm;wmChanged(true)}else if(sw){WM.color=sw.dataset.c;wmChanged(true)}});
+for(const[id,fn]of[['wmText',v=>WM.text=v],['wmFont',v=>WM.font=v],['wmColor',v=>WM.color=v],['wmImg',v=>WM.img=v],['wmSize',v=>{if(WM.type==='text')WM.tsize=+v;else WM.isize=+v}],['wmOp',v=>WM.opacity=+v],['wmMg',v=>WM.margin=+v]]){
+ $('#'+id).addEventListener('input',e=>{fn(e.target.value);wmChanged(false)});$('#'+id).addEventListener('change',()=>{commit();renderTimeline()})}
+$('#wmShadow').addEventListener('change',e=>{WM.shadow=e.target.checked;wmChanged(true)});
+$('#wmApply').onclick=()=>{applyWM(true);updWMPanel();if(wmClip())toast('💧 浮水印已套用到整支影片')};
+$('#wmDel').onclick=()=>{removeWM();updWMPanel()};
+$('#wmUp').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;const m=await importOne(f);renderLibrary();if(m&&m.status==='ok'){WM.type='image';WM.img=m.id;refreshWMImgs();applyWM(true);updWMPanel();toast('💧 已用這張圖片當浮水印')}};
+function openTab(name){$$('#ltabs .tab').forEach(x=>x.classList.toggle('act',x.dataset.tab===name));$$('#left .pane').forEach(p=>p.classList.toggle('act',p.id==='p-'+name));if(name==='wm')updWMPanel();if(innerWidth<=900){document.body.classList.add('showL');document.body.classList.remove('showR')}}
+renderWMPanel();
+
+/* ========== 倒轉播放 ==========
+ 瀏覽器的影片播放器不能倒著播，所以做法是：把片段用到的那段畫面一格一格解碼，
+ 「倒過來」重新壓縮成一支新的 MP4（聲音也把樣本順序反過來），再讓片段改用這支倒放版素材。 */
+const BUSY={cancel:false};
+function busy(on,title){BUSY.cancel=false;$('#busyModal').classList.toggle('hide',!on);if(title)$('#busyT').textContent=title;$('#busyBar').style.width='0';$('#busyInfo').textContent=''}
+function busyProg(p,msg){$('#busyBar').style.width=(clamp(p,0,1)*100).toFixed(1)+'%';if(msg)$('#busyInfo').textContent=msg}
+$('#busyCancel').onclick=()=>{BUSY.cancel=true};
+const baseName=n=>n.replace(/\.[^.]+$/,'');
+function wavReversed(buf,a,span){const sr=buf.sampleRate,ch=Math.min(2,buf.numberOfChannels),s0=Math.max(0,Math.floor(a*sr)),n=Math.max(1,Math.min(buf.length-s0,Math.round(span*sr)));
+ const dv=new DataView(new ArrayBuffer(44+n*ch*2)),W=(o,t)=>{for(let i=0;i<t.length;i++)dv.setUint8(o+i,t.charCodeAt(i))};
+ W(0,'RIFF');dv.setUint32(4,36+n*ch*2,true);W(8,'WAVE');W(12,'fmt ');dv.setUint32(16,16,true);dv.setUint16(20,1,true);dv.setUint16(22,ch,true);dv.setUint32(24,sr,true);dv.setUint32(28,sr*ch*2,true);dv.setUint16(32,ch*2,true);dv.setUint16(34,16,true);W(36,'data');dv.setUint32(40,n*ch*2,true);
+ const d=[...Array(ch)].map((_,i)=>buf.getChannelData(i));let o=44;
+ for(let i=0;i<n;i++){const si=s0+n-1-i;for(let k=0;k<ch;k++){const v=clamp(d[k][si]||0,-1,1);dv.setInt16(o,v<0?v*32768:v*32767,true);o+=2}}
+ return new Blob([dv],{type:'audio/wav'})}
+async function pickAvc(W,H,fps,br){const cands=W*H>2304*1296?['avc1.640033','avc1.640034']:['avc1.640028','avc1.64002a','avc1.640033'];cands.push('avc1.4d0028','avc1.42002a');
+ for(const cd of cands){const cfg={codec:cd,width:W,height:H,bitrate:br,framerate:fps,avc:{format:'avc'}};try{if((await VideoEncoder.isConfigSupported(cfg)).supported)return cfg}catch(e){}}return null}
+async function reverseVideo(m,a,span,name){
+ if(!('VideoEncoder' in window)||typeof Mp4Muxer==='undefined')throw new Error('這個瀏覽器不支援影片編碼，請用最新版 Chrome / Edge');
+ const fps=30,N=Math.max(1,Math.round(span*fps));const sc=Math.min(1,1920/Math.max(m.w,m.h));const W=Math.round(m.w*sc/2)*2,H=Math.round(m.h*sc/2)*2;
+ busyProg(0,'讀取影片…');
+ let src=null,vel=null;try{src=new VSource(await demux(m))}catch(e){src=null}
+ if(!src){vel=document.createElement('video');vel.muted=true;vel.preload='auto';vel.src=m.url;await new Promise((r,j)=>{vel.onloadeddata=r;vel.onerror=()=>j(new Error('無法讀取影片'))})}
+ const grab=async t=>{if(src){const fr=await src.frameAt(t);return fr?await createImageBitmap(fr,{resizeWidth:W,resizeHeight:H}):null}
+  if(Math.abs(vel.currentTime-t)>1e-3)await new Promise(r=>{vel.onseeked=r;vel.currentTime=t});return await createImageBitmap(vel,{resizeWidth:W,resizeHeight:H})};
+ const vcfg=await pickAvc(W,H,fps,Math.round(W*H*fps*.15));if(!vcfg)throw new Error('無法用 H.264 編碼這個解析度');
+ const ab=await audioBufOf(m);let acfg=null,acodec=null;
+ if(ab&&'AudioEncoder' in window)for(const[cd,mc]of[['mp4a.40.2','aac'],['opus','opus']]){const cfg={codec:cd,sampleRate:ab.sampleRate,numberOfChannels:2,bitrate:192000};try{if((await AudioEncoder.isConfigSupported(cfg)).supported){acfg=cfg;acodec=mc;break}}catch(e){}}
+ const target=new Mp4Muxer.ArrayBufferTarget();
+ const mux=new Mp4Muxer.Muxer({target,video:{codec:'avc',width:W,height:H,frameRate:fps},audio:acfg?{codec:acodec,numberOfChannels:2,sampleRate:ab.sampleRate}:undefined,fastStart:'in-memory',firstTimestampBehavior:'offset'});
+ let err=null;const enc=new VideoEncoder({output:(ch,meta)=>mux.addVideoChunk(ch,meta),error:e=>err=e});enc.configure(vcfg);
+ try{
+  if(acfg){busyProg(0,'倒轉聲音…');const sr=ab.sampleRate,s0=Math.max(0,Math.floor(a*sr)),n=Math.max(1,Math.min(ab.length-s0,Math.round(span*sr))),L=ab.getChannelData(0),R=ab.numberOfChannels>1?ab.getChannelData(1):L;
+   const aenc=new AudioEncoder({output:(ch,meta)=>mux.addAudioChunk(ch,meta),error:e=>err=e});aenc.configure(acfg);
+   for(let o=0;o<n;o+=4800){const k=Math.min(4800,n-o),d=new Float32Array(k*2);for(let i=0;i<k;i++){const si=s0+n-1-(o+i);d[i]=L[si]||0;d[k+i]=R[si]||0}
+    const ad=new AudioData({format:'f32-planar',sampleRate:sr,numberOfFrames:k,numberOfChannels:2,timestamp:Math.round(o/sr*1e6),data:d});aenc.encode(ad);ad.close();if(aenc.encodeQueueSize>16)await new Promise(r=>setTimeout(r,0))}
+   await aenc.flush();aenc.close()}
+  // 一次處理一小段（WIN 格）：先往前解碼收集，再倒著送進編碼器 → 記憶體用量固定
+  const WIN=20;let k=0,last=null;
+  for(let end=N;end>0;end-=WIN){const st=Math.max(0,end-WIN),bm=[];
+   for(let i=st;i<end;i++){if(BUSY.cancel)throw new Error('CANCEL');bm.push(await grab(Math.min(a+(i+.5)/fps,a+span-1e-3)))}
+   for(let j=bm.length-1;j>=0;j--){if(err)throw err;let b=bm[j];if(!b&&last)b=last;
+    if(b){const vf=new VideoFrame(b,{timestamp:Math.round(k*1e6/fps),duration:Math.round(1e6/fps)});enc.encode(vf,{keyFrame:k%fps===0});vf.close()}
+    if(last&&last!==b)last.close();last=b;k++;
+    while(enc.encodeQueueSize>4)await new Promise(r=>{enc.addEventListener('dequeue',r,{once:true});setTimeout(r,40)})}
+   busyProg(k/N,`倒轉畫面中… ${k} / ${N} 格`);await yieldUI()}
+  if(last)last.close();
+  await enc.flush();if(err)throw err;mux.finalize();
+  return new File([target.buffer],name,{type:'video/mp4'})}
+ finally{try{enc.close()}catch(e){}if(src)src.close();if(vel){vel.removeAttribute('src');vel.load()}}}
+async function genReversedFile(m,a,span,name){if(m.type==='audio'){const b=await audioBufOf(m);if(!b)throw new Error('無法解碼音訊');return new File([wavReversed(b,a,span)],name,{type:'audio/wav'})}return reverseVideo(m,a,span,name)}
+async function makeReversed(c){const m=S.media[c.mediaId];if(!m||m.status!=='ok')throw new Error('素材沒有載入成功');
+ const span=+(c.dur*c.speed).toFixed(3),a=+c.inPoint.toFixed(3),key=[m.id,a,span].join('|');
+ const ex=Object.values(S.media).find(x=>x.revKey===key&&x.url&&x.status==='ok');if(ex)return ex;
+ const name=`${baseName(m.name)}_倒轉_${a.toFixed(1)}-${(a+span).toFixed(1)}s.${m.type==='audio'?'wav':'mp4'}`;
+ const f=await genReversedFile(m,a,span,name);const nm=await importOne(f);if(!nm||nm.status!=='ok')throw new Error('倒轉後的檔案無法載入');
+ nm.revKey=key;nm.revOf={src:m.id,a,span};return nm}
+async function reverseClips(){const cs=sels().filter(c=>c.kind==='video'||c.kind==='audio');if(!cs.length)return toast('先選取影片或音訊片段（圖片和文字不能倒轉）');
+ if(S.playing)togglePlay();let done=0,undone=0;
+ try{for(let i=0;i<cs.length;i++){const c=cs[i];
+   if(c.revSrc){const r=c.revSrc;c.inPoint=Math.max(0,r.A+r.SPAN-c.inPoint-c.dur*c.speed);c.mediaId=r.mediaId;c.name=r.name;delete c.revSrc;undone++;continue}
+   busy(true,`⏪ 倒轉中（${i+1} / ${cs.length}）：${c.name}`);
+   const nm=await makeReversed(c);c.revSrc={mediaId:c.mediaId,A:c.inPoint,SPAN:+(c.dur*c.speed).toFixed(3),name:c.name};c.mediaId=nm.id;c.inPoint=0;c.name=nm.name;done++}}
+ catch(e){if(e.message!=='CANCEL'){console.error(e);toast('倒轉失敗：'+e.message,6000)}else toast('已取消倒轉')}
+ finally{busy(false)}
+ commit();renderLibrary();renderTimeline();renderInspector();requestDraw();
+ if(done||undone)toast([done?`⏪ 已倒轉 ${done} 個片段`:'',undone?`↩ 已還原 ${undone} 個片段`:''].filter(Boolean).join('，'),3500)}
+// 開專案時：倒轉素材不用使用者重新選，只要原始素材在就自動重新產生
+async function regenReversed(){const list=Object.values(S.media).filter(m=>!m.url&&m.revOf&&S.media[m.revOf.src]&&S.media[m.revOf.src].status==='ok');if(!list.length)return;
+ try{for(const m of list){busy(true,'重新產生倒轉片段：'+m.name);const s=S.media[m.revOf.src];const f=await genReversedFile(s,m.revOf.a,m.revOf.span,m.name);await importOne(f,m.id)}}catch(e){console.error(e)}finally{busy(false)}renderAll()}
+
 /* ========== 主迴圈 ========== */
 let needDraw=3,lastT=performance.now(),frameN=0;
 function requestDraw(){needDraw=Math.max(needDraw,3)}
@@ -1020,6 +1254,7 @@ $('#tSplit').onclick=split;$('#tDup').onclick=dup;$('#tDel').onclick=del;$('#tKf
 $('#tAddV').onclick=()=>{addTrack('v',null,true);commit();renderTimeline()};$('#tAddA').onclick=()=>{addTrack('a');commit();renderTimeline()};
 $('#tMulti').onclick=e=>{MULTI=!MULTI;e.currentTarget.classList.toggle('on',MULTI);toast(MULTI?'多選模式開啟：點片段就會加選/取消':'多選模式關閉')};
 $('#tAll').onclick=()=>selectAll();
+$('#tRev').onclick=()=>reverseClips();
 function selectAll(){const ids=S.clips.map(c=>c.id);setSel(ids);markSel();renderInspector();requestDraw();toast(`已全選 ${ids.length} 個片段`)}
 $('#tSnap').onclick=e=>{S.snap=!S.snap;e.currentTarget.classList.toggle('on',S.snap)};
 $('#zoom').oninput=e=>setZoom(+e.target.value);
@@ -1034,7 +1269,7 @@ $('#mL').onclick=()=>{document.body.classList.toggle('showL');document.body.clas
 $('#mR').onclick=()=>{document.body.classList.toggle('showR');document.body.classList.remove('showL')};
 document.addEventListener('keydown',e=>{if(e.target.matches('input,textarea,select'))return;const ctl=e.ctrlKey||e.metaKey,k=e.key.toLowerCase();
  if(e.code==='Space'){e.preventDefault();togglePlay()}else if(ctl&&k==='z'){e.preventDefault();e.shiftKey?redo():undo()}else if(ctl&&k==='y'){e.preventDefault();redo()}
- else if(ctl&&k==='d'){e.preventDefault();dup()}else if(ctl&&k==='a'){e.preventDefault();selectAll()}else if(k==='escape'){select(null)}else if(k==='s'&&!ctl)split();else if(k==='k')kfAll();else if(k==='delete'||k==='backspace'){e.preventDefault();del()}
+ else if(ctl&&k==='d'){e.preventDefault();dup()}else if(ctl&&k==='a'){e.preventDefault();selectAll()}else if(k==='escape'){hideCtx();select(null)}else if(k==='s'&&!ctl)split();else if(k==='k')kfAll();else if(k==='r'&&!ctl)reverseClips();else if(k==='delete'||k==='backspace'){e.preventDefault();del()}
  else if(k==='arrowleft'){e.preventDefault();seek(S.time-(e.shiftKey?1:1/30))}else if(k==='arrowright'){e.preventDefault();seek(S.time+(e.shiftKey?1:1/30))}
  else if(k==='home')seek(0);else if(k==='end')seek(projDur())});
 addEventListener('resize',fitStage);new ResizeObserver(fitStage).observe($('#stage'));
@@ -1043,7 +1278,7 @@ document.fonts.addEventListener&&document.fonts.addEventListener('loadingdone',r
 
 /* ========== 啟動 ========== */
 initTracks();renderLeft();fitStage();renderAll();commit();requestAnimationFrame(tick);
-function demoStart(){const c=newText({...TSTYLES[1].t,content:'雙擊我修改文字\n開始你的宣傳影片！',size:110});c.animIn={type:'pop',dur:.6};c.animLoop='breathe';S.clips.push(c);lastSnap='';commit();renderTimeline();requestDraw()}
+function demoStart(){const c=newText({...TSTYLES[1].t,content:'RCmovEditor\n你最得力的小工具',size:120});c.animIn={type:'pop',dur:.6};c.animLoop='breathe';S.clips.push(c);lastSnap='';commit();renderTimeline();requestDraw()}
 (async()=>{let last=null;try{last=await IDB.get('proj','last')}catch(e){saveOK=false}
  if(last&&Array.isArray(last.clips)&&last.clips.length){const d=new Date(last.savedAt||Date.now());
   $('#resumeInfo').innerHTML=`發現上次未完成的專案：<b>${esc(last.name)}</b><br>最後儲存：${d.getMonth()+1}/${d.getDate()} ${pad(d.getHours())}:${pad(d.getMinutes())}　·　${last.clips.length} 個片段、${(last.media||[]).length} 個素材`;
