@@ -2,8 +2,9 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RC Café Photobooth · 線上拍貼機</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0e0d0c">
+<title>RCphotoBooth</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Noto+Serif+TC:wght@300;500&display=swap" rel="stylesheet">
 <style>
@@ -13,125 +14,175 @@
     --serif:"Cormorant Garamond","Noto Serif TC",serif;
     --tc:"Noto Serif TC",serif;
   }
-  *{box-sizing:border-box;margin:0;padding:0}
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{background:var(--bg)}
   body{
-    background:var(--bg); color:var(--cream); font-family:var(--tc);
-    min-height:100vh; font-weight:300; letter-spacing:.04em;
+    color:var(--cream); font-family:var(--tc); font-weight:300; letter-spacing:.04em;
+    min-height:100dvh;
     background-image:radial-gradient(circle at 20% 0%, #1c1a18 0%, transparent 55%);
   }
-  header{
-    text-align:center; padding:42px 20px 26px; border-bottom:1px solid var(--line);
-  }
-  header .est{font-family:var(--serif); font-style:italic; color:var(--muted); font-size:15px; letter-spacing:.3em}
-  header h1{font-family:var(--serif); font-weight:400; font-size:clamp(34px,5vw,54px); letter-spacing:.18em; margin:6px 0}
-  header p{color:var(--muted); font-size:13px; letter-spacing:.35em}
-  main{
-    max-width:1180px; margin:0 auto; padding:34px 22px 60px;
-    display:grid; grid-template-columns:1fr 330px; gap:30px;
-  }
-  @media (max-width:900px){ main{grid-template-columns:1fr} }
+  button{font-family:inherit}
+  header{text-align:center; padding:36px 20px 22px; border-bottom:1px solid var(--line)}
+  header .est{font-family:var(--serif); font-style:italic; color:var(--muted); font-size:14px; letter-spacing:.3em}
+  header h1{font-family:var(--serif); font-weight:400; font-size:clamp(32px,6vw,52px); letter-spacing:.12em; margin:4px 0}
+  header h1 i{font-weight:400}
+  header p{color:var(--muted); font-size:12px; letter-spacing:.4em}
 
-  /* 相機區 */
-  .stage{
-    position:relative; background:#000; border:1px solid var(--line);
-    aspect-ratio:4/3; overflow:hidden;
+  main{
+    max-width:1200px; margin:0 auto; padding:30px 22px 60px;
+    display:grid; grid-template-columns:1fr 360px; gap:28px; align-items:start;
   }
-  .stage video{width:100%; height:100%; object-fit:cover; transform:scaleX(-1); transition:filter .3s}
-  .stage .hint{
+
+  /* ===== 相機 ===== */
+  .stage{position:relative; background:#000; border:1px solid var(--line); aspect-ratio:4/3; overflow:hidden}
+  .stage video{width:100%; height:100%; object-fit:cover; transition:filter .3s, transform .3s}
+  .stage video.mirror{transform:scaleX(-1)}
+  .hint{
     position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
-    gap:14px; color:var(--muted); text-align:center; padding:20px; background:#0b0b0a;
+    gap:12px; color:var(--muted); text-align:center; padding:20px; background:#0b0b0a; font-size:13px;
   }
-  .stage .hint.hidden{display:none}
+  .hint.hidden{display:none}
+  .hint b{font-family:var(--serif); font-size:26px; font-style:italic; color:var(--cream); font-weight:400}
   .count{
     position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
-    font-family:var(--serif); font-size:min(28vw,200px); color:rgba(236,230,220,.92);
+    font-family:var(--serif); font-size:min(30vw,200px); color:rgba(236,230,220,.92);
     text-shadow:0 0 40px rgba(0,0,0,.6); pointer-events:none;
   }
   .flash{position:absolute; inset:0; background:#fff; opacity:0; pointer-events:none}
   .flash.on{animation:flash .45s ease-out}
   @keyframes flash{0%{opacity:.95}100%{opacity:0}}
-  .corner{position:absolute; width:26px; height:26px; border:1px solid rgba(236,230,220,.5)}
-  .tl{top:14px;left:14px;border-right:none;border-bottom:none}
-  .tr{top:14px;right:14px;border-left:none;border-bottom:none}
-  .bl{bottom:14px;left:14px;border-right:none;border-top:none}
-  .br{bottom:14px;right:14px;border-left:none;border-top:none}
-  .progress{
-    position:absolute; top:16px; left:50%; transform:translateX(-50%);
-    font-family:var(--serif); letter-spacing:.3em; font-size:15px; color:var(--cream);
-    background:rgba(0,0,0,.45); padding:4px 14px;
+  .corner{position:absolute; width:24px; height:24px; border:1px solid rgba(236,230,220,.5); pointer-events:none}
+  .tl{top:12px;left:12px;border-right:none;border-bottom:none}
+  .tr{top:12px;right:12px;border-left:none;border-bottom:none}
+  .bl{bottom:12px;left:12px;border-right:none;border-top:none}
+  .br{bottom:12px;right:12px;border-left:none;border-top:none}
+  .badge{
+    position:absolute; top:14px; left:50%; transform:translateX(-50%);
+    font-family:var(--serif); letter-spacing:.3em; font-size:15px;
+    background:rgba(0,0,0,.5); padding:4px 14px; display:none;
   }
-  .thumbs{display:flex; gap:10px; margin-top:14px; min-height:64px; flex-wrap:wrap}
-  .thumbs canvas{width:84px; height:63px; border:1px solid var(--line)}
+  .tag{
+    position:absolute; bottom:14px; left:50%; transform:translateX(-50%);
+    font-size:11px; letter-spacing:.25em; color:rgba(236,230,220,.75);
+    background:rgba(0,0,0,.4); padding:3px 10px; pointer-events:none;
+  }
+  .thumbs{display:flex; gap:8px; margin-top:12px; min-height:10px; overflow-x:auto}
+  .thumbs canvas{width:76px; height:57px; border:1px solid var(--line); flex:none}
 
-  /* 控制面板 */
-  .panel{background:var(--panel); border:1px solid var(--line); padding:26px 24px; height:fit-content}
-  .group{margin-bottom:24px}
-  .label{
-    font-family:var(--serif); font-style:italic; color:var(--accent); font-size:16px;
-    margin-bottom:10px; display:flex; justify-content:space-between; letter-spacing:.12em;
-  }
-  .label small{font-style:normal; font-family:var(--tc); color:var(--muted); font-size:12px}
-  .opts{display:flex; flex-wrap:wrap; gap:8px}
-  .opt{
-    flex:1; min-width:62px; padding:10px 8px; background:transparent; color:var(--cream);
-    border:1px solid var(--line); font-family:var(--tc); font-size:13px; cursor:pointer;
-    letter-spacing:.1em; transition:.2s;
-  }
-  .opt:hover{border-color:var(--muted)}
-  .opt.active{background:var(--cream); color:#111; border-color:var(--cream)}
-  input[type=text]{
-    width:100%; padding:10px 12px; background:transparent; border:1px solid var(--line);
-    color:var(--cream); font-family:var(--serif); font-size:17px; font-style:italic; letter-spacing:.08em;
-  }
-  input[type=text]:focus{outline:none; border-color:var(--accent)}
+  .actions{display:grid; grid-auto-flow:column; grid-auto-columns:1fr; gap:10px; margin-top:14px}
   .btn{
-    width:100%; padding:15px; font-family:var(--tc); font-size:15px; letter-spacing:.4em;
-    cursor:pointer; border:1px solid var(--cream); transition:.2s; margin-top:8px;
+    padding:15px 10px; font-size:14px; letter-spacing:.3em; cursor:pointer;
+    border:1px solid var(--cream); transition:.2s; white-space:nowrap;
   }
   .btn.primary{background:var(--cream); color:#111}
   .btn.primary:hover{background:#fff}
   .btn.ghost{background:transparent; color:var(--cream)}
   .btn.ghost:hover{background:#222}
   .btn:disabled{opacity:.35; cursor:not-allowed}
+  .hide{display:none !important}
 
-  /* 成品 */
-  .result{
-    display:none; grid-column:1/-1; text-align:center; border-top:1px solid var(--line); padding-top:34px;
+  /* ===== 面板 ===== */
+  .panel{background:var(--panel); border:1px solid var(--line); padding:22px 20px}
+  .previewBox{
+    background:#0b0b0a; border:1px solid var(--line); padding:14px;
+    display:flex; justify-content:center; align-items:center; margin-bottom:22px;
   }
-  .result.show{display:block}
-  .result h2{font-family:var(--serif); font-weight:400; letter-spacing:.3em; font-size:28px; margin-bottom:22px}
-  .result img{max-width:100%; max-height:80vh; box-shadow:0 20px 60px rgba(0,0,0,.6)}
-  .result .row{display:flex; gap:12px; justify-content:center; margin-top:22px; flex-wrap:wrap}
-  .result .row .btn{width:auto; padding:13px 34px}
+  .previewBox canvas{max-width:100%; max-height:300px; width:auto; height:auto; box-shadow:0 8px 24px rgba(0,0,0,.5)}
+  .group{margin-bottom:20px}
+  .label{
+    font-family:var(--serif); font-style:italic; color:var(--accent); font-size:16px;
+    margin-bottom:9px; display:flex; justify-content:space-between; align-items:baseline; letter-spacing:.12em;
+  }
+  .label small{font-style:normal; font-family:var(--tc); color:var(--muted); font-size:12px}
+  .opts{display:grid; grid-template-columns:repeat(auto-fill,minmax(72px,1fr)); gap:7px}
+  .opt{
+    padding:10px 4px; background:transparent; color:var(--cream);
+    border:1px solid var(--line); font-size:13px; cursor:pointer; letter-spacing:.08em; transition:.2s;
+    display:flex; flex-direction:column; align-items:center; gap:6px;
+  }
+  .opt:hover{border-color:var(--muted)}
+  .opt.active{background:var(--cream); color:#111; border-color:var(--cream)}
+  .swatch{width:26px; height:26px; border-radius:50%; border:1px solid rgba(255,255,255,.25)}
+  .opt.active .swatch{border-color:#111}
+  .toneDot{width:30px; height:22px; border:1px solid rgba(255,255,255,.2)}
+  input[type=text]{
+    width:100%; padding:11px 12px; background:transparent; border:1px solid var(--line);
+    color:var(--cream); font-family:var(--serif); font-size:17px; font-style:italic; letter-spacing:.08em;
+  }
+  input[type=text]:focus{outline:none; border-color:var(--accent)}
+  .switch{display:flex; align-items:center; justify-content:space-between; font-size:13px; color:var(--muted)}
+
+  /* ===== 下載預覽視窗 ===== */
+  .modal{
+    position:fixed; inset:0; z-index:50; background:rgba(5,5,5,.92); backdrop-filter:blur(6px);
+    display:none; flex-direction:column; align-items:center; justify-content:center;
+    padding:24px 16px calc(24px + env(safe-area-inset-bottom));
+  }
+  .modal.show{display:flex}
+  .modal h2{font-family:var(--serif); font-weight:400; letter-spacing:.3em; font-size:24px; margin-bottom:14px}
+  .modal img{max-width:100%; max-height:66dvh; object-fit:contain; box-shadow:0 20px 60px rgba(0,0,0,.7)}
+  .modal .tip{color:var(--muted); font-size:12px; margin-top:10px; text-align:center}
+  .modal .row{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:16px; width:min(520px,100%)}
+  .modal .btn{letter-spacing:.15em; font-size:13px}
+
   footer{text-align:center; color:#4a4640; font-family:var(--serif); font-style:italic; padding:20px; letter-spacing:.3em; font-size:13px}
+
+  /* ===== 手機版 ===== */
+  @media (max-width:860px){
+    header{padding:22px 16px 14px}
+    header p{letter-spacing:.25em}
+    main{grid-template-columns:1fr; padding:14px 12px 120px; gap:16px}
+    .stage{aspect-ratio:3/4}       /* 手機直拿，預覽畫面變直的；成品仍以 4:3 裁切 */
+    .actions{
+      position:fixed; left:0; right:0; bottom:0; z-index:40; margin:0;
+      padding:10px 12px calc(10px + env(safe-area-inset-bottom));
+      background:rgba(14,13,12,.94); border-top:1px solid var(--line); backdrop-filter:blur(8px);
+    }
+    .btn{padding:14px 6px; letter-spacing:.15em}
+    .panel{padding:18px 14px}
+    .opts{grid-template-columns:repeat(4,1fr)}
+    .previewBox canvas{max-height:260px}
+    footer{display:none}
+  }
 </style>
 </head>
 <body>
 
 <header>
   <div class="est">— est. 2026 —</div>
-  <h1>RC CAFÉ</h1>
-  <p>PHOTOBOOTH ・ 留白拍貼室</p>
+  <h1>RC<i>photo</i>Booth</h1>
+  <p>CAFÉ ・ PHOTO ・ BOOTH</p>
 </header>
 
 <main>
   <section>
-    <div class="stage" id="stage">
-      <video id="video" autoplay playsinline muted></video>
+    <div class="stage">
+      <video id="video" class="mirror" autoplay playsinline muted></video>
       <div class="corner tl"></div><div class="corner tr"></div>
       <div class="corner bl"></div><div class="corner br"></div>
       <div class="hint" id="hint">
-        <div style="font-family:var(--serif);font-size:26px;font-style:italic;color:var(--cream)">Welcome in.</div>
-        <div style="font-size:13px">點右側「開啟相機」，並允許瀏覽器使用鏡頭</div>
+        <b>Welcome in.</b>
+        <div>按下「開啟相機」，並允許瀏覽器使用鏡頭</div>
       </div>
-      <div class="progress" id="progress" style="display:none"></div>
+      <div class="badge" id="badge"></div>
+      <div class="tag" id="tag">鏡像</div>
       <div class="count" id="count"></div>
       <div class="flash" id="flash"></div>
     </div>
     <div class="thumbs" id="thumbs"></div>
+
+    <div class="actions">
+      <button class="btn ghost" id="camBtn">開啟相機</button>
+      <button class="btn ghost hide" id="flipBtn">切換鏡頭</button>
+      <button class="btn primary" id="shootBtn" disabled>開始拍貼</button>
+      <button class="btn ghost hide" id="previewBtn">預覽成品</button>
+    </div>
   </section>
 
   <aside class="panel">
+    <div class="label">Frame Preview <small>相框預覽</small></div>
+    <div class="previewBox"><canvas id="framePreview"></canvas></div>
+
     <div class="group">
       <div class="label">Layout <small>版型</small></div>
       <div class="opts" data-key="layout">
@@ -146,20 +197,20 @@
     </div>
 
     <div class="group">
-      <div class="label">Tone <small>色調</small></div>
-      <div class="opts" data-key="tone">
-        <button class="opt active" data-v="mono">黑白</button>
-        <button class="opt" data-v="sepia">復古</button>
-        <button class="opt" data-v="color">原色</button>
-      </div>
+      <div class="label">Tone <small>色調（拍完也能換）</small></div>
+      <div class="opts" id="toneOpts" data-key="tone"></div>
     </div>
 
     <div class="group">
-      <div class="label">Frame <small>相框</small></div>
-      <div class="opts" data-key="frame">
-        <button class="opt active" data-v="paper">米白</button>
-        <button class="opt" data-v="ink">墨黑</button>
-        <button class="opt" data-v="latte">奶茶</button>
+      <div class="label">Frame <small>相框顏色</small></div>
+      <div class="opts" id="frameOpts" data-key="frame"></div>
+    </div>
+
+    <div class="group">
+      <div class="label">Mirror <small>鏡像 / 原始</small></div>
+      <div class="opts" data-key="mirror" id="mirrorOpts">
+        <button class="opt active" data-v="1">鏡像</button>
+        <button class="opt" data-v="0">原始</button>
       </div>
     </div>
 
@@ -169,6 +220,7 @@
         <button class="opt" data-v="2">2s</button>
         <button class="opt active" data-v="3">3s</button>
         <button class="opt" data-v="5">5s</button>
+        <button class="opt" data-v="10">10s</button>
       </div>
     </div>
 
@@ -176,250 +228,318 @@
       <div class="label">Caption <small>底部文字</small></div>
       <input type="text" id="caption" value="a cup of moments" maxlength="28">
     </div>
-
-    <button class="btn ghost" id="camBtn">開啟相機</button>
-    <button class="btn primary" id="shootBtn" disabled>開始拍貼</button>
   </aside>
-
-  <section class="result" id="result">
-    <h2>— YOUR PRINT —</h2>
-    <img id="resultImg" alt="拍貼成品">
-    <div class="row">
-      <button class="btn primary" id="dlBtn">下載 PNG</button>
-      <button class="btn ghost" id="againBtn">再拍一次</button>
-    </div>
-  </section>
 </main>
+
+<div class="modal" id="modal">
+  <h2>— YOUR PRINT —</h2>
+  <img id="modalImg" alt="拍貼成品預覽">
+  <div class="tip">滿意再下載；想換色調或相框，按「調整」回去改，照片會保留。<br>iPhone 若沒跳出下載，可長按圖片「加入照片」。</div>
+  <div class="row">
+    <button class="btn ghost" id="editBtn">調整</button>
+    <button class="btn ghost" id="retakeBtn">重拍</button>
+    <button class="btn primary" id="dlBtn">下載</button>
+  </div>
+</div>
 
 <footer>slow coffee · still moments</footer>
 
 <script>
-// ===== 1. 設定狀態 =====
-const state = { layout:"strip", count:3, tone:"mono", frame:"paper", timer:3 };
-const COUNT_CHOICES = { strip:[2,3,4], grid:[4,6] };   // 直式：2/3/4 張；宮格：2×2 / 2×3
-const FRAMES = {
-  paper:{ bg:"#f3efe7", ink:"#1b1a18", sub:"#8a8378" },
-  ink:  { bg:"#121110", ink:"#ece6dc", sub:"#7d766c" },
-  latte:{ bg:"#d9ccb9", ink:"#2a231d", sub:"#6f604f" }
+// ================= 1. 資料設定 =================
+const state = { layout:"strip", count:3, tone:"mono", frame:"paper", mirror:true, timer:3 };
+const COUNT_CHOICES = { strip:[2,3,4], grid:[4,6] };
+
+// 色調：css 給即時預覽用；map 是實際處理每個像素的公式
+const TONES = {
+  mono:  { name:"經典黑白", css:"grayscale(1) contrast(1.12)",               contrast:1.14, lift:0,  grain:14, vig:.32, map:(r,g,b,y)=>[y,y,y] },
+  noir:  { name:"高反差",   css:"grayscale(1) contrast(1.55) brightness(.95)", contrast:1.55, lift:-6, grain:18, vig:.45, map:(r,g,b,y)=>[y,y,y] },
+  soft:  { name:"柔霧黑白", css:"grayscale(1) contrast(.82) brightness(1.1)",  contrast:.82,  lift:16, grain:10, vig:.18, map:(r,g,b,y)=>[y,y,y] },
+  sepia: { name:"復古棕",   css:"sepia(.6) contrast(1.05) brightness(.97)",    contrast:1.05, lift:0,  grain:14, vig:.32, map:(r,g,b,y)=>[y*1.07+12, y*.95+6, y*.8] },
+  film:  { name:"暖調底片", css:"sepia(.2) saturate(1.1) contrast(1.06)",      contrast:1.06, lift:4,  grain:12, vig:.28, map:(r,g,b,y)=>mix([r*1.06+8, g+2, b*.88], y, .15) },
+  cool:  { name:"冷調",     css:"saturate(.8) hue-rotate(-8deg) brightness(1.03)", contrast:1.04, lift:4, grain:10, vig:.25, map:(r,g,b,y)=>mix([r*.92, g*.98+2, b*1.08+8], y, .2) },
+  fade:  { name:"褪色",     css:"contrast(.82) saturate(.65) brightness(1.08)", contrast:.8,  lift:22, grain:10, vig:.15, map:(r,g,b,y)=>mix([r,g,b], y, .35) },
+  color: { name:"原色",     css:"none",                                        contrast:1.03, lift:0,  grain:6,  vig:.12, map:(r,g,b)=>[r,g,b] }
 };
-const SHOT_W = 800, SHOT_H = 600;  // 每張照片 4:3
+// 把彩色和灰階按比例混合（t 越大越灰）
+function mix(rgb, y, t){ return rgb.map(v => v*(1-t) + y*t); }
+
+const FRAMES = {
+  paper:{ name:"米白", bg:"#f3efe7", ink:"#1b1a18", sub:"#8a8378", ph:"#d9d3c8" },
+  ink:  { name:"墨黑", bg:"#121110", ink:"#ece6dc", sub:"#7d766c", ph:"#2a2826" },
+  latte:{ name:"奶茶", bg:"#d9ccb9", ink:"#2a231d", sub:"#6f604f", ph:"#c4b5a0" },
+  mist: { name:"霧灰", bg:"#cfcecb", ink:"#1f1f1e", sub:"#6c6b68", ph:"#b9b8b4" }
+};
+const SHOT_W = 800, SHOT_H = 600;   // 成品每格 4:3
 
 const $ = id => document.getElementById(id);
 const video = $("video");
-let shots = [];
+let rawShots = [];     // 原始照片（未鏡像、未調色），之後換色調不用重拍
 let busy = false;
+let stream = null;
+let facing = "user";   // user = 前鏡頭, environment = 後鏡頭
+let lastBlobUrl = null;
 
-// ===== 2. 選項按鈕 =====
+// ================= 2. 產生選項按鈕 =================
 function renderCountOpts(){
-  const box = $("countOpts");
   const list = COUNT_CHOICES[state.layout];
-  if(!list.includes(state.count)) state.count = list[list.length > 2 ? 1 : 0];
-  box.innerHTML = list.map(n => {
-    const text = state.layout === "grid" ? `${n} 格 (2×${n/2})` : `${n} 張`;
-    return `<button class="opt ${n===state.count?'active':''}" data-v="${n}">${text}</button>`;
+  if(!list.includes(state.count)) state.count = state.layout === "grid" ? 4 : 3;
+  $("countOpts").innerHTML = list.map(n => {
+    const t = state.layout === "grid" ? `${n} 格<small style="font-size:10px">2×${n/2}</small>` : `${n} 張`;
+    return `<button class="opt ${n===state.count?'active':''}" data-v="${n}">${t}</button>`;
   }).join("");
 }
+$("toneOpts").innerHTML = Object.entries(TONES).map(([k,t]) =>
+  `<button class="opt ${k===state.tone?'active':''}" data-v="${k}">
+     <span class="toneDot" style="background:linear-gradient(135deg,#d9a78a,#6b8fb3 50%,#e8d9a0);filter:${t.css}"></span>${t.name}
+   </button>`).join("");
+$("frameOpts").innerHTML = Object.entries(FRAMES).map(([k,f]) =>
+  `<button class="opt ${k===state.frame?'active':''}" data-v="${k}">
+     <span class="swatch" style="background:${f.bg}"></span>${f.name}
+   </button>`).join("");
 
 document.querySelectorAll(".opts").forEach(group => {
   group.addEventListener("click", e => {
     const b = e.target.closest(".opt");
     if(!b || busy) return;
-    const key = group.dataset.key;
-    const v = b.dataset.v;
-    state[key] = (key === "count" || key === "timer") ? Number(v) : v;
+    const key = group.dataset.key, v = b.dataset.v;
+    if(key === "count" || key === "timer") state[key] = Number(v);
+    else if(key === "mirror") state.mirror = v === "1";
+    else state[key] = v;
     group.querySelectorAll(".opt").forEach(x => x.classList.toggle("active", x === b));
-    if(key === "layout") renderCountOpts();
-    if(key === "tone") applyPreviewTone();
+    if(key === "layout"){ renderCountOpts(); trimShots(); }
+    if(key === "count") trimShots();
+    applyLive();
+    updatePreview();
   });
 });
+$("caption").addEventListener("input", updatePreview);
 
-function applyPreviewTone(){
-  const map = { mono:"grayscale(1) contrast(1.12)", sepia:"sepia(.55) contrast(1.05) brightness(.97)", color:"none" };
-  video.style.filter = map[state.tone];
+function setMirror(on){
+  state.mirror = on;
+  $("mirrorOpts").querySelectorAll(".opt").forEach(x => x.classList.toggle("active", (x.dataset.v === "1") === on));
 }
 
-// ===== 3. 開相機 =====
-$("camBtn").onclick = async () => {
+// 張數改少了 → 多的照片丟掉；改多了 → 保留已拍的，其餘顯示空格
+function trimShots(){
+  if(rawShots.length > state.count) rawShots = rawShots.slice(0, state.count);
+  redrawThumbs();
+}
+
+// 即時預覽：用 CSS 濾鏡 + 鏡像
+function applyLive(){
+  video.style.filter = TONES[state.tone].css;
+  video.classList.toggle("mirror", state.mirror);
+  $("tag").textContent = (state.mirror ? "鏡像" : "原始") + " ・ " + TONES[state.tone].name;
+  $("previewBtn").classList.toggle("hide", rawShots.length !== state.count);
+}
+
+// ================= 3. 相機 =================
+async function startCamera(){
+  if(stream) stream.getTracks().forEach(t => t.stop());
   try{
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video:{ width:{ideal:1280}, height:{ideal:960}, facingMode:"user" }, audio:false
+    stream = await navigator.mediaDevices.getUserMedia({
+      video:{ facingMode:facing, width:{ideal:1280}, height:{ideal:960} }, audio:false
     });
     video.srcObject = stream;
     $("hint").classList.add("hidden");
     $("shootBtn").disabled = false;
-    $("camBtn").textContent = "相機已開啟";
-    $("camBtn").disabled = true;
+    $("camBtn").classList.add("hide");
+    $("flipBtn").classList.remove("hide");
+    setMirror(facing === "user");   // 前鏡頭預設鏡像、後鏡頭預設原始，之後可自己改
+    applyLive(); updatePreview();
   }catch(err){
-    alert("無法開啟相機：" + err.message + "\n請確認已允許鏡頭權限，並用 Chrome / Edge 開啟。");
+    let msg = "無法開啟相機：" + err.message;
+    if(!window.isSecureContext) msg += "\n\n手機必須用 https 網址開啟（例如放到 GitHub Pages）。";
+    alert(msg);
   }
-};
+}
+$("camBtn").onclick = startCamera;
+$("flipBtn").onclick = () => { if(busy) return; facing = facing === "user" ? "environment" : "user"; startCamera(); };
 
-// ===== 4. 拍照流程 =====
+// ================= 4. 拍照流程 =================
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 $("shootBtn").onclick = async () => {
-  if(busy) return;
+  if(busy || !video.videoWidth) return;
   busy = true;
-  shots = [];
-  $("thumbs").innerHTML = "";
-  $("result").classList.remove("show");
-  $("shootBtn").disabled = true;
-  const prog = $("progress");
-  prog.style.display = "block";
+  rawShots = [];
+  redrawThumbs(); updatePreview(); applyLive();
+  ["shootBtn","flipBtn"].forEach(id => $(id).disabled = true);
+  const badge = $("badge");
+  badge.style.display = "block";
 
   for(let i = 0; i < state.count; i++){
-    prog.textContent = `${i+1} / ${state.count}`;
-    for(let s = state.timer; s > 0; s--){
-      $("count").textContent = s;
-      await sleep(1000);
-    }
+    badge.textContent = `${i+1} / ${state.count}`;
+    for(let s = state.timer; s > 0; s--){ $("count").textContent = s; await sleep(1000); }
     $("count").textContent = "";
-    const shot = capture();
-    shots.push(shot);
+    rawShots.push(captureRaw());
     flash();
-    addThumb(shot);
-    await sleep(700);
+    redrawThumbs(); updatePreview();
+    await sleep(650);
   }
 
-  prog.style.display = "none";
-  await compose();
+  badge.style.display = "none";
   busy = false;
-  $("shootBtn").disabled = false;
+  ["shootBtn","flipBtn"].forEach(id => $(id).disabled = false);
   $("shootBtn").textContent = "重新拍貼";
+  applyLive();
+  openModal();
 };
 
 function flash(){
   const f = $("flash");
   f.classList.remove("on"); void f.offsetWidth; f.classList.add("on");
+  if(navigator.vibrate) navigator.vibrate(30);
 }
 
-// 從影片抓一格畫面：裁成 4:3、左右鏡像、套色調
-function capture(){
+// 抓一格原始畫面，置中裁成 4:3
+function captureRaw(){
   const c = document.createElement("canvas");
   c.width = SHOT_W; c.height = SHOT_H;
-  const ctx = c.getContext("2d");
-  const vw = video.videoWidth, vh = video.videoHeight;
-  const target = SHOT_W / SHOT_H;
-  let sw = vw, sh = vw / target;
-  if(sh > vh){ sh = vh; sw = vh * target; }
-  const sx = (vw - sw) / 2, sy = (vh - sh) / 2;
-  ctx.translate(SHOT_W, 0); ctx.scale(-1, 1);       // 鏡像，跟預覽一樣
-  ctx.drawImage(video, sx, sy, sw, sh, 0, 0, SHOT_W, SHOT_H);
-  ctx.setTransform(1,0,0,1,0,0);
-  toneImage(ctx, SHOT_W, SHOT_H, state.tone);
+  const vw = video.videoWidth, vh = video.videoHeight, ratio = SHOT_W / SHOT_H;
+  let sw = vw, sh = vw / ratio;
+  if(sh > vh){ sh = vh; sw = vh * ratio; }
+  c.getContext("2d").drawImage(video, (vw-sw)/2, (vh-sh)/2, sw, sh, 0, 0, SHOT_W, SHOT_H);
+  c._cache = {};
   return c;
 }
 
-// 逐像素調色 + 底片顆粒
-function toneImage(ctx, w, h, tone){
-  const img = ctx.getImageData(0, 0, w, h);
-  const d = img.data;
-  const contrast = tone === "color" ? 1.04 : 1.14;
+// 依目前色調 + 鏡像設定，把原始照片處理好（有快取，不會一直重算）
+function processed(raw){
+  const key = state.tone + (state.mirror ? "M" : "N");
+  if(raw._cache[key]) return raw._cache[key];
+  const c = document.createElement("canvas");
+  c.width = SHOT_W; c.height = SHOT_H;
+  const ctx = c.getContext("2d");
+  if(state.mirror){ ctx.translate(SHOT_W, 0); ctx.scale(-1, 1); }
+  ctx.drawImage(raw, 0, 0);
+  ctx.setTransform(1,0,0,1,0,0);
+  toneImage(ctx, TONES[state.tone]);
+  raw._cache[key] = c;
+  return c;
+}
+
+// 逐像素調色
+function toneImage(ctx, t){
+  const w = ctx.canvas.width, h = ctx.canvas.height;
+  const img = ctx.getImageData(0, 0, w, h), d = img.data;
   for(let i = 0; i < d.length; i += 4){
-    let r = d[i], g = d[i+1], b = d[i+2];
-    if(tone !== "color"){
-      const y = 0.299*r + 0.587*g + 0.114*b;   // 亮度公式
-      if(tone === "mono"){ r = g = b = y; }
-      else { r = y*1.07 + 12; g = y*0.95 + 6; b = y*0.80; }
+    const r = d[i], g = d[i+1], b = d[i+2];
+    const y = 0.299*r + 0.587*g + 0.114*b;          // 亮度公式
+    const out = t.map(r, g, b, y);
+    const grain = (Math.random() - 0.5) * t.grain;  // 底片顆粒
+    for(let k = 0; k < 3; k++){
+      const v = (out[k] - 128) * t.contrast + 128 + t.lift + grain;
+      d[i+k] = v < 0 ? 0 : v > 255 ? 255 : v;
     }
-    const grain = (Math.random() - 0.5) * 14;
-    r = (r - 128) * contrast + 128 + grain;
-    g = (g - 128) * contrast + 128 + grain;
-    b = (b - 128) * contrast + 128 + grain;
-    d[i]   = Math.max(0, Math.min(255, r));
-    d[i+1] = Math.max(0, Math.min(255, g));
-    d[i+2] = Math.max(0, Math.min(255, b));
   }
   ctx.putImageData(img, 0, 0);
-  // 暗角
-  const v = ctx.createRadialGradient(w/2, h/2, h*0.35, w/2, h/2, h*0.85);
+  const v = ctx.createRadialGradient(w/2, h/2, h*.35, w/2, h/2, h*.85);  // 暗角
   v.addColorStop(0, "rgba(0,0,0,0)");
-  v.addColorStop(1, "rgba(0,0,0,0.32)");
+  v.addColorStop(1, `rgba(0,0,0,${t.vig})`);
   ctx.fillStyle = v; ctx.fillRect(0, 0, w, h);
 }
 
-function addThumb(shot){
-  const t = document.createElement("canvas");
-  t.width = 168; t.height = 126;
-  t.getContext("2d").drawImage(shot, 0, 0, 168, 126);
-  $("thumbs").appendChild(t);
+function redrawThumbs(){
+  $("thumbs").innerHTML = "";
+  rawShots.forEach(raw => {
+    const t = document.createElement("canvas");
+    t.width = 152; t.height = 114;
+    t.getContext("2d").drawImage(processed(raw), 0, 0, 152, 114);
+    $("thumbs").appendChild(t);
+  });
 }
 
-// ===== 5. 合成拍貼 =====
-async function compose(){
-  try{ await document.fonts.ready; }catch(e){}
+// ================= 5. 合成拍貼（預覽和成品共用） =================
+function renderPrint(target){
   const f = FRAMES[state.frame];
   const isGrid = state.layout === "grid";
   const cols = isGrid ? 2 : 1;
   const rows = isGrid ? state.count / 2 : state.count;
-  const cellW = isGrid ? 560 : 700;
-  const cellH = cellW * 3 / 4;
+  const cellW = isGrid ? 560 : 700, cellH = cellW * 3 / 4;
   const pad = 46, gap = 22, footer = isGrid ? 200 : 230;
-
   const W = pad*2 + cols*cellW + (cols-1)*gap;
   const H = pad + rows*cellH + (rows-1)*gap + footer;
-  const c = document.createElement("canvas");
+
+  const c = target || document.createElement("canvas");
   c.width = W; c.height = H;
   const ctx = c.getContext("2d");
-
   ctx.fillStyle = f.bg; ctx.fillRect(0, 0, W, H);
 
-  shots.forEach((s, i) => {
-    const col = i % cols, row = Math.floor(i / cols);
-    const x = pad + col*(cellW + gap);
-    const y = pad + row*(cellH + gap);
-    ctx.drawImage(s, x, y, cellW, cellH);
+  for(let i = 0; i < state.count; i++){
+    const x = pad + (i % cols) * (cellW + gap);
+    const y = pad + Math.floor(i / cols) * (cellH + gap);
+    if(rawShots[i]){
+      ctx.drawImage(processed(rawShots[i]), x, y, cellW, cellH);
+    }else{                                    // 還沒拍的格子：顯示編號
+      ctx.fillStyle = f.ph; ctx.fillRect(x, y, cellW, cellH);
+      ctx.fillStyle = f.sub; ctx.textAlign = "center";
+      ctx.font = `italic 400 ${cellH*.32}px "Cormorant Garamond", serif`;
+      ctx.fillText(String(i+1), x + cellW/2, y + cellH*.62);
+    }
     ctx.strokeStyle = "rgba(0,0,0,.18)"; ctx.lineWidth = 1;
     ctx.strokeRect(x + .5, y + .5, cellW - 1, cellH - 1);
-  });
+  }
 
-  // 底部文字區
-  const baseY = H - footer;
-  const cx = W / 2;
+  const baseY = H - footer, cx = W / 2;
   ctx.textAlign = "center";
-  ctx.fillStyle = f.sub;
-  ctx.fillRect(cx - 40, baseY + 38, 80, 1);
-
+  ctx.fillStyle = f.sub; ctx.fillRect(cx - 40, baseY + 38, 80, 1);
   ctx.fillStyle = f.ink;
-  ctx.font = `italic 400 ${isGrid ? 50 : 54}px "Cormorant Garamond", serif`;
+  ctx.font = `italic 400 ${isGrid ? 50 : 54}px "Cormorant Garamond", "Noto Serif TC", serif`;
   ctx.fillText($("caption").value || "a cup of moments", cx, baseY + 98);
-
-  const d = new Date();
-  const date = `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,"0")}.${String(d.getDate()).padStart(2,"0")}`;
   ctx.fillStyle = f.sub;
   ctx.font = `400 22px "Cormorant Garamond", serif`;
-  spacedText(ctx, `RC CAFÉ PHOTOBOOTH  ·  ${date}`, cx, baseY + 146, 4);
-
-  const url = c.toDataURL("image/png");
-  $("resultImg").src = url;
-  $("result").classList.add("show");
-  $("result").scrollIntoView({ behavior:"smooth" });
-  $("dlBtn").onclick = () => {
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `rc-cafe-photobooth-${date.replaceAll(".","")}-${Date.now()%100000}.png`;
-    a.click();
-  };
+  spacedText(ctx, `RCphotoBooth  ·  ${today(".")}`, cx, baseY + 146, 4);
+  return c;
 }
 
-// 畫有字距的文字（canvas 沒有 letter-spacing 的舊瀏覽器也能用）
-function spacedText(ctx, text, cx, y, spacing){
-  const chars = [...text];
-  const widths = chars.map(ch => ctx.measureText(ch).width);
-  const total = widths.reduce((a,b) => a+b, 0) + spacing*(chars.length-1);
-  let x = cx - total/2;
+function updatePreview(){ renderPrint($("framePreview")); }
+
+function today(sep){
+  const d = new Date();
+  return [d.getFullYear(), String(d.getMonth()+1).padStart(2,"0"), String(d.getDate()).padStart(2,"0")].join(sep);
+}
+
+// canvas 字距
+function spacedText(ctx, text, cx, y, sp){
+  const chars = [...text], ws = chars.map(ch => ctx.measureText(ch).width);
+  let x = cx - (ws.reduce((a,b) => a+b, 0) + sp*(chars.length-1)) / 2;
   ctx.textAlign = "left";
-  chars.forEach((ch, i) => { ctx.fillText(ch, x, y); x += widths[i] + spacing; });
+  chars.forEach((ch, i) => { ctx.fillText(ch, x, y); x += ws[i] + sp; });
   ctx.textAlign = "center";
 }
 
-$("againBtn").onclick = () => {
-  $("result").classList.remove("show");
-  window.scrollTo({ top:0, behavior:"smooth" });
+// ================= 6. 預覽視窗 & 下載 =================
+function openModal(){
+  const c = renderPrint();
+  c.toBlob(blob => {
+    if(lastBlobUrl) URL.revokeObjectURL(lastBlobUrl);
+    lastBlobUrl = URL.createObjectURL(blob);
+    $("modalImg").src = lastBlobUrl;
+    $("modal").classList.add("show");
+    document.body.style.overflow = "hidden";
+  }, "image/png");
+}
+function closeModal(){
+  $("modal").classList.remove("show");
+  document.body.style.overflow = "";
+}
+$("previewBtn").onclick = openModal;
+$("editBtn").onclick = () => { closeModal(); document.querySelector(".panel").scrollIntoView({behavior:"smooth"}); };
+$("retakeBtn").onclick = () => { closeModal(); window.scrollTo({top:0, behavior:"smooth"}); $("shootBtn").click(); };
+$("dlBtn").onclick = () => {
+  const a = document.createElement("a");
+  a.href = lastBlobUrl;
+  a.download = `RCphotoBooth-${today("")}-${Date.now()%100000}.png`;
+  document.body.appendChild(a); a.click(); a.remove();
 };
+$("modal").addEventListener("click", e => { if(e.target.id === "modal") closeModal(); });
 
+// ================= 啟動 =================
 renderCountOpts();
-applyPreviewTone();
+applyLive();
+updatePreview();
+if(document.fonts) document.fonts.ready.then(updatePreview);
 </script>
 </body>
 </html>
