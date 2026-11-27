@@ -119,9 +119,10 @@ JUST [C](./Code/)ODE
 #### CyberSec
 - [AIS3_OT_工控資安](https://123456dr.github.io/RANDOM_CODE/Code/CyberSec/AIS3_1114_OT.html)
 #### Self_Project
-- [RCvocPro](https://123456dr.github.io/RANDOM_CODE/Code/Self_Project/RCvocPro.html)
+- [RCphotoBooth](https://123456dr.github.io/RANDOM_CODE/Code/Self_Project/RCphotobooth.html)
 - [RCmovEditor](https://123456dr.github.io/RANDOM_CODE/Code/Self_Project/RCmovEditor.html) /  操作影片: [https://youtu.be/gEiZoap_YRE](https://youtu.be/gEiZoap_YRE)
 - [n8n_with_PTjob](https://123456dr.github.io/RANDOM_CODE/Code/Self_Project/n8n.html) / GitHub: [123456dr/n8n-construction-plan-generator](https://github.com/123456dr/n8n-construction-plan-generator)
+- [RCvocPro](https://123456dr.github.io/RANDOM_CODE/Code/Self_Project/RCvocPro.html)
 #### ALGO_web<br>
 - [演算法期中考古題詳解](https://123456dr.github.io/RANDOM_CODE/Code/UT/ALGO/筆試/演算法期中考古題詳解.html)
 - [CH4](https://123456dr.github.io/RANDOM_CODE/Code/UT/ALGO/筆試/ch4.html)

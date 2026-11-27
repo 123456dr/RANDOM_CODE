@@ -13,81 +13,95 @@
     --cream:#ece6dc; --muted:#8f877c; --accent:#c9b79c;
     --serif:"Cormorant Garamond","Noto Serif TC",serif;
     --tc:"Noto Serif TC",serif;
+    --checker:conic-gradient(#3a3835 25%,#2a2826 0 50%,#3a3835 0 75%,#2a2826 0) 0 0/16px 16px;
   }
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
   html,body{background:var(--bg)}
   body{
-    color:var(--cream); font-family:var(--tc); font-weight:300; letter-spacing:.04em;
-    min-height:100dvh;
+    color:var(--cream); font-family:var(--tc); font-weight:300; letter-spacing:.04em; min-height:100dvh;
     background-image:radial-gradient(circle at 20% 0%, #1c1a18 0%, transparent 55%);
   }
   button{font-family:inherit}
-  header{text-align:center; padding:36px 20px 22px; border-bottom:1px solid var(--line)}
+  header{text-align:center; padding:36px 20px 22px; border-bottom:1px solid var(--line); position:relative}
+  .clearBtn{position:absolute; top:16px; right:18px; font-size:12px; padding:7px 12px; color:var(--muted)}
+  .clearBtn:hover{color:#e8a39a; border-color:#8a4a42}
   header .est{font-family:var(--serif); font-style:italic; color:var(--muted); font-size:14px; letter-spacing:.3em}
   header h1{font-family:var(--serif); font-weight:400; font-size:clamp(32px,6vw,52px); letter-spacing:.12em; margin:4px 0}
   header h1 i{font-weight:400}
   header p{color:var(--muted); font-size:12px; letter-spacing:.4em}
 
-  main{
-    max-width:1200px; margin:0 auto; padding:30px 22px 60px;
-    display:grid; grid-template-columns:1fr 360px; gap:28px; align-items:start;
-  }
+  main{max-width:1200px; margin:0 auto; padding:30px 22px 60px; display:grid; grid-template-columns:1fr 380px; gap:28px; align-items:start}
 
   /* ===== 相機 ===== */
   .stage{position:relative; background:#000; border:1px solid var(--line); aspect-ratio:4/3; overflow:hidden}
-  .stage video{width:100%; height:100%; object-fit:cover; transition:filter .3s, transform .3s}
-  .stage video.mirror{transform:scaleX(-1)}
+  .stage video{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:0}
+  .stage #live{position:absolute; inset:0; width:100%; height:100%; transition:filter .3s}
   .hint{
     position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
-    gap:12px; color:var(--muted); text-align:center; padding:20px; background:#0b0b0a; font-size:13px;
+    gap:12px; color:var(--muted); text-align:center; padding:20px; background:#0b0b0a; font-size:13px; z-index:2;
   }
   .hint.hidden{display:none}
   .hint b{font-family:var(--serif); font-size:26px; font-style:italic; color:var(--cream); font-weight:400}
   .count{
-    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center; z-index:3;
     font-family:var(--serif); font-size:min(30vw,200px); color:rgba(236,230,220,.92);
     text-shadow:0 0 40px rgba(0,0,0,.6); pointer-events:none;
   }
-  .flash{position:absolute; inset:0; background:#fff; opacity:0; pointer-events:none}
+  .flash{position:absolute; inset:0; background:#fff; opacity:0; pointer-events:none; z-index:4}
   .flash.on{animation:flash .45s ease-out}
   @keyframes flash{0%{opacity:.95}100%{opacity:0}}
-  .corner{position:absolute; width:24px; height:24px; border:1px solid rgba(236,230,220,.5); pointer-events:none}
+  .corner{position:absolute; width:24px; height:24px; border:1px solid rgba(236,230,220,.5); pointer-events:none; z-index:2}
   .tl{top:12px;left:12px;border-right:none;border-bottom:none}
   .tr{top:12px;right:12px;border-left:none;border-bottom:none}
   .bl{bottom:12px;left:12px;border-right:none;border-top:none}
   .br{bottom:12px;right:12px;border-left:none;border-top:none}
   .badge{
-    position:absolute; top:14px; left:50%; transform:translateX(-50%);
-    font-family:var(--serif); letter-spacing:.3em; font-size:15px;
-    background:rgba(0,0,0,.5); padding:4px 14px; display:none;
+    position:absolute; top:14px; left:50%; transform:translateX(-50%); z-index:3; white-space:nowrap;
+    font-family:var(--serif); letter-spacing:.25em; font-size:15px; background:rgba(0,0,0,.55); padding:4px 14px; display:none;
   }
   .tag{
-    position:absolute; bottom:14px; left:50%; transform:translateX(-50%);
-    font-size:11px; letter-spacing:.25em; color:rgba(236,230,220,.75);
-    background:rgba(0,0,0,.4); padding:3px 10px; pointer-events:none;
+    position:absolute; bottom:14px; left:50%; transform:translateX(-50%); z-index:2; white-space:nowrap;
+    font-size:11px; letter-spacing:.15em; color:rgba(236,230,220,.85); background:rgba(0,0,0,.45); padding:3px 10px; pointer-events:none;
   }
-  .thumbs{display:flex; gap:8px; margin-top:12px; min-height:10px; overflow-x:auto}
+
+  .pauseBox{
+    position:absolute; inset:0; z-index:5; display:none; flex-direction:column; align-items:center; justify-content:center; gap:14px;
+    background:rgba(8,8,8,.62); backdrop-filter:blur(2px); text-align:center;
+  }
+  .pauseBox.show{display:flex}
+  .pauseBox b{font-family:var(--serif); font-style:italic; font-weight:400; font-size:clamp(34px,7vw,56px); letter-spacing:.15em}
+  .pauseBox span{font-size:13px; color:var(--muted); letter-spacing:.15em}
+  .pauseBox .row{display:flex; gap:10px}
+  .pauseBox .mini{background:rgba(0,0,0,.4)}
+  .stage.counting{cursor:pointer}
+  .rollHead{display:flex; justify-content:space-between; align-items:center; margin-top:14px}
+  .rollHead span{font-family:var(--serif); font-style:italic; color:var(--accent); letter-spacing:.12em}
+  .rollHead small{font-family:var(--tc); font-style:normal; color:var(--muted); font-size:12px; margin-left:6px}
+  .thumbs{display:flex; gap:8px; margin-top:8px; overflow-x:auto; min-height:20px; padding-bottom:4px}
   .thumbs canvas{width:76px; height:57px; border:1px solid var(--line); flex:none}
+  .thumbs .empty{color:#4d4943; font-size:12px; padding:18px 0}
 
   .actions{display:grid; grid-auto-flow:column; grid-auto-columns:1fr; gap:10px; margin-top:14px}
-  .btn{
-    padding:15px 10px; font-size:14px; letter-spacing:.3em; cursor:pointer;
-    border:1px solid var(--cream); transition:.2s; white-space:nowrap;
-  }
+  .btn{padding:15px 10px; font-size:14px; letter-spacing:.3em; cursor:pointer; border:1px solid var(--cream); transition:.2s; white-space:nowrap}
   .btn.primary{background:var(--cream); color:#111}
   .btn.primary:hover{background:#fff}
   .btn.ghost{background:transparent; color:var(--cream)}
   .btn.ghost:hover{background:#222}
   .btn:disabled{opacity:.35; cursor:not-allowed}
+  .mini{
+    padding:9px 12px; font-size:13px; letter-spacing:.08em; cursor:pointer; background:transparent;
+    color:var(--cream); border:1px solid var(--line); transition:.2s; white-space:nowrap;
+  }
+  .mini:hover{border-color:var(--muted)}
+  .mini.on{background:var(--cream); color:#111; border-color:var(--cream)}
+  .mini:disabled{opacity:.35; cursor:not-allowed}
   .hide{display:none !important}
 
   /* ===== 面板 ===== */
   .panel{background:var(--panel); border:1px solid var(--line); padding:22px 20px}
-  .previewBox{
-    background:#0b0b0a; border:1px solid var(--line); padding:14px;
-    display:flex; justify-content:center; align-items:center; margin-bottom:22px;
-  }
-  .previewBox canvas{max-width:100%; max-height:300px; width:auto; height:auto; box-shadow:0 8px 24px rgba(0,0,0,.5)}
+  .previewBox{background:#0b0b0a; border:1px solid var(--line); padding:14px; display:flex; flex-direction:column; align-items:center; gap:10px; margin-bottom:22px}
+  .previewBox canvas{max-width:100%; max-height:320px; width:auto; height:auto; box-shadow:0 8px 24px rgba(0,0,0,.5); cursor:pointer}
+  .previewBox .tip{font-size:12px; color:var(--accent); letter-spacing:.1em}
   .group{margin-bottom:20px}
   .label{
     font-family:var(--serif); font-style:italic; color:var(--accent); font-size:16px;
@@ -96,23 +110,28 @@
   .label small{font-style:normal; font-family:var(--tc); color:var(--muted); font-size:12px}
   .opts{display:grid; grid-template-columns:repeat(auto-fill,minmax(72px,1fr)); gap:7px}
   .opt{
-    padding:10px 4px; background:transparent; color:var(--cream);
-    border:1px solid var(--line); font-size:13px; cursor:pointer; letter-spacing:.08em; transition:.2s;
+    padding:10px 4px; background:transparent; color:var(--cream); border:1px solid var(--line);
+    font-size:13px; cursor:pointer; letter-spacing:.08em; transition:.2s;
     display:flex; flex-direction:column; align-items:center; gap:6px;
   }
   .opt:hover{border-color:var(--muted)}
   .opt.active{background:var(--cream); color:#111; border-color:var(--cream)}
+  .opt:disabled{opacity:.35; cursor:not-allowed}
   .swatch{width:26px; height:26px; border-radius:50%; border:1px solid rgba(255,255,255,.25)}
-  .opt.active .swatch{border-color:#111}
   .toneDot{width:30px; height:22px; border:1px solid rgba(255,255,255,.2)}
+  .opts.scenes{grid-template-columns:repeat(3,1fr)}
+  .opts.scenes .opt{padding:5px 5px 8px; font-size:12px}
+  .opts.scenes .thumb{width:100%; aspect-ratio:4/3; object-fit:cover; display:block; background:#222}
+  .opts.scenes .none{width:100%; aspect-ratio:4/3; display:flex; align-items:center; justify-content:center; font-family:var(--serif); font-style:italic; font-size:15px; color:var(--muted); border:1px dashed var(--line)}
+  .status{font-size:12px; color:var(--muted); margin-top:8px; line-height:1.6}
   input[type=text]{
     width:100%; padding:11px 12px; background:transparent; border:1px solid var(--line);
     color:var(--cream); font-family:var(--serif); font-size:17px; font-style:italic; letter-spacing:.08em;
   }
   input[type=text]:focus{outline:none; border-color:var(--accent)}
-  .switch{display:flex; align-items:center; justify-content:space-between; font-size:13px; color:var(--muted)}
+  input[type=range]{width:100%; accent-color:var(--accent)}
 
-  /* ===== 下載預覽視窗 ===== */
+  /* ===== 彈出視窗（成品 / 格子編輯 / 去背） ===== */
   .modal{
     position:fixed; inset:0; z-index:50; background:rgba(5,5,5,.92); backdrop-filter:blur(6px);
     display:none; flex-direction:column; align-items:center; justify-content:center;
@@ -121,18 +140,67 @@
   .modal.show{display:flex}
   .modal h2{font-family:var(--serif); font-weight:400; letter-spacing:.3em; font-size:24px; margin-bottom:14px}
   .modal img{max-width:100%; max-height:66dvh; object-fit:contain; box-shadow:0 20px 60px rgba(0,0,0,.7)}
-  .modal .tip{color:var(--muted); font-size:12px; margin-top:10px; text-align:center}
-  .modal .row{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:16px; width:min(520px,100%)}
+  .modal .tip{color:var(--muted); font-size:12px; margin-top:10px; text-align:center; line-height:1.7}
+  .modal .row{display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-top:16px; width:min(520px,100%)}
   .modal .btn{letter-spacing:.15em; font-size:13px}
+
+  .sheet{position:fixed; inset:0; z-index:60; background:rgba(5,5,5,.9); backdrop-filter:blur(6px); display:none; overflow-y:auto}
+  .sheet.show{display:block}
+  .sheet.top{z-index:70}
+  .sheetInner{
+    max-width:640px; margin:0 auto; min-height:100%; background:var(--panel); border-left:1px solid var(--line); border-right:1px solid var(--line);
+    padding:18px 18px calc(24px + env(safe-area-inset-bottom));
+  }
+  .sheetHead{display:flex; justify-content:space-between; align-items:center; margin-bottom:12px}
+  .sheetHead h3{font-family:var(--serif); font-weight:400; font-size:24px; letter-spacing:.2em}
+  .sheetHead .btn{padding:10px 22px; letter-spacing:.2em}
+  #edCanvas{width:100%; aspect-ratio:4/3; display:block; background:#000; touch-action:none; border:1px solid var(--line)}
+  .edHint{font-size:12px; color:var(--muted); text-align:center; margin:8px 0 16px}
+  .strip{display:flex; gap:8px; overflow-x:auto; padding-bottom:6px; margin-bottom:10px}
+  .tile{
+    flex:none; width:84px; height:63px; border:1px solid var(--line); background:#0b0b0a; cursor:pointer; position:relative;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:12px; color:var(--muted); text-align:center; line-height:1.4;
+  }
+  .tile canvas{width:100%; height:100%; display:block; object-fit:contain}
+  .tile.sel{outline:2px solid var(--cream); outline-offset:-2px}
+  .tile.person{background:var(--checker)}
+  .tile.add{border-style:dashed}
+  .tileX{position:absolute; top:2px; right:2px; width:20px; height:20px; border:none; border-radius:50%; background:rgba(0,0,0,.7); color:#fff; font-size:13px; line-height:20px; cursor:pointer; padding:0}
+  .tileX:hover{background:#8a4a42}
+  .tile img{width:100%; height:100%; object-fit:cover; display:block}
+  .tile .lbl{position:absolute; left:0; right:0; bottom:0; background:rgba(0,0,0,.6); color:var(--cream); font-size:11px; padding:2px 0; text-align:center}
+  .btnRow{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:18px}
+  .itemCtl{border:1px solid var(--line); padding:12px; margin-top:4px}
+  .itemCtl label{font-size:12px; color:var(--muted); display:block; margin-bottom:10px}
+  .cutWrap{background:var(--checker); border:1px solid var(--line); display:flex; justify-content:center; margin-bottom:12px}
+  #cutCanvas{max-width:100%; max-height:58dvh; touch-action:none; display:block; cursor:crosshair}
+  .sheet label.r{font-size:12px; color:var(--muted); display:block; margin:10px 0}
+
+  /* ===== 下拉選單：一次只開一欄，內容浮在上方，不推動版面 ===== */
+  .panel .group{margin:0; border-top:1px solid var(--line); position:relative}
+  .panel .group:last-child{border-bottom:1px solid var(--line)}
+  .panel .group > .label{cursor:pointer; margin:0; padding:15px 2px; user-select:none; align-items:center}
+  .panel .group > .label:hover{color:var(--cream)}
+  .panel .group > .label::after{content:"+"; font-style:normal; font-family:var(--tc); color:var(--muted); width:16px; text-align:right; margin-left:10px}
+  .panel .group.open > .label::after{content:"−"}
+  .panel .group > .label .cur{flex:1; text-align:right; font-family:var(--tc); font-style:normal; font-size:12px; color:var(--cream); margin-left:12px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; letter-spacing:.08em}
+  .panel .group:not(.open) > .label small{display:none}
+  .panel .group.open > .label .cur{display:none}
+  .panel .group > .body{
+    display:none; position:absolute; left:-12px; right:-12px; top:100%; z-index:30;
+    background:#1d1c1a; border:1px solid #3a3733; padding:14px 12px 16px;
+    box-shadow:0 18px 40px rgba(0,0,0,.6); max-height:min(60vh,520px); overflow-y:auto; overscroll-behavior:contain;
+  }
+  .panel .group.open > .body{display:block}
+  .panel .group.open > .label{color:var(--cream)}
 
   footer{text-align:center; color:#4a4640; font-family:var(--serif); font-style:italic; padding:20px; letter-spacing:.3em; font-size:13px}
 
-  /* ===== 手機版 ===== */
+  /* ===== 手機 ===== */
   @media (max-width:860px){
     header{padding:22px 16px 14px}
     header p{letter-spacing:.25em}
     main{grid-template-columns:1fr; padding:14px 12px 120px; gap:16px}
-    .stage{aspect-ratio:3/4}       /* 手機直拿，預覽畫面變直的；成品仍以 4:3 裁切 */
     .actions{
       position:fixed; left:0; right:0; bottom:0; z-index:40; margin:0;
       padding:10px 12px calc(10px + env(safe-area-inset-bottom));
@@ -141,7 +209,9 @@
     .btn{padding:14px 6px; letter-spacing:.15em}
     .panel{padding:18px 14px}
     .opts{grid-template-columns:repeat(4,1fr)}
-    .previewBox canvas{max-height:260px}
+    .opts.scenes{grid-template-columns:repeat(3,1fr)}
+    .previewBox canvas{max-height:300px}
+    .sheetInner{border:none; padding:14px 12px calc(24px + env(safe-area-inset-bottom))}
     footer{display:none}
   }
 </style>
@@ -149,6 +219,7 @@
 <body>
 
 <header>
+  <button class="mini clearBtn" id="clearBtn" title="刪除保存的照片並重設">清除資料</button>
   <div class="est">— est. 2026 —</div>
   <h1>RC<i>photo</i>Booth</h1>
   <p>CAFÉ ・ PHOTO ・ BOOTH</p>
@@ -157,7 +228,8 @@
 <main>
   <section>
     <div class="stage">
-      <video id="video" class="mirror" autoplay playsinline muted></video>
+      <video id="video" autoplay playsinline muted></video>
+      <canvas id="live" width="800" height="600"></canvas>
       <div class="corner tl"></div><div class="corner tr"></div>
       <div class="corner bl"></div><div class="corner br"></div>
       <div class="hint" id="hint">
@@ -165,11 +237,24 @@
         <div>按下「開啟相機」，並允許瀏覽器使用鏡頭</div>
       </div>
       <div class="badge" id="badge"></div>
-      <div class="tag" id="tag">鏡像</div>
+      <div class="tag" id="tag"></div>
       <div class="count" id="count"></div>
       <div class="flash" id="flash"></div>
+      <div class="pauseBox" id="pauseBox">
+        <b>Paused</b>
+        <span id="pauseInfo">倒數已暫停</span>
+        <div class="row">
+          <button class="mini on" id="resumeBtn">▶ 繼續</button>
+          <button class="mini" id="stopBtn">結束拍攝</button>
+        </div>
+      </div>
     </div>
-    <div class="thumbs" id="thumbs"></div>
+
+    <div class="rollHead">
+      <span>Film Roll<small>底片：拍過的照片都在這</small></span>
+      <button class="mini" id="extraBtn" disabled>＋ 多拍一張</button>
+    </div>
+    <div class="thumbs" id="thumbs"><div class="empty">還沒有照片</div></div>
 
     <div class="actions">
       <button class="btn ghost" id="camBtn">開啟相機</button>
@@ -180,8 +265,28 @@
   </section>
 
   <aside class="panel">
-    <div class="label">Frame Preview <small>相框預覽</small></div>
-    <div class="previewBox"><canvas id="framePreview"></canvas></div>
+    <div class="label">Frame <small>相框預覽</small></div>
+    <div class="previewBox">
+      <canvas id="framePreview" title="點格子編輯"></canvas>
+      <div class="tip">👆 點任一格：換照片、重拍、上傳、加人物</div>
+    </div>
+
+    <div class="group">
+      <div class="label">Scene <small>全部格子的預設背景（每格可另外設定）</small></div>
+      <div class="opts scenes" id="sceneOpts" data-key="bg"></div>
+      <div class="status" id="segStatus">第一次開相機會自動下載 AI 人像模型（約幾 MB），之後就能換背景。</div>
+    </div>
+
+    <div class="group">
+      <div class="label">Depth <small>背景虛化</small></div>
+      <div class="opts" data-key="blur">
+        <button class="opt active" data-v="0">清晰</button>
+        <button class="opt" data-v="3">輕微</button>
+        <button class="opt" data-v="7">柔焦</button>
+        <button class="opt" data-v="14">強烈</button>
+      </div>
+      <div class="status" id="credit"></div>
+    </div>
 
     <div class="group">
       <div class="label">Layout <small>版型</small></div>
@@ -192,7 +297,7 @@
     </div>
 
     <div class="group">
-      <div class="label">Shots <small>張數</small></div>
+      <div class="label">Shots <small>格數</small></div>
       <div class="opts" id="countOpts" data-key="count"></div>
     </div>
 
@@ -202,7 +307,7 @@
     </div>
 
     <div class="group">
-      <div class="label">Frame <small>相框顏色</small></div>
+      <div class="label">Frame Color <small>相框顏色</small></div>
       <div class="opts" id="frameOpts" data-key="frame"></div>
     </div>
 
@@ -231,60 +336,640 @@
   </aside>
 </main>
 
+<!-- 成品預覽 -->
 <div class="modal" id="modal">
   <h2>— YOUR PRINT —</h2>
   <img id="modalImg" alt="拍貼成品預覽">
-  <div class="tip">滿意再下載；想換色調或相框，按「調整」回去改，照片會保留。<br>iPhone 若沒跳出下載，可長按圖片「加入照片」。</div>
+  <div class="tip">滿意再下載；想改哪一格，按「調整」後點那一格就能換。<br>iPhone 若沒跳出下載，可長按圖片「加入照片」。</div>
   <div class="row">
     <button class="btn ghost" id="editBtn">調整</button>
-    <button class="btn ghost" id="retakeBtn">重拍</button>
     <button class="btn primary" id="dlBtn">下載</button>
   </div>
 </div>
 
+<!-- 格子編輯 -->
+<div class="sheet" id="editor">
+  <div class="sheetInner">
+    <div class="sheetHead"><h3 id="edTitle">第 1 格</h3><button class="btn primary" id="edDone">完成</button></div>
+    <canvas id="edCanvas" width="800" height="600"></canvas>
+    <div class="edHint">拖曳人物移動 ・ 雙指或滾輪縮放 ・ 拍照前先放好人物，拍的時候相機畫面會一起顯示</div>
+
+    <div class="label">Photo <small>這一格的照片</small></div>
+    <div class="strip" id="edRoll"></div>
+    <div class="btnRow">
+      <button class="mini" id="edShoot">📷 拍這一格</button>
+      <button class="mini" id="edUpload">⬆ 上傳照片</button>
+    </div>
+    <div class="itemCtl hide" id="photoCtl" style="margin-bottom:18px">
+      <label>📷 照片縮放（拖曳格子裡沒有人物的地方可以移動照片）<input type="range" id="photoZoom" min="50" max="300"></label>
+      <div class="btnRow" style="margin:0"><button class="mini" id="photoReset">重設位置</button></div>
+    </div>
+
+    <div class="label">Background <small>這一格的背景</small></div>
+    <div class="strip" id="edBg"></div>
+
+    <div class="label">People <small>人物（可以不放）</small></div>
+    <div class="strip" id="edPeople"></div>
+    <div class="itemCtl hide" id="itemCtl">
+      <label>大小 <input type="range" id="itemSize" min="10" max="250"></label>
+      <div class="btnRow" style="margin:0">
+        <button class="mini" id="itemFlip">↔ 翻轉</button>
+        <button class="mini" id="itemCut">✂ 修改去背</button>
+        <button class="mini" id="itemDel">移除</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 人物去背編輯 -->
+<div class="sheet top" id="cutout">
+  <div class="sheetInner">
+    <div class="sheetHead"><h3>人物去背</h3><button class="btn primary" id="cutOk">完成</button></div>
+    <div class="cutWrap"><canvas id="cutCanvas"></canvas></div>
+    <div class="btnRow" style="margin-bottom:6px">
+      <button class="mini on" id="modeErase">擦掉</button>
+      <button class="mini" id="modeKeep">補回</button>
+      <button class="mini" id="cutAuto">✨ 重新自動去背</button>
+      <button class="mini" id="cutAll">全部保留</button>
+      <button class="mini" id="cutUndo" title="Ctrl+Z" disabled>↶ 上一步</button>
+      <button class="mini" id="cutRedo" title="Ctrl+Y" disabled>↷ 下一步</button>
+    </div>
+    <label class="r">筆刷大小 <input type="range" id="brush" min="6" max="90" value="30"></label>
+    <div class="status" id="cutStatus">在圖上塗抹：「擦掉」去掉多的背景，「補回」救回被誤刪的地方（淡淡顯示的就是被擦掉的部分）。</div>
+    <div class="btnRow" style="margin-top:14px"><button class="mini" id="cutCancel">取消</button></div>
+  </div>
+</div>
+
+<input type="file" id="bgFile" accept="image/*" hidden>
+<input type="file" id="cellFile" accept="image/*" hidden>
+<input type="file" id="personFile" accept="image/*" hidden>
+<input type="file" id="cellBgFile" accept="image/*" hidden>
+
 <footer>slow coffee · still moments</footer>
 
 <script>
-// ================= 1. 資料設定 =================
-const state = { layout:"strip", count:3, tone:"mono", frame:"paper", mirror:true, timer:3 };
+// =====================================================================
+// 1. 基本設定
+// =====================================================================
+const state = { layout:"strip", count:3, tone:"film", frame:"paper", mirror:true, timer:3, bg:"none", blur:0 };
 const COUNT_CHOICES = { strip:[2,3,4], grid:[4,6] };
 
-// 色調：css 給即時預覽用；map 是實際處理每個像素的公式
 const TONES = {
-  mono:  { name:"經典黑白", css:"grayscale(1) contrast(1.12)",               contrast:1.14, lift:0,  grain:14, vig:.32, map:(r,g,b,y)=>[y,y,y] },
-  noir:  { name:"高反差",   css:"grayscale(1) contrast(1.55) brightness(.95)", contrast:1.55, lift:-6, grain:18, vig:.45, map:(r,g,b,y)=>[y,y,y] },
-  soft:  { name:"柔霧黑白", css:"grayscale(1) contrast(.82) brightness(1.1)",  contrast:.82,  lift:16, grain:10, vig:.18, map:(r,g,b,y)=>[y,y,y] },
-  sepia: { name:"復古棕",   css:"sepia(.6) contrast(1.05) brightness(.97)",    contrast:1.05, lift:0,  grain:14, vig:.32, map:(r,g,b,y)=>[y*1.07+12, y*.95+6, y*.8] },
-  film:  { name:"暖調底片", css:"sepia(.2) saturate(1.1) contrast(1.06)",      contrast:1.06, lift:4,  grain:12, vig:.28, map:(r,g,b,y)=>mix([r*1.06+8, g+2, b*.88], y, .15) },
+  mono:  { name:"經典黑白", css:"grayscale(1) contrast(1.12)",                   contrast:1.14, lift:0,  grain:14, vig:.32, map:(r,g,b,y)=>[y,y,y] },
+  noir:  { name:"高反差",   css:"grayscale(1) contrast(1.55) brightness(.95)",   contrast:1.55, lift:-6, grain:18, vig:.45, map:(r,g,b,y)=>[y,y,y] },
+  soft:  { name:"柔霧黑白", css:"grayscale(1) contrast(.82) brightness(1.1)",    contrast:.82,  lift:16, grain:10, vig:.18, map:(r,g,b,y)=>[y,y,y] },
+  sepia: { name:"復古棕",   css:"sepia(.6) contrast(1.05) brightness(.97)",      contrast:1.05, lift:0,  grain:14, vig:.32, map:(r,g,b,y)=>[y*1.07+12, y*.95+6, y*.8] },
+  film:  { name:"暖調底片", css:"sepia(.2) saturate(1.1) contrast(1.06)",        contrast:1.06, lift:4,  grain:12, vig:.28, map:(r,g,b,y)=>mix([r*1.06+8, g+2, b*.88], y, .15) },
   cool:  { name:"冷調",     css:"saturate(.8) hue-rotate(-8deg) brightness(1.03)", contrast:1.04, lift:4, grain:10, vig:.25, map:(r,g,b,y)=>mix([r*.92, g*.98+2, b*1.08+8], y, .2) },
-  fade:  { name:"褪色",     css:"contrast(.82) saturate(.65) brightness(1.08)", contrast:.8,  lift:22, grain:10, vig:.15, map:(r,g,b,y)=>mix([r,g,b], y, .35) },
-  color: { name:"原色",     css:"none",                                        contrast:1.03, lift:0,  grain:6,  vig:.12, map:(r,g,b)=>[r,g,b] }
+  fade:  { name:"褪色",     css:"contrast(.82) saturate(.65) brightness(1.08)",  contrast:.8,   lift:22, grain:10, vig:.15, map:(r,g,b,y)=>mix([r,g,b], y, .35) },
+  color: { name:"原色",     css:"none",                                          contrast:1.03, lift:0,  grain:6,  vig:.12, map:(r,g,b)=>[r,g,b] }
 };
-// 把彩色和灰階按比例混合（t 越大越灰）
 function mix(rgb, y, t){ return rgb.map(v => v*(1-t) + y*t); }
 
 const FRAMES = {
   paper:{ name:"米白", bg:"#f3efe7", ink:"#1b1a18", sub:"#8a8378", ph:"#d9d3c8" },
   ink:  { name:"墨黑", bg:"#121110", ink:"#ece6dc", sub:"#7d766c", ph:"#2a2826" },
   latte:{ name:"奶茶", bg:"#d9ccb9", ink:"#2a231d", sub:"#6f604f", ph:"#c4b5a0" },
-  mist: { name:"霧灰", bg:"#cfcecb", ink:"#1f1f1e", sub:"#6c6b68", ph:"#b9b8b4" }
+  mist: { name:"霧灰", bg:"#cfcecb", ink:"#1f1f1e", sub:"#6c6b68", ph:"#b9b8b4" },
+  metal:{ name:"金屬板", bg:"#8c8f94", ink:"#111214", sub:"#26282b", ph:"#6c6f74", plate:true }
 };
-const SHOT_W = 800, SHOT_H = 600;   // 成品每格 4:3
+const SHOT_W = 800, SHOT_H = 600;   // 每一格都是 4:3，相機畫面也是 4:3，所見即所得
 
 const $ = id => document.getElementById(id);
-const video = $("video");
-let rawShots = [];     // 原始照片（未鏡像、未調色），之後換色調不用重拍
-let busy = false;
-let stream = null;
-let facing = "user";   // user = 前鏡頭, environment = 後鏡頭
-let lastBlobUrl = null;
+const video = $("video"), live = $("live");
+let busy = false, stream = null, facing = "user", lastBlobUrl = null;
+let nextId = 1;
 
-// ================= 2. 產生選項按鈕 =================
+// ---- 三種資料 ----
+let roll = [];        // 底片：所有拍過 / 上傳的照片
+let people = [];      // 人物庫：去背好的人物
+const cells = Array.from({length:6}, () => ({ shot:null, items:[], bg:null, view:{x:0, y:0, z:1} }));
+// cells[i].view = 這格照片的位置與縮放：x/y 是位移（格子寬高的比例），z 是放大倍率
+function setCellShot(i, id){ cells[i].shot = id; cells[i].view = {x:0, y:0, z:1}; }   // 換照片時位置歸零
+// cells[i].bg = 這格自己的背景；null = 跟隨「全部格子」的預設背景
+const cellBg = i => cells[i]?.bg ?? state.bg;
+// cells[i].shot  = 這格用哪一張底片（id），null = 空
+// cells[i].items = 這格放了哪些人物 [{pid, x, y, s, f}]，x/y 是中心點(0~1)，s 是高度佔格子的比例，f 是否翻轉
+
+let liveTarget = null;   // 拍攝中正在拍第幾格
+let lastEdited = 0;      // 最後編輯的格子（相機畫面會預覽它的人物）
+const shotById = id => roll.find(r => r.id === id);
+const personById = id => people.find(p => p.id === id);
+const mk = (w, h) => { const c = document.createElement("canvas"); c.width = w; c.height = h; return c; };
+
+// 金屬防滑板花紋（程式產生的小磁磚，重複鋪滿）
+function makePlateTile(){
+  const t = mk(48, 48), c = t.getContext("2d");
+  c.fillStyle = lg(c,0,0,48,48,[[0,"#9a9da2"],[1,"#7f8287"]]); c.fillRect(0,0,48,48);
+  for(let i = 0; i < 260; i++){ c.fillStyle = `rgba(${Math.random()<.5?255:0},${Math.random()<.5?255:0},${Math.random()<.5?255:0},.05)`; c.fillRect(Math.random()*48, Math.random()*48, 1, 1); }
+  const lug = (x, y, rot) => {
+    c.save(); c.translate(x, y); c.rotate(rot);
+    c.fillStyle = "rgba(0,0,0,.35)"; c.beginPath(); c.ellipse(1.5, 1.5, 10, 2.6, 0, 0, 7); c.fill();
+    c.fillStyle = lg(c,0,-3,0,3,[[0,"#e4e6e9"],[.5,"#a9adb2"],[1,"#6a6d72"]]); c.beginPath(); c.ellipse(0, 0, 10, 2.6, 0, 0, 7); c.fill();
+    c.restore();
+  };
+  lug(12, 12, Math.PI/4); lug(36, 36, Math.PI/4); lug(36, 12, -Math.PI/4); lug(12, 36, -Math.PI/4);
+  return t;
+}
+function lg(c, x0, y0, x1, y1, stops){ const g = c.createLinearGradient(x0,y0,x1,y1); stops.forEach(([o,col]) => g.addColorStop(o,col)); return g; }
+const plateTile = makePlateTile();
+
+// =====================================================================
+// 2. 真實照片場景（Unsplash，免費可商用）
+// =====================================================================
+const U = id => ({ full:`https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=1600&q=80`,
+                   thumb:`https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=320&h=240&q=60` });
+const SCENES = {
+  none:    { name:"原始背景" },
+  upload:  { name:"我的照片", upload:true },
+  studio:  { name:"攝影棚" },
+  elevator:{ name:"電梯",     ...U("1592256410394-51c948ec13d5"), credit:"Derrick Treadwell", cctv:true },
+  cablecar:{ name:"纜車",     ...U("1665125688197-7318b9b86dc4"), credit:"allPhoto Bangkok" },
+  metro:   { name:"地鐵車廂", ...U("1504080720394-65d17e99459e"), credit:"Paul Gaudriault" },
+  cafe:    { name:"咖啡廳",   ...U("1749871615234-98bff62995ba"), credit:"Kouji Tsuru" },
+  taipei:  { name:"台北夜景", ...U("1599578705716-8d3d9246f53b"), credit:"Ethan Lin" },
+  tokyo:   { name:"東京街頭", ...U("1752070485313-71ac5e594ad0"), credit:"ayumi kubo" },
+  library: { name:"圖書館",   ...U("1760166699654-5d0e10f51994"), credit:"Fer Troulik" },
+  beach:   { name:"海邊夕陽", ...U("1748597720639-9196aaa0af46"), credit:"Masoud Mostafaei" }
+};
+
+function txt(c, str, x, y, font, col){ c.font = font; c.fillStyle = col; c.textAlign = "center"; c.textBaseline = "middle"; c.fillText(str,x,y); c.textBaseline = "alphabetic"; }
+
+function loadSceneImage(key){
+  const s = SCENES[key];
+  if(!s || s.img || s.loading || !s.full) return;
+  s.loading = true;
+  const img = new Image();
+  img.crossOrigin = "anonymous";       // 讓 canvas 可以匯出（CORS）
+  img.onload = () => { s.img = img; s.loading = false; sceneCache.clear(); refreshAll(); };
+  img.onerror = () => { s.loading = false; s.failed = true; renderSceneOpts(); };
+  img.src = s.full;
+}
+
+// 像 object-fit:cover 一樣裁切填滿
+function drawCover(c, img, w, h, blurPx = 0){
+  const ir = img.width / img.height, r = w / h;
+  let dw, dh;
+  if(ir > r){ dh = h; dw = h * ir; } else { dw = w; dh = w / ir; }
+  const extra = blurPx * 3;
+  if(blurPx && typeof c.filter === "string") c.filter = `blur(${blurPx}px)`;
+  c.drawImage(img, (w-dw)/2 - extra, (h-dh)/2 - extra, dw + extra*2, dh + extra*2);
+  if(typeof c.filter === "string") c.filter = "none";
+}
+
+const sceneCache = new Map();
+function getScene(key, w, h){
+  const s = SCENES[key];
+  if(!s || key === "none") return null;
+  const id = `${key}_${w}x${h}_${state.blur}_${s.ver||0}`;
+  if(sceneCache.has(id)) return sceneCache.get(id);
+  const cv = mk(w, h), c = cv.getContext("2d");
+  if(key === "studio"){
+    const g = c.createRadialGradient(w/2,h*.4,0,w/2,h*.4,Math.max(w,h)*.75);
+    g.addColorStop(0,"#d6d2cb"); g.addColorStop(1,"#55524d"); c.fillStyle = g; c.fillRect(0,0,w,h);
+  }else{
+    if(!s.img){ loadSceneImage(key); return null; }
+    drawCover(c, s.img, w, h, state.blur * w / 800);
+  }
+  if(sceneCache.size > 30) sceneCache.clear();
+  const out = { bg:cv }; sceneCache.set(id, out); return out;
+}
+
+// =====================================================================
+// 3. AI 人像分割（MediaPipe）：VIDEO 模式給相機，IMAGE 模式給上傳的照片
+// =====================================================================
+const MP = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14";
+const MODEL = "https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter/float16/latest/selfie_segmenter.tflite";
+let segVideo = null, segImage = null, segState = "idle", segPromise = null, lastTs = 0, lastVideoTime = -1;
+const maskCanvas = document.createElement("canvas");
+let maskImg = null;
+
+function loadSegmenter(){
+  if(segPromise) return segPromise;
+  segState = "loading"; updateSegStatus();
+  segPromise = (async () => {
+    try{
+      const v = await import(`${MP}/vision_bundle.mjs`);
+      const files = await v.FilesetResolver.forVisionTasks(`${MP}/wasm`);
+      const make = async mode => {
+        const opt = d => ({ baseOptions:{ modelAssetPath:MODEL, delegate:d }, runningMode:mode, outputCategoryMask:false, outputConfidenceMasks:true });
+        try{ return await v.ImageSegmenter.createFromOptions(files, opt("GPU")); }
+        catch(e){ return await v.ImageSegmenter.createFromOptions(files, opt("CPU")); }
+      };
+      segVideo = await make("VIDEO");
+      segImage = await make("IMAGE");
+      segState = "ready";
+    }catch(e){ console.error(e); segState = "error"; }
+    updateSegStatus(); applyLive();
+  })();
+  return segPromise;
+}
+
+function updateSegStatus(){
+  $("segStatus").textContent = {
+    idle:"第一次開相機會自動下載 AI 人像模型（約幾 MB），之後就能換背景。",
+    loading:"AI 人像模型載入中…（需要網路）",
+    ready:"✓ 人像去背已就緒，單人、多人都可以。光線亮、離鏡頭近一點，邊緣更乾淨。",
+    error:"✗ 人像模型載入失敗（可能沒網路），目前只能用原始背景；上傳人物時可以手動去背。"
+  }[segState];
+}
+
+// 信心值（0~1）→ 透明度，中間做柔和過渡
+function confToAlpha(data, imgData){
+  const d = imgData.data;
+  for(let i = 0; i < data.length; i++){
+    let a = (data[i] - .3) / .4; a = a < 0 ? 0 : a > 1 ? 1 : a;
+    const j = i*4; d[j] = d[j+1] = d[j+2] = 255; d[j+3] = a*255;
+  }
+}
+const pickMask = res => { const m = res.confidenceMasks; return m && m.length ? (m.length > 1 ? m[1] : m[0]) : null; };
+
+function segmentNow(){
+  if(segState !== "ready" || !video.videoWidth) return;
+  let ts = performance.now(); if(ts <= lastTs) ts = lastTs + 1; lastTs = ts;
+  try{
+    segVideo.segmentForVideo(video, ts, res => {
+      const m = pickMask(res); if(!m) return;
+      if(maskCanvas.width !== m.width || maskCanvas.height !== m.height || !maskImg){
+        maskCanvas.width = m.width; maskCanvas.height = m.height; maskImg = new ImageData(m.width, m.height);
+      }
+      confToAlpha(m.getAsFloat32Array(), maskImg);
+      maskCanvas.getContext("2d").putImageData(maskImg, 0, 0);
+    });
+  }catch(e){ console.warn(e); }
+}
+
+// 對一張圖做去背，回傳同尺寸的遮罩；模型不能用就回傳 null
+async function segmentPicture(cv){
+  await loadSegmenter();
+  if(!segImage) return null;
+  let out = null;
+  try{
+    segImage.segment(cv, res => {
+      const m = pickMask(res); if(!m) return;
+      const small = mk(m.width, m.height), id = new ImageData(m.width, m.height);
+      confToAlpha(m.getAsFloat32Array(), id);
+      small.getContext("2d").putImageData(id, 0, 0);
+      out = mk(cv.width, cv.height);
+      out.getContext("2d").drawImage(small, 0, 0, cv.width, cv.height);
+    });
+  }catch(e){ console.warn(e); }
+  return out;
+}
+
+// 把「人」剪下來貼到 target
+const tmp = document.createElement("canvas");
+function drawPerson(target, img, imgRect, mask, maskRect, w, h, mirror){
+  if(tmp.width !== w || tmp.height !== h){ tmp.width = w; tmp.height = h; }
+  const t = tmp.getContext("2d");
+  t.setTransform(1,0,0,1,0,0); t.globalCompositeOperation = "source-over"; t.clearRect(0,0,w,h);
+  if(mirror) t.setTransform(-1,0,0,1,w,0);
+  t.drawImage(img, ...imgRect, 0, 0, w, h);
+  t.globalCompositeOperation = "destination-in";
+  if(typeof t.filter === "string") t.filter = "blur(1.5px)";
+  t.drawImage(mask, ...maskRect, 0, 0, w, h);
+  if(typeof t.filter === "string") t.filter = "none";
+  t.setTransform(1,0,0,1,0,0); t.globalCompositeOperation = "source-over";
+  target.drawImage(tmp, 0, 0);
+}
+
+// 在格子上畫人物貼圖
+function drawItems(c, items, w, h){
+  (items || []).forEach(it => {
+    const p = personById(it.pid); if(!p) return;
+    const hh = it.s * h, ww = hh * p.cut.width / p.cut.height;
+    c.save(); c.translate(it.x*w, it.y*h); if(it.f) c.scale(-1,1);
+    c.drawImage(p.cut, -ww/2, -hh/2, ww, hh); c.restore();
+  });
+}
+// 人物的範圍（0~1 座標），用來判斷手指點到哪個人物
+function itemBox(it){
+  const p = personById(it.pid); if(!p) return null;
+  const hn = it.s, wn = it.s * (p.cut.width / p.cut.height) * (SHOT_H / SHOT_W);
+  return { x:it.x - wn/2, y:it.y - hn/2, w:wn, h:hn };
+}
+
+// 監視器畫面：REC、CAMERA 編號、時間碼、四角框線
+function drawCCTV(c, w, h, i){
+  const u = h / 100, m = 3.2*u, L = 7*u;
+  c.save();
+  c.strokeStyle = "rgba(255,255,255,.85)"; c.lineWidth = Math.max(2, .45*u);
+  [[m,m,1,1],[w-m,m,-1,1],[m,h-m,1,-1],[w-m,h-m,-1,-1]].forEach(([x,y,dx,dy]) => {
+    c.beginPath(); c.moveTo(x, y + L*dy); c.lineTo(x, y); c.lineTo(x + L*dx, y); c.stroke();
+  });
+  c.shadowColor = "rgba(0,0,0,.6)"; c.shadowBlur = u*.8;
+  c.font = `700 ${4.2*u}px "Courier New", monospace`; c.textBaseline = "middle";
+  c.fillStyle = "#ff2b2b"; c.beginPath(); c.arc(m + 3*u, m + 4.5*u, 1.4*u, 0, 7); c.fill();
+  c.fillStyle = "#fff"; c.textAlign = "left";  c.fillText("REC", m + 5.5*u, m + 4.6*u);
+  c.textAlign = "right"; c.fillText(`CAMERA ${i+1}`, w - m - 2.5*u, m + 4.6*u);
+  const sec = 75 + i*45, tc = `00:${String(Math.floor(sec/60)).padStart(2,"0")}:${String(sec%60).padStart(2,"0")}`;
+  c.textAlign = "left"; c.font = `700 ${3.6*u}px "Courier New", monospace`; c.fillText(tc, m + 2.5*u, h - m - 4*u);
+  c.restore(); c.textBaseline = "alphabetic";
+}
+
+// =====================================================================
+// 4. 相機即時畫面（4:3，和成品每一格一模一樣）
+// =====================================================================
+function cropRect(){
+  const vw = video.videoWidth, vh = video.videoHeight, ratio = SHOT_W / SHOT_H;
+  let sw = vw, sh = vw / ratio;
+  if(sh > vh){ sh = vh; sw = vh * ratio; }
+  return [(vw-sw)/2, (vh-sh)/2, sw, sh];
+}
+function previewCell(){ return liveTarget ?? lastEdited; }
+
+function loop(){
+  requestAnimationFrame(loop);
+  if(!video.videoWidth) return;
+  const c = live.getContext("2d"), cr = cropRect();
+  const ci = previewCell(), bg = ci < state.count ? cellBg(ci) : state.bg;
+  const sc = bg !== "none" ? getScene(bg, SHOT_W, SHOT_H) : null;
+  if(sc && video.currentTime !== lastVideoTime){ lastVideoTime = video.currentTime; segmentNow(); }
+  if(sc && maskCanvas.width){
+    const mx = maskCanvas.width / video.videoWidth, my = maskCanvas.height / video.videoHeight;
+    c.drawImage(sc.bg, 0, 0);
+    drawPerson(c, video, cr, maskCanvas, [cr[0]*mx, cr[1]*my, cr[2]*mx, cr[3]*my], SHOT_W, SHOT_H, state.mirror);
+  }else{
+    c.save(); if(state.mirror){ c.translate(SHOT_W,0); c.scale(-1,1); }
+    c.drawImage(video, ...cr, 0, 0, SHOT_W, SHOT_H); c.restore();
+  }
+  if(ci < state.count) drawItems(c, cells[ci].items, SHOT_W, SHOT_H);
+  if(SCENES[bg]?.cctv) drawCCTV(c, SHOT_W, SHOT_H, ci);
+}
+
+// =====================================================================
+// 5. 照片處理：base = 背景+人+鏡像（不含色調）；cell = base + 人物貼圖 + 色調
+// =====================================================================
+function baseKey(raw, bg = state.bg){
+  const useBg = bg !== "none" && raw.mask && getScene(bg, SHOT_W, SHOT_H);
+  return `${state.mirror && raw.mirrorable}|${useBg ? bg + state.blur + (SCENES[bg].ver||0) : "none"}`;
+}
+function base(raw, bg = state.bg){
+  const key = baseKey(raw, bg);
+  if(raw._base[key]) return raw._base[key];
+  const c = mk(SHOT_W, SHOT_H), ctx = c.getContext("2d");
+  const mirror = state.mirror && raw.mirrorable;
+  const sc = (bg !== "none" && raw.mask) ? getScene(bg, SHOT_W, SHOT_H) : null;
+  if(sc){
+    ctx.drawImage(sc.bg, 0, 0);
+    drawPerson(ctx, raw.img, [0,0,SHOT_W,SHOT_H], raw.mask, [0,0,SHOT_W,SHOT_H], SHOT_W, SHOT_H, mirror);
+  }else{
+    if(mirror){ ctx.translate(SHOT_W,0); ctx.scale(-1,1); }
+    ctx.drawImage(raw.img, 0, 0); ctx.setTransform(1,0,0,1,0,0);
+  }
+  if(Object.keys(raw._base).length > 8) raw._base = {};
+  raw._base[key] = c;
+  return c;
+}
+
+// 依照 view 把圖畫上去（以格子中心為基準縮放）
+function drawViewed(ctx, img, v){
+  ctx.save();
+  ctx.translate(SHOT_W/2 + v.x*SHOT_W, SHOT_H/2 + v.y*SHOT_H);
+  ctx.scale(v.z, v.z);
+  ctx.drawImage(img, -SHOT_W/2, -SHOT_H/2, SHOT_W, SHOT_H);
+  ctx.restore();
+}
+// 只有「人」的透明圖層（去背後）
+function personLayer(raw){
+  const key = "p" + (state.mirror && raw.mirrorable);
+  if(raw._base[key]) return raw._base[key];
+  const c = mk(SHOT_W, SHOT_H);
+  drawPerson(c.getContext("2d"), raw.img, [0,0,SHOT_W,SHOT_H], raw.mask, [0,0,SHOT_W,SHOT_H], SHOT_W, SHOT_H, state.mirror && raw.mirrorable);
+  raw._base[key] = c;
+  return c;
+}
+
+const cellCache = [];
+function cellCanvas(i){
+  const cell = cells[i], raw = cell.shot ? shotById(cell.shot) : null;
+  const bg = cellBg(i);
+  const sc = bg !== "none" ? getScene(bg, SHOT_W, SHOT_H) : null;
+  const key = JSON.stringify([bg, cell.shot, cell.view, raw ? baseKey(raw, bg) : (sc ? bg + state.blur + (SCENES[bg].ver||0) : "ph"),
+    cell.items, cell.items.map(it => personById(it.pid)?.ver), state.tone, state.frame]);
+  if(cellCache[i] && cellCache[i].key === key) return cellCache[i];
+  const c = mk(SHOT_W, SHOT_H), ctx = c.getContext("2d");
+  const empty = !raw && !cell.items.length;
+  if(raw){
+    const v = cell.view, moved = v.x || v.y || v.z !== 1;
+    if(!moved) ctx.drawImage(base(raw, bg), 0, 0);
+    else if(sc && raw.mask){
+      // 有換背景：背景不動，只移動 / 縮放去背後的「人」
+      ctx.drawImage(sc.bg, 0, 0);
+      drawViewed(ctx, personLayer(raw), v);
+    }else{
+      // 沒換背景：移動 / 縮放整張照片，空出來的地方用相框底色補
+      ctx.fillStyle = FRAMES[state.frame].ph; ctx.fillRect(0,0,SHOT_W,SHOT_H);
+      drawViewed(ctx, base(raw, "none"), v);
+    }
+  }
+  else if(sc) ctx.drawImage(sc.bg, 0, 0);
+  else { ctx.fillStyle = FRAMES[state.frame].ph; ctx.fillRect(0,0,SHOT_W,SHOT_H); }
+  drawItems(ctx, cell.items, SHOT_W, SHOT_H);
+  if(!(empty && !sc)) toneImage(ctx, TONES[state.tone]);
+  if(SCENES[bg]?.cctv) drawCCTV(ctx, SHOT_W, SHOT_H, i);    // 監視器字樣畫在色調之後，保持清楚
+  cellCache[i] = { key, canvas:c, empty };
+  return cellCache[i];
+}
+
+function toneImage(ctx, t){
+  const w = ctx.canvas.width, h = ctx.canvas.height;
+  const img = ctx.getImageData(0,0,w,h), d = img.data;
+  for(let i = 0; i < d.length; i += 4){
+    const r = d[i], g = d[i+1], b = d[i+2], y = .299*r + .587*g + .114*b;
+    const out = t.map(r,g,b,y), grain = (Math.random() - .5) * t.grain;
+    for(let k = 0; k < 3; k++){ const v = (out[k]-128)*t.contrast + 128 + t.lift + grain; d[i+k] = v < 0 ? 0 : v > 255 ? 255 : v; }
+  }
+  ctx.putImageData(img,0,0);
+  const v = ctx.createRadialGradient(w/2,h/2,h*.35,w/2,h/2,h*.85);
+  v.addColorStop(0,"rgba(0,0,0,0)"); v.addColorStop(1,`rgba(0,0,0,${t.vig})`);
+  ctx.fillStyle = v; ctx.fillRect(0,0,w,h);
+}
+
+// 底片縮圖（用 CSS 濾鏡套色調，比較省效能）
+function shotThumb(raw){
+  const t = mk(152, 114);
+  t.getContext("2d").drawImage(base(raw), 0, 0, 152, 114);
+  t.style.filter = TONES[state.tone].css;
+  return t;
+}
+function renderRoll(){
+  const box = $("thumbs");
+  box.innerHTML = roll.length ? "" : `<div class="empty">還沒有照片</div>`;
+  roll.forEach(r => box.appendChild(shotThumb(r)));
+  box.scrollLeft = box.scrollWidth;
+}
+
+// =====================================================================
+// 6. 合成整張拍貼
+// =====================================================================
+let geom = null;   // 記住每一格在相框上的位置，點擊時用
+function renderPrint(target){
+  const f = FRAMES[state.frame], isGrid = state.layout === "grid";
+  const cols = isGrid ? 2 : 1, rows = isGrid ? state.count/2 : state.count;
+  const cellW = isGrid ? 560 : 700, cellH = cellW*3/4;
+  const pad = 46, gap = 22, footer = isGrid ? 200 : 230;
+  const W = pad*2 + cols*cellW + (cols-1)*gap, H = pad + rows*cellH + (rows-1)*gap + footer;
+  const c = target || mk(W, H); c.width = W; c.height = H;
+  const ctx = c.getContext("2d");
+  ctx.fillStyle = f.bg; ctx.fillRect(0,0,W,H);
+  if(f.plate){
+    ctx.fillStyle = ctx.createPattern(plateTile, "repeat"); ctx.fillRect(0,0,W,H);
+    const g = ctx.createRadialGradient(W*.3, H*.2, 0, W*.5, H*.5, Math.max(W,H)*.8);
+    g.addColorStop(0, "rgba(255,255,255,.18)"); g.addColorStop(1, "rgba(0,0,0,.28)");
+    ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
+  }
+  const rects = [];
+  for(let i = 0; i < state.count; i++){
+    const x = pad + (i%cols)*(cellW+gap), y = pad + Math.floor(i/cols)*(cellH+gap);
+    rects.push({x, y, w:cellW, h:cellH});
+    const cc = cellCanvas(i);
+    ctx.drawImage(cc.canvas, x, y, cellW, cellH);
+    if(cc.empty) txt(ctx, String(i+1), x+cellW/2, y+cellH/2, `italic 400 ${cellH*.32}px "Cormorant Garamond", serif`, f.sub);
+    ctx.strokeStyle = "rgba(0,0,0,.18)"; ctx.lineWidth = 1; ctx.strokeRect(x+.5, y+.5, cellW-1, cellH-1);
+  }
+  const baseY = H - footer, cx = W/2;
+  ctx.fillStyle = f.sub; ctx.fillRect(cx-40, baseY+38, 80, 1);
+  ctx.textAlign = "center"; ctx.fillStyle = f.ink;
+  ctx.font = `italic 400 ${isGrid ? 50 : 54}px "Cormorant Garamond", "Noto Serif TC", serif`;
+  ctx.fillText($("caption").value || "a cup of moments", cx, baseY+98);
+  ctx.fillStyle = f.sub; ctx.font = `400 22px "Cormorant Garamond", serif`;
+  spacedText(ctx, `RCphotoBooth  ·  ${today(".")}`, cx, baseY+146, 4);
+  if(target) geom = { W, H, rects };
+  return c;
+}
+let previewQueued = false;
+function updatePreview(){
+  if(previewQueued) return;
+  previewQueued = true;
+  requestAnimationFrame(() => { previewQueued = false; renderPrint($("framePreview")); applyLive(); persistSoon(); });
+}
+
+// =====================================================================
+// 保存：重新整理後只留下「放在格子裡的照片」，其餘（多拍的底片、人物、設定）都重設
+// 用 IndexedDB 存（比 localStorage 容量大，可以直接存圖片 Blob）
+// =====================================================================
+const store = {
+  db:null,
+  open(){
+    if(this.db) return Promise.resolve(this.db);
+    return new Promise((ok, fail) => {
+      const r = indexedDB.open("RCphotoBooth", 1);
+      r.onupgradeneeded = () => r.result.createObjectStore("kv");
+      r.onsuccess = () => ok(this.db = r.result);
+      r.onerror = () => fail(r.error);
+    });
+  },
+  async run(mode, fn){
+    const db = await this.open();
+    return new Promise((ok, fail) => {
+      const tx = db.transaction("kv", mode), req = fn(tx.objectStore("kv"));
+      tx.oncomplete = () => ok(req && req.result); tx.onerror = () => fail(tx.error);
+    });
+  },
+  get(k){ return this.run("readonly", s => s.get(k)); },
+  set(k, v){ return this.run("readwrite", s => s.put(v, k)); },
+  clear(){ return this.run("readwrite", s => s.clear()); }
+};
+const toBlob = (cv, type, q) => new Promise(ok => cv.toBlob(ok, type, q));
+async function blobToCanvas(b){
+  const bmp = await createImageBitmap(b), c = mk(bmp.width, bmp.height);
+  c.getContext("2d").drawImage(bmp, 0, 0); return c;
+}
+
+let lastSig = null, persistTimer = null, restoring = true;
+function persistSoon(){
+  if(restoring) return;
+  const sig = state.layout + "|" + state.count + "|" + JSON.stringify(cells.slice(0, state.count).map(c => [c.shot, c.view]));
+  if(sig === lastSig) return;
+  lastSig = sig;
+  clearTimeout(persistTimer);
+  persistTimer = setTimeout(async () => {
+    try{
+      const list = [];
+      for(let i = 0; i < state.count; i++){
+        const r = cells[i].shot ? shotById(cells[i].shot) : null;
+        list.push(r ? { img:await toBlob(r.img, "image/jpeg", .92), mask:r.mask ? await toBlob(r.mask, "image/png") : null, mirrorable:r.mirrorable, view:cells[i].view } : null);
+      }
+      await store.set("saved", { layout:state.layout, count:state.count, cells:list });
+    }catch(e){ console.warn("保存失敗", e); }
+  }, 400);
+}
+
+// 人物庫：上傳過、修改過的人物都保存（原圖 + 去背遮罩）
+async function savePeople(){
+  try{
+    const list = [];
+    for(const p of people) list.push({ orig:await toBlob(p.orig, "image/png"), mask:await toBlob(p.mask, "image/png") });
+    await store.set("people", list);
+  }catch(e){ console.warn("人物保存失敗", e); }
+}
+async function restorePeople(){
+  try{
+    const list = await store.get("people");
+    for(const e of (list || [])){
+      const p = { id:nextId++, orig:await blobToCanvas(e.orig), mask:await blobToCanvas(e.mask), ver:1 };
+      buildCut(p); people.push(p);
+    }
+  }catch(err){ console.warn("人物讀取失敗", err); }
+}
+
+async function restoreSaved(){
+  await restorePeople();
+  try{
+    const d = await store.get("saved");
+    if(d && d.cells){
+      state.layout = d.layout; state.count = d.count;
+      for(let i = 0; i < d.cells.length; i++){
+        const e = d.cells[i]; if(!e) continue;
+        const shot = { id:nextId++, img:await blobToCanvas(e.img), mask:e.mask ? await blobToCanvas(e.mask) : null, mirrorable:e.mirrorable, _base:{} };
+        roll.push(shot); setCellShot(i, shot.id);
+        if(e.view) cells[i].view = e.view;
+      }
+      document.querySelectorAll('[data-key="layout"] .opt').forEach(b => b.classList.toggle("active", b.dataset.v === state.layout));
+      renderCountOpts(); renderRoll();
+    }
+  }catch(e){ console.warn("讀取保存資料失敗", e); }
+  restoring = false;
+  updatePreview();
+}
+
+$("clearBtn").onclick = async () => {
+  if(busy) return;
+  if(!confirm("確定要清除保存的照片並重設所有設定嗎？\n（這個動作無法復原）")) return;
+  try{ await store.clear(); }catch(e){}
+  location.reload();
+};
+function today(sep){ const d = new Date(); return [d.getFullYear(), String(d.getMonth()+1).padStart(2,"0"), String(d.getDate()).padStart(2,"0")].join(sep); }
+function spacedText(ctx, text, cx, y, sp){
+  const chars = [...text], ws = chars.map(ch => ctx.measureText(ch).width);
+  let x = cx - (ws.reduce((a,b) => a+b, 0) + sp*(chars.length-1))/2;
+  ctx.textAlign = "left"; chars.forEach((ch,i) => { ctx.fillText(ch,x,y); x += ws[i] + sp; }); ctx.textAlign = "center";
+}
+function refreshAll(){
+  roll.forEach(r => r._base = {});
+  cellCache.length = 0;
+  renderRoll(); updatePreview();
+  if($("editor").classList.contains("show")) { renderEdRoll(); drawEditor(); }
+}
+
+// 點相框預覽的某一格 → 打開那一格的編輯
+$("framePreview").addEventListener("click", e => {
+  if(busy || !geom) return;
+  const r = e.target.getBoundingClientRect();
+  const x = (e.clientX - r.left) * geom.W / r.width, y = (e.clientY - r.top) * geom.H / r.height;
+  const i = geom.rects.findIndex(q => x >= q.x && x <= q.x+q.w && y >= q.y && y <= q.y+q.h);
+  if(i >= 0) openEditor(i);
+});
+
+// =====================================================================
+// 7. 設定選項
+// =====================================================================
 function renderCountOpts(){
   const list = COUNT_CHOICES[state.layout];
   if(!list.includes(state.count)) state.count = state.layout === "grid" ? 4 : 3;
   $("countOpts").innerHTML = list.map(n => {
-    const t = state.layout === "grid" ? `${n} 格<small style="font-size:10px">2×${n/2}</small>` : `${n} 張`;
+    const t = state.layout === "grid" ? `${n} 格<small style="font-size:10px"> (2×${n/2})</small>` : `${n} 格`;
     return `<button class="opt ${n===state.count?'active':''}" data-v="${n}">${t}</button>`;
   }).join("");
 }
@@ -293,60 +978,133 @@ $("toneOpts").innerHTML = Object.entries(TONES).map(([k,t]) =>
      <span class="toneDot" style="background:linear-gradient(135deg,#d9a78a,#6b8fb3 50%,#e8d9a0);filter:${t.css}"></span>${t.name}
    </button>`).join("");
 $("frameOpts").innerHTML = Object.entries(FRAMES).map(([k,f]) =>
-  `<button class="opt ${k===state.frame?'active':''}" data-v="${k}">
-     <span class="swatch" style="background:${f.bg}"></span>${f.name}
-   </button>`).join("");
+  `<button class="opt ${k===state.frame?'active':''}" data-v="${k}"><span class="swatch" style="background:${f.plate ? `url(${plateTile.toDataURL()}) 0 0/16px 16px` : f.bg}"></span>${f.name}</button>`).join("");
 
-document.querySelectorAll(".opts").forEach(group => {
+function renderSceneOpts(){
+  const box = $("sceneOpts"); box.innerHTML = "";
+  Object.entries(SCENES).forEach(([k,s]) => {
+    const b = document.createElement("button");
+    b.className = "opt" + (k === state.bg ? " active" : ""); b.dataset.v = k;
+    if(k === "none") b.innerHTML = `<span class="none">Original</span>${s.name}`;
+    else if(s.custom) b.innerHTML = `<img class="thumb" src="${s.img.src}">${s.name}`;
+    else if(k === "upload") b.innerHTML = s.img ? `<img class="thumb" src="${s.img.src}">${s.name}` : `<span class="none">＋ 上傳</span>${s.name}`;
+    else if(k === "studio") b.innerHTML = `<span class="none" style="background:radial-gradient(circle at 50% 40%,#d6d2cb,#55524d);border:none"></span>${s.name}`;
+    else if(s.failed){ b.innerHTML = `<span class="none">載入失敗</span>${s.name}`; b.disabled = true; }
+    else b.innerHTML = `<img class="thumb" src="${s.thumb}" loading="lazy" alt="">${s.name}`;
+    box.appendChild(b);
+  });
+}
+
+document.querySelectorAll(".opts[data-key]").forEach(group => {
   group.addEventListener("click", e => {
     const b = e.target.closest(".opt");
     if(!b || busy) return;
     const key = group.dataset.key, v = b.dataset.v;
-    if(key === "count" || key === "timer") state[key] = Number(v);
+    if(key === "bg" && v === "upload" && (!SCENES.upload.img || state.bg === "upload")){ $("bgFile").click(); return; }
+    if(["count","timer","blur"].includes(key)) state[key] = Number(v);
     else if(key === "mirror") state.mirror = v === "1";
     else state[key] = v;
     group.querySelectorAll(".opt").forEach(x => x.classList.toggle("active", x === b));
-    if(key === "layout"){ renderCountOpts(); trimShots(); }
-    if(key === "count") trimShots();
-    applyLive();
+    if(key === "layout") renderCountOpts();
+    if(key === "bg"){ if(v !== "none") loadSegmenter(); showCredit(); }
+    if(["tone","mirror","bg","blur"].includes(key)) renderRoll();
     updatePreview();
   });
 });
-$("caption").addEventListener("input", updatePreview);
+$("caption").addEventListener("input", () => { updatePreview(); updateSummaries(); });
 
+$("bgFile").addEventListener("change", async e => {
+  const file = e.target.files[0]; e.target.value = "";
+  if(!file) return;
+  const img = await loadImg(file);
+  const s = SCENES.upload; s.img = img; s.ver = (s.ver || 0) + 1;
+  state.bg = "upload"; loadSegmenter();
+  renderSceneOpts(); showCredit(); refreshAll();
+});
+function showCredit(){
+  const s = SCENES[state.bg];
+  $("credit").textContent = s.credit ? `背景照片：${s.credit} / Unsplash`
+    : state.bg === "upload" ? "使用你上傳的背景（再點一次「我的照片」可以換一張）" : "";
+}
 function setMirror(on){
   state.mirror = on;
   $("mirrorOpts").querySelectorAll(".opt").forEach(x => x.classList.toggle("active", (x.dataset.v === "1") === on));
 }
-
-// 張數改少了 → 多的照片丟掉；改多了 → 保留已拍的，其餘顯示空格
-function trimShots(){
-  if(rawShots.length > state.count) rawShots = rawShots.slice(0, state.count);
-  redrawThumbs();
-}
-
-// 即時預覽：用 CSS 濾鏡 + 鏡像
 function applyLive(){
-  video.style.filter = TONES[state.tone].css;
-  video.classList.toggle("mirror", state.mirror);
-  $("tag").textContent = (state.mirror ? "鏡像" : "原始") + " ・ " + TONES[state.tone].name;
-  $("previewBtn").classList.toggle("hide", rawShots.length !== state.count);
+  live.style.filter = TONES[state.tone].css;
+  const ci = previewCell();
+  const extra = ci < state.count && cells[ci].items.length ? ` ・ 預覽第 ${ci+1} 格人物` : "";
+  const pbg = ci < state.count ? cellBg(ci) : state.bg;
+  $("tag").textContent = [state.mirror ? "鏡像" : "原始", TONES[state.tone].name, SCENES[pbg].name].join(" ・ ") + extra;
+  const has = cells.slice(0, state.count).some(c => c.shot || c.items.length);
+  $("previewBtn").classList.toggle("hide", !has);
+  updateSummaries();
 }
 
-// ================= 3. 相機 =================
+// =====================================================================
+// 手風琴選單
+// =====================================================================
+function initAccordion(){
+  document.querySelectorAll(".panel .group").forEach((g, i) => {
+    const label = g.querySelector(".label");
+    const body = document.createElement("div"); body.className = "body";
+    [...g.children].forEach(ch => { if(ch !== label) body.appendChild(ch); });
+    g.appendChild(body);
+    const cur = document.createElement("span"); cur.className = "cur"; label.appendChild(cur);
+    label.setAttribute("role", "button"); label.tabIndex = 0;
+    label.addEventListener("click", () => toggleGroup(g));
+    label.addEventListener("keydown", e => { if(e.key === "Enter" || e.key === " "){ e.preventDefault(); toggleGroup(g); } });
+  });
+  updateSummaries();
+}
+
+// 打開這一欄、關掉其他欄。內容是浮在上方的下拉框，不佔版面，所以畫面完全不會移動或捲動
+function toggleGroup(g){
+  const willOpen = !g.classList.contains("open");
+  closeGroups();
+  if(willOpen) g.classList.add("open");
+}
+function closeGroups(){ document.querySelectorAll(".panel .group.open").forEach(x => x.classList.remove("open")); }
+// 點選單以外的地方、或按 Esc，就收起來
+document.addEventListener("pointerdown", e => { if(!e.target.closest(".panel .group")) closeGroups(); });
+document.addEventListener("keydown", e => { if(e.key === "Escape") closeGroups(); });
+
+// 收起來的欄位，標題右邊顯示目前選了什麼
+function updateSummaries(){
+  document.querySelectorAll(".panel .group").forEach(g => {
+    const cur = g.querySelector(".label .cur"); if(!cur) return;
+    const input = g.querySelector("input[type=text]");
+    const act = g.querySelector(".opt.active");
+    let t = "";
+    if(input) t = input.value;
+    else if(act){
+      const c = act.cloneNode(true);
+      c.querySelectorAll(".none,.thumb,.toneDot,.swatch").forEach(x => x.remove());
+      t = c.textContent.replace(/\s+/g, " ").trim();
+    }
+    cur.textContent = t;
+  });
+}
+
+// 讀檔成圖片
+function loadImg(file){
+  return new Promise((ok, fail) => { const img = new Image(); img.onload = () => ok(img); img.onerror = fail; img.src = URL.createObjectURL(file); });
+}
+
+// =====================================================================
+// 8. 相機 & 拍照
+// =====================================================================
 async function startCamera(){
   if(stream) stream.getTracks().forEach(t => t.stop());
   try{
-    stream = await navigator.mediaDevices.getUserMedia({
-      video:{ facingMode:facing, width:{ideal:1280}, height:{ideal:960} }, audio:false
-    });
+    stream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:facing, width:{ideal:1280}, height:{ideal:960} }, audio:false });
     video.srcObject = stream;
     $("hint").classList.add("hidden");
-    $("shootBtn").disabled = false;
-    $("camBtn").classList.add("hide");
-    $("flipBtn").classList.remove("hide");
-    setMirror(facing === "user");   // 前鏡頭預設鏡像、後鏡頭預設原始，之後可自己改
-    applyLive(); updatePreview();
+    ["shootBtn","extraBtn"].forEach(id => $(id).disabled = false);
+    $("camBtn").classList.add("hide"); $("flipBtn").classList.remove("hide");
+    maskCanvas.width = 0;
+    setMirror(facing === "user");
+    applyLive(); updatePreview(); loadSegmenter();
   }catch(err){
     let msg = "無法開啟相機：" + err.message;
     if(!window.isSecureContext) msg += "\n\n手機必須用 https 網址開啟（例如放到 GitHub Pages）。";
@@ -356,190 +1114,510 @@ async function startCamera(){
 $("camBtn").onclick = startCamera;
 $("flipBtn").onclick = () => { if(busy) return; facing = facing === "user" ? "environment" : "user"; startCamera(); };
 
-// ================= 4. 拍照流程 =================
 const sleep = ms => new Promise(r => setTimeout(r, ms));
+let shootLabel = "開始拍貼";
+function lockUI(on){
+  busy = on;
+  ["flipBtn","extraBtn"].forEach(id => $(id).disabled = on || !video.videoWidth);
+  $("shootBtn").disabled = !video.videoWidth;
+  $("shootBtn").textContent = on ? "⏸ 暫停" : shootLabel;
+  document.querySelector(".stage").classList.toggle("counting", on);
+  if(!on){ paused = false; stopReq = false; $("pauseBox").classList.remove("show"); }
+}
 
-$("shootBtn").onclick = async () => {
-  if(busy || !video.videoWidth) return;
-  busy = true;
-  rawShots = [];
-  redrawThumbs(); updatePreview(); applyLive();
-  ["shootBtn","flipBtn"].forEach(id => $(id).disabled = true);
-  const badge = $("badge");
-  badge.style.display = "block";
+// ===== 暫停 / 繼續 / 結束 =====
+let paused = false, stopReq = false;
+const STOP = Symbol("stop");
+function setPaused(p){
+  if(!busy) return;
+  paused = p;
+  $("pauseBox").classList.toggle("show", p);
+  $("shootBtn").textContent = p ? "▶ 繼續" : "⏸ 暫停";
+  if(p) $("count").textContent = "";
+}
+$("resumeBtn").onclick = e => { e.stopPropagation(); setPaused(false); };
+$("stopBtn").onclick = e => { e.stopPropagation(); stopReq = true; setPaused(false); };
+// 拍攝中點相機畫面也能暫停 / 繼續
+document.querySelector(".stage").addEventListener("click", () => { if(busy) setPaused(!paused); });
+// 鍵盤空白鍵暫停（打字時不觸發）
+document.addEventListener("keydown", e => {
+  if(e.code === "Space" && busy && !/INPUT|TEXTAREA/.test(document.activeElement.tagName)){ e.preventDefault(); setPaused(!paused); }
+});
 
-  for(let i = 0; i < state.count; i++){
-    badge.textContent = `${i+1} / ${state.count}`;
-    for(let s = state.timer; s > 0; s--){ $("count").textContent = s; await sleep(1000); }
-    $("count").textContent = "";
-    rawShots.push(captureRaw());
-    flash();
-    redrawThumbs(); updatePreview();
-    await sleep(650);
+// 倒數：每 0.1 秒檢查一次，暫停時時間不會減少
+async function countdown(){
+  let remain = state.timer * 1000;
+  while(remain > 0){
+    if(stopReq) throw STOP;
+    if(!paused) $("count").textContent = Math.ceil(remain / 1000);
+    await sleep(100);
+    if(!paused) remain -= 100;
   }
-
-  badge.style.display = "none";
-  busy = false;
-  ["shootBtn","flipBtn"].forEach(id => $(id).disabled = false);
-  $("shootBtn").textContent = "重新拍貼";
-  applyLive();
-  openModal();
-};
-
+  if(stopReq) throw STOP;
+}
 function flash(){
-  const f = $("flash");
-  f.classList.remove("on"); void f.offsetWidth; f.classList.add("on");
+  const f = $("flash"); f.classList.remove("on"); void f.offsetWidth; f.classList.add("on");
   if(navigator.vibrate) navigator.vibrate(30);
 }
 
-// 抓一格原始畫面，置中裁成 4:3
+// 拍一張：存原始照片 + 人像遮罩，放進底片
 function captureRaw(){
-  const c = document.createElement("canvas");
-  c.width = SHOT_W; c.height = SHOT_H;
-  const vw = video.videoWidth, vh = video.videoHeight, ratio = SHOT_W / SHOT_H;
-  let sw = vw, sh = vw / ratio;
-  if(sh > vh){ sh = vh; sw = vh * ratio; }
-  c.getContext("2d").drawImage(video, (vw-sw)/2, (vh-sh)/2, sw, sh, 0, 0, SHOT_W, SHOT_H);
-  c._cache = {};
-  return c;
-}
-
-// 依目前色調 + 鏡像設定，把原始照片處理好（有快取，不會一直重算）
-function processed(raw){
-  const key = state.tone + (state.mirror ? "M" : "N");
-  if(raw._cache[key]) return raw._cache[key];
-  const c = document.createElement("canvas");
-  c.width = SHOT_W; c.height = SHOT_H;
-  const ctx = c.getContext("2d");
-  if(state.mirror){ ctx.translate(SHOT_W, 0); ctx.scale(-1, 1); }
-  ctx.drawImage(raw, 0, 0);
-  ctx.setTransform(1,0,0,1,0,0);
-  toneImage(ctx, TONES[state.tone]);
-  raw._cache[key] = c;
-  return c;
-}
-
-// 逐像素調色
-function toneImage(ctx, t){
-  const w = ctx.canvas.width, h = ctx.canvas.height;
-  const img = ctx.getImageData(0, 0, w, h), d = img.data;
-  for(let i = 0; i < d.length; i += 4){
-    const r = d[i], g = d[i+1], b = d[i+2];
-    const y = 0.299*r + 0.587*g + 0.114*b;          // 亮度公式
-    const out = t.map(r, g, b, y);
-    const grain = (Math.random() - 0.5) * t.grain;  // 底片顆粒
-    for(let k = 0; k < 3; k++){
-      const v = (out[k] - 128) * t.contrast + 128 + t.lift + grain;
-      d[i+k] = v < 0 ? 0 : v > 255 ? 255 : v;
-    }
+  const cr = cropRect();
+  const img = mk(SHOT_W, SHOT_H);
+  img.getContext("2d").drawImage(video, ...cr, 0, 0, SHOT_W, SHOT_H);
+  let mask = null;
+  segmentNow();
+  if(maskCanvas.width){
+    const mx = maskCanvas.width / video.videoWidth, my = maskCanvas.height / video.videoHeight;
+    mask = mk(SHOT_W, SHOT_H);
+    mask.getContext("2d").drawImage(maskCanvas, cr[0]*mx, cr[1]*my, cr[2]*mx, cr[3]*my, 0, 0, SHOT_W, SHOT_H);
   }
-  ctx.putImageData(img, 0, 0);
-  const v = ctx.createRadialGradient(w/2, h/2, h*.35, w/2, h/2, h*.85);  // 暗角
-  v.addColorStop(0, "rgba(0,0,0,0)");
-  v.addColorStop(1, `rgba(0,0,0,${t.vig})`);
-  ctx.fillStyle = v; ctx.fillRect(0, 0, w, h);
+  const shot = { id:nextId++, img, mask, mirrorable:true, _base:{} };
+  roll.push(shot);
+  return shot;
+}
+async function shootOne(label){
+  const badge = $("badge"); badge.textContent = label; badge.style.display = "block";
+  $("pauseInfo").textContent = `倒數已暫停 ・ ${label}`;
+  try{ await countdown(); }
+  finally{ $("count").textContent = ""; badge.style.display = "none"; }
+  const shot = captureRaw();
+  flash(); renderRoll();
+  badge.style.display = "none";
+  return shot;
 }
 
-function redrawThumbs(){
-  $("thumbs").innerHTML = "";
-  rawShots.forEach(raw => {
-    const t = document.createElement("canvas");
-    t.width = 152; t.height = 114;
-    t.getContext("2d").drawImage(processed(raw), 0, 0, 152, 114);
-    $("thumbs").appendChild(t);
+// 開始拍貼：依序拍每一格
+$("shootBtn").onclick = async () => {
+  if(busy){ setPaused(!paused); return; }          // 拍攝中這顆按鈕就是暫停鍵
+  if(!video.videoWidth) return;
+  lockUI(true);
+  let done = false;
+  try{
+    for(let i = 0; i < state.count; i++){
+      liveTarget = i; applyLive();
+      const shot = await shootOne(`第 ${i+1} 格 / 共 ${state.count} 格`);
+      setCellShot(i, shot.id); updatePreview();
+      await sleep(600);
+    }
+    done = true;
+  }catch(e){ if(e !== STOP) throw e; }               // 按了「結束拍攝」：已拍的格子保留
+  liveTarget = null; shootLabel = "重新拍貼"; lockUI(false);
+  applyLive(); updatePreview();
+  if(done) openModal();
+};
+// 多拍一張：只放進底片，之後再挑
+$("extraBtn").onclick = async () => {
+  if(busy || !video.videoWidth) return;
+  lockUI(true);
+  try{ await shootOne("多拍一張"); }catch(e){ if(e !== STOP) throw e; }
+  lockUI(false);
+};
+
+// =====================================================================
+// 9. 格子編輯：換照片 / 重拍 / 上傳 / 放人物
+// =====================================================================
+let editing = 0, selItem = -1;
+const ed = $("edCanvas");
+
+function openEditor(i){
+  editing = i; lastEdited = i; selItem = -1;
+  $("edTitle").textContent = `第 ${i+1} 格`;
+  $("edShoot").disabled = !video.videoWidth;
+  $("edShoot").title = video.videoWidth ? "" : "請先開啟相機";
+  renderEdRoll(); renderEdBg(); renderEdPeople(); drawEditor();
+  $("editor").classList.add("show"); document.body.style.overflow = "hidden";
+}
+function closeEditor(){ $("editor").classList.remove("show"); document.body.style.overflow = ""; applyLive(); }
+$("edDone").onclick = closeEditor;
+
+function changed(){ updatePreview(); drawEditorSoon(); }
+let edQueued = false;
+function drawEditorSoon(){ if(edQueued) return; edQueued = true; requestAnimationFrame(() => { edQueued = false; drawEditor(); }); }
+
+function drawEditor(){
+  const c = ed.getContext("2d");
+  c.drawImage(cellCanvas(editing).canvas, 0, 0);
+  const it = cells[editing].items[selItem];
+  $("itemCtl").classList.toggle("hide", !it);
+  $("photoCtl").classList.toggle("hide", !cells[editing].shot);
+  $("photoZoom").value = Math.round(cells[editing].view.z * 100);
+  if(it){
+    const b = itemBox(it);
+    c.setLineDash([10,8]); c.lineWidth = 3; c.strokeStyle = "#ece6dc";
+    c.strokeRect(b.x*SHOT_W, b.y*SHOT_H, b.w*SHOT_W, b.h*SHOT_H); c.setLineDash([]);
+    $("itemSize").value = Math.round(it.s * 100);
+  }
+  [...$("edPeople").children].forEach(t => t.classList.toggle("sel", !!it && t.dataset.pid == it.pid));
+}
+
+function renderEdRoll(){
+  const box = $("edRoll"); box.innerHTML = "";
+  const none = document.createElement("div");
+  none.className = "tile" + (cells[editing].shot ? "" : " sel"); none.textContent = "不放照片";
+  none.onclick = () => { setCellShot(editing, null); renderEdRoll(); changed(); };
+  box.appendChild(none);
+  roll.slice().reverse().forEach(r => {
+    const t = document.createElement("div");
+    t.className = "tile" + (cells[editing].shot === r.id ? " sel" : "");
+    t.appendChild(shotThumb(r));
+    t.onclick = () => { setCellShot(editing, r.id); renderEdRoll(); changed(); };
+    box.appendChild(t);
   });
 }
 
-// ================= 5. 合成拍貼（預覽和成品共用） =================
-function renderPrint(target){
-  const f = FRAMES[state.frame];
-  const isGrid = state.layout === "grid";
-  const cols = isGrid ? 2 : 1;
-  const rows = isGrid ? state.count / 2 : state.count;
-  const cellW = isGrid ? 560 : 700, cellH = cellW * 3 / 4;
-  const pad = 46, gap = 22, footer = isGrid ? 200 : 230;
-  const W = pad*2 + cols*cellW + (cols-1)*gap;
-  const H = pad + rows*cellH + (rows-1)*gap + footer;
+// 這一格的背景：跟隨全部 / 任一場景 / 上傳一張只給這格用
+function sceneTileInner(k, s){
+  if(k === "none") return `<span style="font-family:var(--serif);font-style:italic">Original</span>`;
+  if(k === "studio") return `<div style="width:100%;height:100%;background:radial-gradient(circle at 50% 40%,#d6d2cb,#55524d)"></div>`;
+  if(s.img) return `<img src="${s.img.src}" alt="">`;
+  if(s.thumb) return `<img src="${s.thumb}" alt="" loading="lazy">`;
+  return "";
+}
+function renderEdBg(){
+  const box = $("edBg"); box.innerHTML = "";
+  const cur = cells[editing].bg;
+  const follow = document.createElement("div");
+  follow.className = "tile" + (cur === null ? " sel" : "");
+  follow.innerHTML = `跟隨全部<br><small>${SCENES[state.bg].name}</small>`;
+  follow.onclick = () => setCellBg(null);
+  box.appendChild(follow);
+  Object.entries(SCENES).forEach(([k, s]) => {
+    if(s.failed || (k === "upload" && !s.img)) return;
+    const t = document.createElement("div");
+    t.className = "tile" + (cur === k ? " sel" : "");
+    t.innerHTML = sceneTileInner(k, s) + `<span class="lbl">${s.name}</span>`;
+    t.onclick = () => setCellBg(k);
+    box.appendChild(t);
+  });
+  const add = document.createElement("div");
+  add.className = "tile add"; add.innerHTML = "＋ 上傳背景<br><small>只給這格</small>";
+  add.onclick = () => $("cellBgFile").click();
+  box.appendChild(add);
+}
+function setCellBg(k){
+  cells[editing].bg = k;
+  if(k && k !== "none") loadSegmenter();
+  renderEdBg(); changed();
+}
+let myBgCount = 0;
+$("cellBgFile").addEventListener("change", async e => {
+  const file = e.target.files[0]; e.target.value = "";
+  if(!file) return;
+  const img = await loadImg(file);
+  const key = "my" + (++myBgCount);
+  SCENES[key] = { name:`我的背景${myBgCount}`, img, custom:true };
+  renderSceneOpts();
+  setCellBg(key);
+});
 
-  const c = target || document.createElement("canvas");
-  c.width = W; c.height = H;
-  const ctx = c.getContext("2d");
-  ctx.fillStyle = f.bg; ctx.fillRect(0, 0, W, H);
+function renderEdPeople(){
+  const box = $("edPeople"); box.innerHTML = "";
+  const add = document.createElement("div");
+  add.className = "tile add"; add.innerHTML = "＋ 上傳人物<br><small>自動去背</small>";
+  add.onclick = () => $("personFile").click();
+  box.appendChild(add);
+  people.forEach(p => {
+    const t = document.createElement("div");
+    t.className = "tile person"; t.dataset.pid = p.id;
+    t.appendChild(p.thumb);
+    t.onclick = () => addItem(p.id);
+    const x = document.createElement("button");
+    x.className = "tileX"; x.textContent = "×"; x.title = "從人物庫刪除";
+    x.onclick = ev => {
+      ev.stopPropagation();
+      if(!confirm("要把這個人物從人物庫刪除嗎？（已放進格子的也會一起移除）")) return;
+      people = people.filter(q => q.id !== p.id);
+      cells.forEach(c => c.items = c.items.filter(it => it.pid !== p.id));
+      selItem = -1; renderEdPeople(); changed(); savePeople();
+    };
+    t.appendChild(x);
+    box.appendChild(t);
+  });
+}
+function addItem(pid){
+  const items = cells[editing].items;
+  const n = items.length;
+  items.push({ pid, x:[.5,.27,.73][n%3], y:.6, s:.8, f:false });
+  selItem = items.length - 1;
+  changed();
+}
 
-  for(let i = 0; i < state.count; i++){
-    const x = pad + (i % cols) * (cellW + gap);
-    const y = pad + Math.floor(i / cols) * (cellH + gap);
-    if(rawShots[i]){
-      ctx.drawImage(processed(rawShots[i]), x, y, cellW, cellH);
-    }else{                                    // 還沒拍的格子：顯示編號
-      ctx.fillStyle = f.ph; ctx.fillRect(x, y, cellW, cellH);
-      ctx.fillStyle = f.sub; ctx.textAlign = "center";
-      ctx.font = `italic 400 ${cellH*.32}px "Cormorant Garamond", serif`;
-      ctx.fillText(String(i+1), x + cellW/2, y + cellH*.62);
+// 拍這一格
+$("edShoot").onclick = async () => {
+  if(busy || !video.videoWidth) return;
+  const i = editing;
+  closeEditor();
+  document.querySelector(".stage").scrollIntoView({ behavior:"smooth", block:"center" });
+  lockUI(true); liveTarget = i; applyLive();
+  try{ const shot = await shootOne(`重拍第 ${i+1} 格`); setCellShot(i, shot.id); }
+  catch(e){ if(e !== STOP) throw e; }
+  liveTarget = null; lockUI(false); updatePreview();
+  await sleep(500); openEditor(i);
+};
+// 上傳照片到這一格（也會放進底片）
+$("edUpload").onclick = () => $("cellFile").click();
+$("cellFile").addEventListener("change", async e => {
+  const file = e.target.files[0]; e.target.value = "";
+  if(!file) return;
+  const img = await loadImg(file);
+  const cv = mk(SHOT_W, SHOT_H);
+  drawCover(cv.getContext("2d"), img, SHOT_W, SHOT_H);
+  const mask = await segmentPicture(cv);
+  const shot = { id:nextId++, img:cv, mask, mirrorable:false, _base:{} };
+  roll.push(shot); setCellShot(editing, shot.id);
+  renderRoll(); renderEdRoll(); changed();
+});
+
+// ---- 在格子上拖曳 / 縮放人物 ----
+const pointers = new Map();
+let drag = null;
+function normPt(e){ const r = ed.getBoundingClientRect(); return { x:(e.clientX - r.left)/r.width, y:(e.clientY - r.top)/r.height }; }
+ed.addEventListener("pointerdown", e => {
+  ed.setPointerCapture(e.pointerId);
+  pointers.set(e.pointerId, normPt(e));
+  const items = cells[editing].items;
+  if(pointers.size === 1){
+    const p = normPt(e);
+    selItem = -1;
+    for(let k = items.length - 1; k >= 0; k--){
+      const b = itemBox(items[k]);
+      if(b && p.x >= b.x && p.x <= b.x+b.w && p.y >= b.y && p.y <= b.y+b.h){ selItem = k; break; }
     }
-    ctx.strokeStyle = "rgba(0,0,0,.18)"; ctx.lineWidth = 1;
-    ctx.strokeRect(x + .5, y + .5, cellW - 1, cellH - 1);
+    const it = items[selItem], v = cells[editing].view;
+    if(it) drag = { dx:p.x - it.x, dy:p.y - it.y };
+    else if(cells[editing].shot) drag = { photo:true, dx:p.x - v.x, dy:p.y - v.y };   // 沒點到人物 → 移動照片
+    else drag = null;
+    drawEditor();
+  }else if(pointers.size === 2){
+    const [a, b] = [...pointers.values()], d = Math.hypot(a.x-b.x, a.y-b.y);
+    if(items[selItem]) drag = { pinch:d, s0:items[selItem].s };
+    else if(cells[editing].shot) drag = { pinch:d, photo:true, z0:cells[editing].view.z };
   }
+});
+ed.addEventListener("pointermove", e => {
+  if(!pointers.has(e.pointerId)) return;
+  pointers.set(e.pointerId, normPt(e));
+  if(drag && drag.photo){
+    const v = cells[editing].view;
+    if(drag.pinch && pointers.size === 2){
+      const [a, b] = [...pointers.values()];
+      v.z = clampZ(drag.z0 * Math.hypot(a.x-b.x, a.y-b.y) / drag.pinch);
+    }else if(!drag.pinch){
+      const p = normPt(e); v.x = p.x - drag.dx; v.y = p.y - drag.dy;
+    }
+    changed(); return;
+  }
+  const it = cells[editing].items[selItem];
+  if(!it || !drag) return;
+  if(drag.pinch && pointers.size === 2){
+    const [a, b] = [...pointers.values()];
+    it.s = Math.min(2.5, Math.max(.1, drag.s0 * Math.hypot(a.x-b.x, a.y-b.y) / drag.pinch));
+  }else if(!drag.pinch){
+    const p = normPt(e);
+    it.x = p.x - drag.dx; it.y = p.y - drag.dy;
+  }
+  changed();
+});
+const up = e => { pointers.delete(e.pointerId); if(!pointers.size) drag = null; };
+ed.addEventListener("pointerup", up); ed.addEventListener("pointercancel", up);
+ed.addEventListener("wheel", e => {
+  const it = cells[editing].items[selItem];
+  if(it){ e.preventDefault(); it.s = Math.min(2.5, Math.max(.1, it.s * (1 - e.deltaY * .001))); changed(); }
+  else if(cells[editing].shot){ e.preventDefault(); const v = cells[editing].view; v.z = clampZ(v.z * (1 - e.deltaY * .001)); changed(); }
+}, { passive:false });
+const clampZ = z => Math.min(3, Math.max(.5, z));
+$("photoZoom").oninput = e => { cells[editing].view.z = e.target.value / 100; changed(); };
+$("photoReset").onclick = () => { cells[editing].view = {x:0, y:0, z:1}; changed(); };
 
-  const baseY = H - footer, cx = W / 2;
-  ctx.textAlign = "center";
-  ctx.fillStyle = f.sub; ctx.fillRect(cx - 40, baseY + 38, 80, 1);
-  ctx.fillStyle = f.ink;
-  ctx.font = `italic 400 ${isGrid ? 50 : 54}px "Cormorant Garamond", "Noto Serif TC", serif`;
-  ctx.fillText($("caption").value || "a cup of moments", cx, baseY + 98);
-  ctx.fillStyle = f.sub;
-  ctx.font = `400 22px "Cormorant Garamond", serif`;
-  spacedText(ctx, `RCphotoBooth  ·  ${today(".")}`, cx, baseY + 146, 4);
-  return c;
+$("itemSize").oninput = e => { const it = cells[editing].items[selItem]; if(it){ it.s = e.target.value / 100; changed(); } };
+$("itemFlip").onclick = () => { const it = cells[editing].items[selItem]; if(it){ it.f = !it.f; changed(); } };
+$("itemDel").onclick = () => { cells[editing].items.splice(selItem, 1); selItem = -1; changed(); };
+$("itemCut").onclick = () => { const it = cells[editing].items[selItem]; if(it) openCutout(personById(it.pid), false); };
+
+// =====================================================================
+// 10. 人物去背：AI 自動 + 手動擦掉 / 補回
+// =====================================================================
+let cut = null;   // { person, orig, mask, isNew }
+const cc = $("cutCanvas");
+
+$("personFile").addEventListener("change", async e => {
+  const file = e.target.files[0]; e.target.value = "";
+  if(!file) return;
+  const img = await loadImg(file);
+  const sc = Math.min(1, 1200 / Math.max(img.width, img.height));      // 太大的圖先縮小
+  const orig = mk(Math.round(img.width*sc), Math.round(img.height*sc));
+  orig.getContext("2d").drawImage(img, 0, 0, orig.width, orig.height);
+  openCutout({ id:nextId++, orig, mask:null, ver:0 }, true);
+  $("cutStatus").textContent = "AI 自動去背中…";
+  const m = await segmentPicture(orig);
+  if(cut && cut.person.orig === orig){
+    if(m){ saveStep(); cut.mask.getContext("2d").drawImage(m, 0, 0); }
+    $("cutStatus").textContent = m
+      ? "✓ 已自動去背。用「擦掉」去掉多的背景、「補回」救回被誤刪的地方（淡淡顯示的是被擦掉的部分）。"
+      : "AI 模型無法使用，請用「擦掉」手動把背景塗掉。";
+    drawCut();
+  }
+});
+
+function openCutout(person, isNew){
+  const mask = mk(person.orig.width, person.orig.height), m = mask.getContext("2d");
+  if(person.mask) m.drawImage(person.mask, 0, 0);
+  else { m.fillStyle = "#fff"; m.fillRect(0, 0, mask.width, mask.height); }
+  cut = { person, mask, isNew, mode:"erase", undo:[], redo:[] };
+  updateUndoBtns();
+  cc.width = person.orig.width; cc.height = person.orig.height;
+  setMode("erase");
+  $("cutStatus").textContent = "在圖上塗抹：「擦掉」去掉多的背景，「補回」救回被誤刪的地方。";
+  drawCut();
+  $("cutout").classList.add("show"); document.body.style.overflow = "hidden";
+}
+function closeCutout(){ $("cutout").classList.remove("show"); if(!$("editor").classList.contains("show")) document.body.style.overflow = ""; cut = null; }
+
+const cutTmp = document.createElement("canvas");
+function drawCut(){
+  if(!cut) return;
+  const c = cc.getContext("2d"), o = cut.person.orig;
+  c.clearRect(0, 0, cc.width, cc.height);
+  c.globalAlpha = .22; c.drawImage(o, 0, 0); c.globalAlpha = 1;           // 被擦掉的部分淡淡顯示
+  cutTmp.width = o.width; cutTmp.height = o.height;
+  const t = cutTmp.getContext("2d");
+  t.globalCompositeOperation = "source-over"; t.clearRect(0,0,o.width,o.height); t.drawImage(o, 0, 0);
+  t.globalCompositeOperation = "destination-in"; t.drawImage(cut.mask, 0, 0);
+  t.globalCompositeOperation = "source-over";
+  c.drawImage(cutTmp, 0, 0);
 }
 
-function updatePreview(){ renderPrint($("framePreview")); }
+function setMode(m){
+  if(cut) cut.mode = m;
+  $("modeErase").classList.toggle("on", m === "erase");
+  $("modeKeep").classList.toggle("on", m === "keep");
+}
+$("modeErase").onclick = () => setMode("erase");
+$("modeKeep").onclick = () => setMode("keep");
 
-function today(sep){
-  const d = new Date();
-  return [d.getFullYear(), String(d.getMonth()+1).padStart(2,"0"), String(d.getDate()).padStart(2,"0")].join(sep);
+let brushLast = null;
+function cutPt(e){ const r = cc.getBoundingClientRect(); return { x:(e.clientX - r.left) * cc.width / r.width, y:(e.clientY - r.top) * cc.height / r.height, k:cc.width / r.width }; }
+function paint(p){
+  const m = cut.mask.getContext("2d");
+  m.globalCompositeOperation = cut.mode === "erase" ? "destination-out" : "source-over";
+  m.strokeStyle = m.fillStyle = "#fff";
+  m.lineCap = m.lineJoin = "round";
+  m.lineWidth = $("brush").value * p.k;
+  m.beginPath();
+  if(brushLast){ m.moveTo(brushLast.x, brushLast.y); m.lineTo(p.x, p.y); m.stroke(); }
+  else { m.arc(p.x, p.y, m.lineWidth/2, 0, 7); m.fill(); }
+  m.globalCompositeOperation = "source-over";
+  brushLast = p;
+  drawCut();
+}
+cc.addEventListener("pointerdown", e => { if(!cut) return; cc.setPointerCapture(e.pointerId); saveStep(); brushLast = null; paint(cutPt(e)); });
+cc.addEventListener("pointermove", e => { if(cut && brushLast) paint(cutPt(e)); });
+["pointerup","pointercancel"].forEach(ev => cc.addEventListener(ev, () => brushLast = null));
+
+$("cutAuto").onclick = async () => {
+  if(!cut) return;
+  $("cutStatus").textContent = "AI 自動去背中…";
+  const m = await segmentPicture(cut.person.orig);
+  if(!cut) return;
+  if(m){ saveStep(); const c = cut.mask.getContext("2d"); c.clearRect(0,0,cut.mask.width,cut.mask.height); c.drawImage(m,0,0); }
+  $("cutStatus").textContent = m ? "✓ 已重新自動去背。" : "AI 模型無法使用，請手動擦掉背景。";
+  drawCut();
+};
+$("cutAll").onclick = () => { if(!cut) return; saveStep(); const c = cut.mask.getContext("2d"); c.fillStyle = "#fff"; c.fillRect(0,0,cut.mask.width,cut.mask.height); drawCut(); };
+$("cutCancel").onclick = closeCutout;
+
+// ===== 上一步 / 下一步 =====
+// 每次動筆前，把當下的遮罩拍一張「快照」存進 undo 堆疊；上一步就是拿回最近一張快照
+const MAX_STEPS = 20;
+function copyMask(src){ const c = mk(src.width, src.height); c.getContext("2d").drawImage(src, 0, 0); return c; }
+function putMask(src){ const m = cut.mask.getContext("2d"); m.clearRect(0, 0, cut.mask.width, cut.mask.height); m.drawImage(src, 0, 0); drawCut(); }
+function saveStep(){
+  cut.undo.push(copyMask(cut.mask));
+  if(cut.undo.length > MAX_STEPS) cut.undo.shift();     // 太舊的步驟丟掉，避免吃光記憶體
+  cut.redo = [];                                        // 做了新動作，「下一步」就作廢
+  updateUndoBtns();
+}
+function undoCut(){
+  if(!cut || !cut.undo.length) return;
+  cut.redo.push(copyMask(cut.mask)); putMask(cut.undo.pop()); updateUndoBtns();
+}
+function redoCut(){
+  if(!cut || !cut.redo.length) return;
+  cut.undo.push(copyMask(cut.mask)); putMask(cut.redo.pop()); updateUndoBtns();
+}
+function updateUndoBtns(){
+  $("cutUndo").disabled = !cut || !cut.undo.length;
+  $("cutRedo").disabled = !cut || !cut.redo.length;
+}
+$("cutUndo").onclick = undoCut;
+$("cutRedo").onclick = redoCut;
+document.addEventListener("keydown", e => {
+  if(!cut || !(e.ctrlKey || e.metaKey)) return;
+  const k = e.key.toLowerCase();
+  if(k === "z" && !e.shiftKey){ e.preventDefault(); undoCut(); }
+  else if(k === "y" || (k === "z" && e.shiftKey)){ e.preventDefault(); redoCut(); }
+});
+$("cutOk").onclick = () => {
+  if(!cut) return;
+  const p = cut.person;
+  p.mask = cut.mask; p.ver++;
+  buildCut(p);
+  if(cut.isNew){ people.push(p); closeCutout(); renderEdPeople(); addItem(p.id); }
+  else { closeCutout(); renderEdPeople(); changed(); }
+  savePeople();
+};
+
+// 依遮罩把人物剪出來，並裁掉四周空白
+function buildCut(p){
+  const w = p.orig.width, h = p.orig.height;
+  const a = p.mask.getContext("2d").getImageData(0, 0, w, h).data;
+  let x0 = w, y0 = h, x1 = -1, y1 = -1;
+  for(let y = 0; y < h; y++) for(let x = 0; x < w; x++){
+    if(a[(y*w + x)*4 + 3] > 12){ if(x < x0) x0 = x; if(x > x1) x1 = x; if(y < y0) y0 = y; if(y > y1) y1 = y; }
+  }
+  if(x1 < 0){ x0 = y0 = 0; x1 = y1 = 0; }
+  const cw = x1 - x0 + 1, ch = y1 - y0 + 1;
+  const c = mk(cw, ch), t = c.getContext("2d");
+  t.drawImage(p.orig, -x0, -y0);
+  t.globalCompositeOperation = "destination-in"; t.drawImage(p.mask, -x0, -y0);
+  p.cut = c;
+  const th = mk(168, 126), tc = th.getContext("2d"), s = Math.min(168/cw, 126/ch);
+  tc.drawImage(c, (168 - cw*s)/2, (126 - ch*s)/2, cw*s, ch*s);
+  p.thumb = th;
 }
 
-// canvas 字距
-function spacedText(ctx, text, cx, y, sp){
-  const chars = [...text], ws = chars.map(ch => ctx.measureText(ch).width);
-  let x = cx - (ws.reduce((a,b) => a+b, 0) + sp*(chars.length-1)) / 2;
-  ctx.textAlign = "left";
-  chars.forEach((ch, i) => { ctx.fillText(ch, x, y); x += ws[i] + sp; });
-  ctx.textAlign = "center";
-}
-
-// ================= 6. 預覽視窗 & 下載 =================
+// =====================================================================
+// 11. 成品預覽 & 下載
+// =====================================================================
 function openModal(){
-  const c = renderPrint();
-  c.toBlob(blob => {
+  renderPrint().toBlob(blob => {
     if(lastBlobUrl) URL.revokeObjectURL(lastBlobUrl);
     lastBlobUrl = URL.createObjectURL(blob);
     $("modalImg").src = lastBlobUrl;
-    $("modal").classList.add("show");
-    document.body.style.overflow = "hidden";
+    $("modal").classList.add("show"); document.body.style.overflow = "hidden";
   }, "image/png");
 }
-function closeModal(){
-  $("modal").classList.remove("show");
-  document.body.style.overflow = "";
-}
+function closeModal(){ $("modal").classList.remove("show"); document.body.style.overflow = ""; }
 $("previewBtn").onclick = openModal;
-$("editBtn").onclick = () => { closeModal(); document.querySelector(".panel").scrollIntoView({behavior:"smooth"}); };
-$("retakeBtn").onclick = () => { closeModal(); window.scrollTo({top:0, behavior:"smooth"}); $("shootBtn").click(); };
+$("editBtn").onclick = () => { closeModal(); $("framePreview").scrollIntoView({ behavior:"smooth", block:"center" }); };
 $("dlBtn").onclick = () => {
-  const a = document.createElement("a");
-  a.href = lastBlobUrl;
+  const a = document.createElement("a"); a.href = lastBlobUrl;
   a.download = `RCphotoBooth-${today("")}-${Date.now()%100000}.png`;
   document.body.appendChild(a); a.click(); a.remove();
 };
 $("modal").addEventListener("click", e => { if(e.target.id === "modal") closeModal(); });
 
-// ================= 啟動 =================
+// =====================================================================
+// 啟動
+// =====================================================================
 renderCountOpts();
+renderSceneOpts();
+initAccordion();
 applyLive();
-updatePreview();
-if(document.fonts) document.fonts.ready.then(updatePreview);
+restoreSaved();
+requestAnimationFrame(loop);
+if(document.fonts) document.fonts.ready.then(() => { cellCache.length = 0; updatePreview(); });
 </script>
 </body>
 </html>
